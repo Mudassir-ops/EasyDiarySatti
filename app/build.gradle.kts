@@ -88,3 +88,6 @@ kapt {
     useBuildCache = false
     generateStubs = true
 }
+ksp {
+    arg("dagger.hilt.android.internal.disableAndroidSuperclassValidation", "true")
+}

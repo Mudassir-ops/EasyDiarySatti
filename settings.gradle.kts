@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "EasyDiarySatti"
 include(":app")
- 
+include(":easydiarycommons")
+include(":easydiarycommons")

@@ -15,24 +15,6 @@
         android:layout_height="match_parent"
         tools:context=".presentation.fragments.onboarding.ongoingitem.OnGoingItemFragment">
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tv_skip"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_20sdp"
-            android:background="@drawable/empty_rectangle"
-            android:elevation="@dimen/_5sdp"
-            android:fontFamily="@font/outfit"
-            android:paddingHorizontal="@dimen/_16sdp"
-            android:paddingVertical="@dimen/_8sdp"
-            android:text="@string/skip"
-            android:textAlignment="center"
-            android:textColor="@color/app_primary_color"
-            android:textSize="@dimen/_13ssp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_onGoing_item"
             android:layout_width="0dp"
@@ -41,8 +23,9 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.7"
+            android:layout_marginHorizontal="@dimen/_15sdp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_skip"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0"
             app:srcCompat="@drawable/intro_1" />
 
@@ -52,33 +35,26 @@
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/_15sdp"
             android:elevation="@dimen/_5sdp"
+            android:textAlignment="center"
             android:fontFamily="@font/outfit_bold"
-            android:shadowColor="#80000000"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="2"
             android:text="@{onBoardingModel.labelOne}"
             android:textColor="@color/black"
-            android:textSize="@dimen/_13ssp"
+            android:textSize="@dimen/_15ssp"
             app:layout_constraintEnd_toEndOf="@+id/iv_onGoing_item"
             app:layout_constraintStart_toStartOf="@+id/iv_onGoing_item"
             app:layout_constraintTop_toBottomOf="@+id/iv_onGoing_item" />
-
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_onGoing_item_label_2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_15sdp"
+            android:layout_marginTop="@dimen/_5sdp"
             android:elevation="@dimen/_5sdp"
-            android:fontFamily="@font/outfit_regular"
-            android:shadowColor="#80000000"
-            android:shadowDx="1"
-            android:shadowDy="1"
-            android:shadowRadius="2"
-            android:text="@{onBoardingModel.labelOne}"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_11ssp"
+            android:textAlignment="center"
+            android:fontFamily="@font/outfit_light"
+            android:text="@{onBoardingModel.labelTwo}"
+            android:textColor="@color/txt_color_gray"
+            android:textSize="@dimen/_13ssp"
             app:layout_constraintEnd_toEndOf="@+id/iv_onGoing_item"
             app:layout_constraintStart_toStartOf="@+id/iv_onGoing_item"
             app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1" />

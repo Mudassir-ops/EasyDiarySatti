@@ -3,6 +3,7 @@
     <array name="preloaded_fonts" translatable="false">
         <item>@font/outfit</item>
         <item>@font/outfit_bold</item>
+        <item>@font/outfit_light</item>
         <item>@font/outfit_medium</item>
         <item>@font/outfit_regular</item>
         <item>@font/outfit_semibold</item>

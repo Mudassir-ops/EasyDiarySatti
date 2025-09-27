@@ -23,16 +23,16 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
         arrayOf(
             OnGoingScreenUiModel(
                 labelOne = "Diary Journal",
-                labelTwo = "Log your thoughts, track habits, and plan goals.",
+                labelTwo = "Log your thoughts, track habits, and\nplan goals.",
                 imageRes = R.drawable.intro_1,
 
                 ), OnGoingScreenUiModel(
                 labelOne = "Capture Your Memories",
-                labelTwo = "Make your diary truly yours! Add tags or upload images.",
+                labelTwo = "Make your diary truly yours! Add tags\nor upload images.",
                 imageRes = R.drawable.intro_2,
             ), OnGoingScreenUiModel(
                 labelOne = "Personal & Private",
-                labelTwo = "Preserve your private moments and make them wonderful.",
+                labelTwo = "Preserve your private moments and\nmake them wonderful.",
                 imageRes = R.drawable.intro_3,
             )
         )
@@ -52,13 +52,20 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
         pagerAdapterRef = WeakReference(pagerAdapter)
         binding?.viewPagerEasyDiary?.apply {
             adapter = pagerAdapter
-            isUserInputEnabled = false
         }
     }
 
     private fun clickListeners() {
         binding?.apply {
+            btnNext.setOnClickListener {
+                val nextItem = viewPagerEasyDiary.currentItem + 1
+                if (nextItem < (viewPagerEasyDiary.adapter?.itemCount ?: 0)) {
+                    viewPagerEasyDiary.currentItem = nextItem
+                }
+            }
+            tvSkip.setOnClickListener {
 
+            }
         }
     }
 

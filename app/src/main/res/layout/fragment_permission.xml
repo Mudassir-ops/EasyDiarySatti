@@ -87,13 +87,13 @@
         app:layout_constraintStart_toEndOf="@id/icCamera"
         app:layout_constraintTop_toTopOf="@id/viewCameraAccess" />
 
-    <androidx.appcompat.widget.SwitchCompat
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/icSwitchCamera"
         style="@style/CustomSwitchStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/_10sdp"
-        android:checked="true"
+        android:checked="false"
         android:text=""
         android:thumb="@drawable/custom_thumb"
         app:layout_constraintBottom_toBottomOf="@id/viewCameraAccess"
@@ -131,21 +131,21 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_10sdp"
         android:fontFamily="@font/outfit"
-        android:text="Allow Gallery Access"
+        android:text="@string/allow_gallery_access"
         android:textColor="@color/txt_color_gray"
         android:textSize="@dimen/_14ssp"
         app:layout_constraintBottom_toBottomOf="@id/viewGallery"
         app:layout_constraintStart_toEndOf="@id/icGallery"
         app:layout_constraintTop_toTopOf="@id/viewGallery" />
 
-    <androidx.appcompat.widget.SwitchCompat
+    <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/icSwitchGallery"
         style="@style/CustomSwitchStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/_10sdp"
         android:button="@null"
-        android:checked="true"
+        android:checked="false"
         android:text=""
         android:thumb="@drawable/custom_thumb"
         android:thumbTint="@null"

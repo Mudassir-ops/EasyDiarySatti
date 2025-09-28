@@ -27,7 +27,11 @@
         android:id="@+id/languageFragment"
         android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
         android:label="LanguageFragment"
-        tools:layout="@layout/fragment_language"/>
+        tools:layout="@layout/fragment_language" >
+        <action
+            android:id="@+id/action_languageFragment_to_themesFragment"
+            app:destination="@id/themesFragment" />
+    </fragment>
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.easydiarysatti.ui.signup.SignUpFragment"
@@ -41,9 +45,14 @@
         android:id="@+id/nameFragment"
         android:name="com.example.easydiarysatti.ui.name.NameFragment"
         android:label="NameFragment"
-        tools:layout="@layout/fragment_name" >
+        tools:layout="@layout/fragment_name">
         <action
             android:id="@+id/action_nameFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/themesFragment"
+        android:name="com.example.easydiarysatti.ui.theme.ThemesFragment"
+        android:label="ThemesFragment"
+        tools:layout="@layout/fragment_themes" />
 </navigation>

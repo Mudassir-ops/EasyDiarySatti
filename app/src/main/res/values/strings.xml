@@ -33,6 +33,10 @@
     <string name="welcome_back_satti">Welcome Back, Satti</string>
     <string name="continueLabel">Continue</string>
     <string name="cherish_every_memory_with_new_ndigital_diary">Cherish every memory with new\ndigital diary</string>
+    <string name="choose_a_theme_that_reflects_your_personality_nand_enhances_your_diary_experience">Choose a theme that reflects your personality\nand enhances your diary experience.</string>
+    <string name="choose_your_theme">Choose Your Theme</string>
+    <string name="later">Later</string>
+    <string name="select">Select</string>
 
 
 </resources>

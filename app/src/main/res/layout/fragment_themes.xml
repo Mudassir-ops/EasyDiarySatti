@@ -17,7 +17,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/_20sdp"
-        android:layout_marginTop="@dimen/_20sdp"
+        android:layout_marginTop="@dimen/_13sdp"
         android:fontFamily="@font/outfit_bold"
         android:text="@string/choose_your_theme"
         android:textAlignment="viewStart"
@@ -43,47 +43,51 @@
         android:id="@+id/themeViewPager"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginVertical="@dimen/_20sdp"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:paddingStart="40dp"
-        android:paddingEnd="40dp"
-        app:layout_constraintBottom_toTopOf="@+id/buttonsLayout"
+        android:paddingStart="@dimen/_35sdp"
+        android:paddingEnd="@dimen/_35sdp"
+        app:layout_constraintBottom_toTopOf="@+id/btnLater"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvSubtitle" />
 
-    <LinearLayout
-        android:id="@+id/buttonsLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:orientation="horizontal"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnLater"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_40sdp"
+        android:background="@drawable/btn_theme_unselected_bg_shape"
+        android:fontFamily="@font/outfit_bold"
+        android:text="@string/later"
+        android:textAllCaps="false"
+        android:textColor="@color/app_primary_color"
+        android:textSize="@dimen/_15ssp"
+        app:backgroundTint="@null"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btnSelect"
+        app:layout_constraintHeight_percent="0.075"
+        app:layout_constraintStart_toStartOf="parent"
+        app:strokeColor="@color/app_primary_color"
+        app:strokeWidth="@dimen/_2sdp" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnSelect"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:background="@drawable/btn_theme_bg_shape"
+        android:fontFamily="@font/outfit_bold"
+        android:text="@string/select"
+        android:textAllCaps="false"
+        android:textSize="@dimen/_15ssp"
+        app:backgroundTint="@null"
+        app:cornerRadius="@dimen/_10sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/btnLater"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnLater"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="@font/outfit"
-            android:text="@string/later" />
-
-        <Space
-            android:layout_width="16dp"
-            android:layout_height="wrap_content" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSelect"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:fontFamily="@font/outfit"
-            android:text="@string/select" />
-
-    </LinearLayout>
+        app:layout_constraintStart_toEndOf="@+id/btnLater"
+        app:layout_constraintTop_toTopOf="@+id/btnLater" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

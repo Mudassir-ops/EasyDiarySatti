@@ -44,9 +44,7 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
             themeViewPager.setPageTransformer { page, position ->
                 page.scaleY = 0.85f + (1 - abs(position)) * 0.15f
             }
-            themeViewPager.post {
-                themeViewPager.setCurrentItem(1, false)
-            }
+            themeViewPager.setCurrentItem(1, false)
         }
     }
 }

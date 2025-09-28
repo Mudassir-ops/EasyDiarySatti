@@ -9,4 +9,5 @@
 
     <color name="switch_track_color">#42ABD0</color>
     <color name="switch_thumb_color">#E2E8F0</color>
+    <color name="track_color">#848D9B</color>
 </resources>

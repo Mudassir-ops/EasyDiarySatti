@@ -26,7 +26,7 @@ class LanguageFragment : Fragment(R.layout.fragment_language) {
 
     private fun clickListener() {
         binding?.apply {
-            btnDone.setOnClickListener { moveToNextScreen() }
+            btnNext.setOnClickListener { moveToNextScreen() }
             val languageItems =
                 listOf(
                     clEnglishUk,

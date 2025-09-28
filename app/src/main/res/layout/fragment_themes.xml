@@ -36,7 +36,7 @@
         android:text="@string/choose_a_theme_that_reflects_your_personality_nand_enhances_your_diary_experience"
         android:textAlignment="viewStart"
         android:textColor="@color/txt_color_gray"
-        android:textSize="@dimen/_14ssp"
+        android:textSize="@dimen/_13ssp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@+id/tvTitle"
         app:layout_constraintTop_toBottomOf="@id/tvTitle" />
@@ -63,7 +63,7 @@
         android:layout_marginEnd="@dimen/_15sdp"
         android:layout_marginBottom="@dimen/_40sdp"
         android:background="@drawable/btn_theme_unselected_bg_shape"
-        android:fontFamily="@font/outfit_bold"
+        android:fontFamily="@font/outfit_medium"
         android:text="@string/later"
         android:textAllCaps="false"
         android:textColor="@color/app_primary_color"
@@ -72,9 +72,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnSelect"
         app:layout_constraintHeight_percent="0.06"
-        app:layout_constraintStart_toStartOf="parent"
-        app:strokeColor="@color/app_primary_color"
-        app:strokeWidth="@dimen/_2sdp" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSelect"
@@ -83,7 +81,7 @@
         android:layout_marginStart="@dimen/_15sdp"
         android:layout_marginEnd="@dimen/_20sdp"
         android:background="@drawable/btn_theme_bg_shape"
-        android:fontFamily="@font/outfit_bold"
+        android:fontFamily="@font/outfit_medium"
         android:text="@string/select"
         android:textAllCaps="false"
         android:textSize="@dimen/_13ssp"

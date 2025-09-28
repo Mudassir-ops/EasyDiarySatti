@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Rect
+import android.graphics.drawable.Drawable
 import android.graphics.drawable.RippleDrawable
 import android.net.Uri
 import android.os.Build
@@ -247,6 +248,28 @@ fun AppCompatImageView.loadImage(
         .placeholder(placeholder)
         .into(this)
 }
+
+fun View.loadBackground(
+    resourceId: Int?,
+    placeholder: Int = R.drawable.image_placeholder
+) {
+    Glide.with(this.context)
+        .load(resourceId ?: placeholder)
+        .placeholder(placeholder)
+        .into(object : com.bumptech.glide.request.target.CustomTarget<Drawable>() {
+            override fun onResourceReady(
+                resource: Drawable,
+                transition: com.bumptech.glide.request.transition.Transition<in Drawable>?
+            ) {
+                background = resource
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {
+                background = placeholder
+            }
+        })
+}
+
 
 fun Fragment.setKeyboardVisibilityListener(onVisibilityChanged: (Boolean) -> Unit) {
     val activity = activity ?: return

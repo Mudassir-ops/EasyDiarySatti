@@ -37,6 +37,8 @@
     <string name="choose_your_theme">Choose Your Theme</string>
     <string name="later">Later</string>
     <string name="select">Select</string>
+    <string name="library">Library</string>
+    <string name="calender">Calender</string>
 
 
 </resources>

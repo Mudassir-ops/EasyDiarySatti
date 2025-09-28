@@ -14,4 +14,5 @@
     <color name="stroke_selected_color">#ECF7FA</color>
     <color name="pin_bg">#EDEEF0</color>
     <color name="pin_border">#AAB1BA</color>
+    <color name="unselected_color">#CCCCCC33</color>
 </resources>

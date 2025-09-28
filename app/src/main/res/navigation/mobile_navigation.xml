@@ -27,7 +27,7 @@
         android:id="@+id/languageFragment"
         android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
         android:label="LanguageFragment"
-        tools:layout="@layout/fragment_language" >
+        tools:layout="@layout/fragment_language">
         <action
             android:id="@+id/action_languageFragment_to_themesFragment"
             app:destination="@id/themesFragment" />
@@ -54,5 +54,14 @@
         android:id="@+id/themesFragment"
         android:name="com.example.easydiarysatti.ui.theme.ThemesFragment"
         android:label="ThemesFragment"
-        tools:layout="@layout/fragment_themes" />
+        tools:layout="@layout/fragment_themes">
+        <action
+            android:id="@+id/action_themesFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mainFragment"
+        android:name="com.example.easydiarysatti.ui.main.MainFragment"
+        android:label="fragment_main"
+        tools:layout="@layout/fragment_main" />
 </navigation>

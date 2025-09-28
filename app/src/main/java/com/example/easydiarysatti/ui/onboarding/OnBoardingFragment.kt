@@ -6,8 +6,10 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentOnBoardingBinding
+import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.uimodels.OnGoingScreenUiModel
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -61,10 +63,18 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
                 val nextItem = viewPagerEasyDiary.currentItem + 1
                 if (nextItem < (viewPagerEasyDiary.adapter?.itemCount ?: 0)) {
                     viewPagerEasyDiary.currentItem = nextItem
+                } else {
+                    findNavController().safeNav(
+                        currentDestId = R.id.onBoardingFragment,
+                        actionId = R.id.action_onBoardingFragment_to_permissionFragment
+                    )
                 }
             }
             tvSkip.setOnClickListener {
-
+                findNavController().safeNav(
+                    currentDestId = R.id.onBoardingFragment,
+                    actionId = R.id.action_onBoardingFragment_to_permissionFragment
+                )
             }
         }
     }

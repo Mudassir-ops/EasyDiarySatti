@@ -13,6 +13,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/white"
         tools:context=".presentation.fragments.onboarding.OnBoardingFragment">
 
 
@@ -24,8 +25,8 @@
             android:background="@drawable/empty_rectangle"
             android:elevation="@dimen/_5sdp"
             android:fontFamily="@font/outfit"
-            android:paddingHorizontal="@dimen/_16sdp"
-            android:paddingVertical="@dimen/_8sdp"
+            android:paddingHorizontal="@dimen/_19sdp"
+            android:paddingVertical="@dimen/_7sdp"
             android:text="@string/skip"
             android:textAlignment="center"
             android:textColor="@color/app_primary_color"
@@ -46,10 +47,12 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNext"
             android:layout_width="0dp"
-            android:layout_height="@dimen/_30sdp"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/_40sdp"
             android:background="@drawable/btn_bg"
+            android:fontFamily="@font/outfit_medium"
             android:text="@string/next"
+            android:textSize="@dimen/_14ssp"
             app:backgroundTint="@color/app_primary_color"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"

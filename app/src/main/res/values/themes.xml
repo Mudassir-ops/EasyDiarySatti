@@ -7,5 +7,13 @@
 
     </style>
 
+    <style name="CustomSwitchStyle" parent="Widget.Material3.CompoundButton.Switch">
+        <!-- Track (background oval) -->
+        <item name="trackTint">@color/switch_track_color</item>
+        <!-- Thumb (circle with check) -->
+        <item name="thumbTint">@color/switch_thumb_color</item>
+
+    </style>
+
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
 </resources>

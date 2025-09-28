@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.permission.PermissionFragment">
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_onGoing_item_label_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_45sdp"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit_bold"
+        android:text="@string/permissions"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_onGoing_item_label_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_8sdp"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit"
+        android:text="@string/we_need_your_permission"
+        android:textAlignment="center"
+        android:textColor="@color/txt_color_gray"
+        android:textSize="@dimen/_14ssp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_40sdp"
+        android:background="@drawable/btn_bg"
+        android:fontFamily="@font/outfit_medium"
+        android:text="@string/done"
+        android:textSize="@dimen/_14ssp"
+        app:backgroundTint="@color/app_primary_color"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_percent="0.85" />
+
+    <View
+        android:id="@+id/viewCameraAccess"
+        android:layout_width="0dp"
+        android:layout_height="?actionBarSize"
+        android:layout_marginTop="@dimen/_45sdp"
+        android:background="@drawable/bg_permission"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_onGoing_item_label_2"
+        app:layout_constraintWidth_percent="0.9" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icCamera"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="@dimen/_10sdp"
+        app:layout_constraintBottom_toBottomOf="@id/viewCameraAccess"
+        app:layout_constraintEnd_toStartOf="@id/txtAllowCameraAccess"
+        app:layout_constraintStart_toStartOf="@id/viewCameraAccess"
+        app:layout_constraintTop_toTopOf="@id/viewCameraAccess"
+        app:srcCompat="@drawable/ic_camera" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtAllowCameraAccess"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:fontFamily="@font/outfit"
+        android:text="@string/allow_camera_access"
+        android:textColor="@color/txt_color_gray"
+        android:textSize="@dimen/_14ssp"
+        app:layout_constraintBottom_toBottomOf="@id/viewCameraAccess"
+        app:layout_constraintStart_toEndOf="@id/icCamera"
+        app:layout_constraintTop_toTopOf="@id/viewCameraAccess" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/icSwitchCamera"
+        style="@style/CustomSwitchStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:checked="true"
+        android:text=""
+        android:thumb="@drawable/custom_thumb"
+        app:layout_constraintBottom_toBottomOf="@id/viewCameraAccess"
+        app:layout_constraintEnd_toEndOf="@id/viewCameraAccess"
+        app:layout_constraintTop_toTopOf="@id/viewCameraAccess"
+        app:thumbTint="@null"
+        app:track="@drawable/custom_track"
+        app:trackTint="@color/app_primary_color" />
+
+    <View
+        android:id="@+id/viewGallery"
+        android:layout_width="0dp"
+        android:layout_height="?actionBarSize"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:background="@drawable/bg_permission"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/viewCameraAccess"
+        app:layout_constraintWidth_percent="0.9" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icGallery"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginStart="@dimen/_10sdp"
+        app:layout_constraintBottom_toBottomOf="@id/viewGallery"
+        app:layout_constraintEnd_toStartOf="@id/txtAllowGalleryAccess"
+        app:layout_constraintStart_toStartOf="@id/viewGallery"
+        app:layout_constraintTop_toTopOf="@id/viewGallery"
+        app:srcCompat="@drawable/ic_gallery" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtAllowGalleryAccess"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:fontFamily="@font/outfit"
+        android:text="Allow Gallery Access"
+        android:textColor="@color/txt_color_gray"
+        android:textSize="@dimen/_14ssp"
+        app:layout_constraintBottom_toBottomOf="@id/viewGallery"
+        app:layout_constraintStart_toEndOf="@id/icGallery"
+        app:layout_constraintTop_toTopOf="@id/viewGallery" />
+
+    <androidx.appcompat.widget.SwitchCompat
+        android:id="@+id/icSwitchGallery"
+        style="@style/CustomSwitchStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:button="@null"
+        android:checked="true"
+        android:text=""
+        android:thumb="@drawable/custom_thumb"
+        android:thumbTint="@null"
+        app:layout_constraintBottom_toBottomOf="@id/viewGallery"
+        app:layout_constraintEnd_toEndOf="@id/viewGallery"
+        app:layout_constraintTop_toTopOf="@id/viewGallery"
+        app:showText="false"
+        app:thumbTint="@null"
+        app:track="@drawable/custom_track" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

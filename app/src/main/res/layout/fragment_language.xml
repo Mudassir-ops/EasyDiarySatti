@@ -33,7 +33,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_language_header" />
 
-
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"

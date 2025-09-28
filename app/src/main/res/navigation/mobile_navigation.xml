@@ -18,9 +18,14 @@
         android:id="@+id/permissionFragment"
         android:name="com.example.easydiarysatti.ui.permission.PermissionFragment"
         android:label="fragment_permission"
-        tools:layout="@layout/fragment_permission" />
+        tools:layout="@layout/fragment_permission" >
+        <action
+            android:id="@+id/action_permissionFragment_to_languageFragment"
+            app:destination="@id/languageFragment" />
+    </fragment>
     <fragment
         android:id="@+id/languageFragment"
+        tools:layout="@layout/fragment_language"
         android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
         android:label="LanguageFragment" />
 </navigation>

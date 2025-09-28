@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentLanguageBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
+import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setSelectedBg
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,18 +48,9 @@ class LanguageFragment : Fragment(R.layout.fragment_language) {
     }
 
     fun moveToNextScreen() {
-        sessionManagerRepo.setLanguageSettled(languageSettledIn = true)
-        /* val alreadyGranted = validateStoragePermission()
-         if (alreadyGranted) {
-             findNavController().safeNav(
-                 currentDestId = R.id.languageFragment,
-                 actionId = R.id.action_languageFragment_to_onBoardingFragment
-             )
-         } else {
-             findNavController().safeNav(
-                 currentDestId = R.id.languageFragment,
-                 actionId = R.id.action_languageFragment_to_permissionFragment
-             )
-         }*/
+//        findNavController().safeNav(
+//            currentDestId = R.id.languageFragment,
+//            actionId = R.id.action_languageFragment_to_signUpFragment
+//        )
     }
 }

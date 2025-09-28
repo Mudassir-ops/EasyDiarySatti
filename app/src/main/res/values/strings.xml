@@ -23,6 +23,10 @@
     <string name="arabic_ae">Arabic (AE)</string>
     <string name="select_language">Select Language</string>
     <string name="choose_your_preferred_language_to">Choose your preferred language to\npersonalize your diary experience.</string>
+    <string name="protect_your_thoughts_and_memories_with_a_nsecure_4_digit_pin_for_quick_and_easy_naccess">Protect your thoughts and memories with a\nsecure 4-digit PIN for quick and easy\naccess.</string>
+    <string name="setup_pin">Setup PIN</string>
+    <string name="access_your_diary">Access Your Diary</string>
+    <string name="pins_do_not_match_try_again">PINs do not match, try again</string>
 
 
 </resources>

@@ -14,6 +14,7 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.annotation.IdRes
@@ -23,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Calendar
@@ -208,4 +210,21 @@ fun View.setSelectedBg(isSelected: Boolean) {
     val drawableRes =
         if (isSelected) R.drawable.language_item_selected else R.drawable.language_item_bg
     this.setBackgroundResource(drawableRes)
+}
+
+fun View.showSnackbar(
+    message: String,
+    duration: Int = Snackbar.LENGTH_SHORT,
+    anchor: View? = null
+) {
+    Snackbar.make(this, message, duration).apply {
+        anchor?.let { anchorView = it }
+    }.show()
+}
+
+fun Fragment.hideKeyboard() {
+    val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+    requireView().let { v ->
+        imm.hideSoftInputFromWindow(v.windowToken, 0)
+    }
 }

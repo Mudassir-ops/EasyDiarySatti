@@ -12,4 +12,6 @@
     <color name="track_color">#848D9B</color>
     <color name="stroke_color">#C6CAD1</color>
     <color name="stroke_selected_color">#ECF7FA</color>
+    <color name="pin_bg">#EDEEF0</color>
+    <color name="pin_border">#AAB1BA</color>
 </resources>

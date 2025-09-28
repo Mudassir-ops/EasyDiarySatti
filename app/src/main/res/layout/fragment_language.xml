@@ -2,13 +2,13 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="24dp">
+    android:layout_height="match_parent">
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_language_header"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_15sdp"
         android:layout_marginTop="@dimen/_20sdp"
         android:elevation="@dimen/_5sdp"
         android:fontFamily="@font/outfit_bold"
@@ -23,6 +23,7 @@
         android:id="@+id/tv_language_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_15sdp"
         android:layout_marginTop="@dimen/_8sdp"
         android:elevation="@dimen/_5sdp"
         android:fontFamily="@font/outfit"
@@ -38,6 +39,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/_25sdp"
+        android:paddingHorizontal="@dimen/_15sdp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_language_label">
@@ -51,7 +53,7 @@
                 android:id="@+id/cl_english_us"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
                 android:background="@drawable/language_item_selected"
                 android:padding="@dimen/_10sdp">
 
@@ -86,7 +88,7 @@
                 android:id="@+id/cl_english_uk"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
                 android:background="@drawable/language_item_bg"
                 android:padding="@dimen/_10sdp">
 
@@ -121,7 +123,7 @@
                 android:id="@+id/cl_turkish"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
                 android:background="@drawable/language_item_bg"
                 android:padding="@dimen/_10sdp">
 
@@ -160,7 +162,7 @@
                 android:id="@+id/cl_arabic"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
                 android:background="@drawable/language_item_bg"
                 android:padding="@dimen/_10sdp">
 
@@ -198,7 +200,7 @@
                 android:id="@+id/cl_portuguese"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
                 android:background="@drawable/language_item_bg"
                 android:padding="@dimen/_10sdp">
 
@@ -233,7 +235,7 @@
                 android:id="@+id/cl_spanish"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
                 android:background="@drawable/language_item_bg"
                 android:padding="@dimen/_10sdp">
 
@@ -268,7 +270,7 @@
                 android:id="@+id/cl_urdu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/_6sdp"
+                android:layout_marginBottom="@dimen/_8sdp"
                 android:background="@drawable/language_item_bg"
                 android:padding="@dimen/_10sdp">
 

@@ -18,14 +18,23 @@
         android:id="@+id/permissionFragment"
         android:name="com.example.easydiarysatti.ui.permission.PermissionFragment"
         android:label="fragment_permission"
-        tools:layout="@layout/fragment_permission" >
+        tools:layout="@layout/fragment_permission">
         <action
-            android:id="@+id/action_permissionFragment_to_languageFragment"
-            app:destination="@id/languageFragment" />
+            android:id="@+id/action_permissionFragment_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
     </fragment>
     <fragment
         android:id="@+id/languageFragment"
-        tools:layout="@layout/fragment_language"
         android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
-        android:label="LanguageFragment" />
+        android:label="LanguageFragment"
+        tools:layout="@layout/fragment_language" />
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.example.easydiarysatti.ui.signup.SignUpFragment"
+        android:label="fragment_sign_up"
+        tools:layout="@layout/fragment_sign_up" >
+        <action
+            android:id="@+id/action_signUpFragment_to_languageFragment"
+            app:destination="@id/languageFragment" />
+    </fragment>
 </navigation>

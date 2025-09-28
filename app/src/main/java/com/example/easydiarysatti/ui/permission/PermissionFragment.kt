@@ -31,7 +31,7 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
     fun moveToNextScreen() {
         findNavController().safeNav(
             currentDestId = R.id.permissionFragment,
-            actionId = R.id.action_permissionFragment_to_languageFragment
+            actionId = R.id.action_permissionFragment_to_signUpFragment
         )
     }
 }

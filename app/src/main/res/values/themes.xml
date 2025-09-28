@@ -7,12 +7,5 @@
 
     </style>
 
-    <style name="CustomSwitchStyle" parent="Widget.Material3.CompoundButton.Switch">
-        <item name="trackTint">@color/switch_track_color</item>
-        <item name="thumbTint">@color/switch_thumb_color</item>
-        <item name="trackDecorationTint">@color/switch_track_color </item>
-
-    </style>
-
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
 </resources>

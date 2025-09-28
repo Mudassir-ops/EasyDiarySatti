@@ -7,6 +7,7 @@ import android.app.DatePickerDialog
 import android.content.Context
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.graphics.Rect
 import android.graphics.drawable.RippleDrawable
 import android.net.Uri
 import android.os.Build
@@ -15,15 +16,20 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
 import android.view.View
+import android.view.ViewTreeObserver
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.ColorRes
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -242,3 +248,31 @@ fun AppCompatImageView.loadImage(
         .into(this)
 }
 
+fun Fragment.setKeyboardVisibilityListener(onVisibilityChanged: (Boolean) -> Unit) {
+    val activity = activity ?: return
+    val contentView = activity.findViewById<View>(android.R.id.content)
+    val listener = ViewTreeObserver.OnGlobalLayoutListener {
+        val r = Rect()
+        contentView.getWindowVisibleDisplayFrame(r)
+        val screenHeight = contentView.rootView.height
+        val keypadHeight = screenHeight - r.bottom
+        onVisibilityChanged(keypadHeight > screenHeight * 0.15)
+    }
+    contentView.viewTreeObserver.addOnGlobalLayoutListener(listener)
+    viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
+        override fun onDestroy(owner: LifecycleOwner) {
+            contentView.viewTreeObserver.removeOnGlobalLayoutListener(listener)
+        }
+    })
+}
+
+
+@Suppress("DEPRECATION")
+fun Fragment.enableResize(enable: Boolean) {
+    val mode = if (enable) {
+        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
+    } else {
+        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+    }
+    activity?.window?.setSoftInputMode(mode)
+}

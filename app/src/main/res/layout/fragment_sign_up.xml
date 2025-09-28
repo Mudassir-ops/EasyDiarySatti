@@ -7,22 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".ui.signup.SignUpFragment">
 
-    <View
-        android:id="@+id/viewTop"
-        android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"
-        app:layout_constraintBottom_toTopOf="@id/viewTop"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/txChooseYourTheme"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/_10sdp"
-        android:layout_marginTop="@dimen/_12sdp"
+        android:layout_marginTop="@dimen/_20sdp"
         android:fontFamily="@font/outfit_bold"
         android:text="@string/access_your_diary"
         android:textColor="@color/black"
@@ -30,7 +21,7 @@
         app:layout_constraintBottom_toTopOf="@id/txtSetPasswordDescription"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/viewTop" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/txtSetPasswordDescription"

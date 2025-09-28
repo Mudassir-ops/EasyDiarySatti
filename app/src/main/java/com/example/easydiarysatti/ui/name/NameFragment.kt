@@ -5,10 +5,12 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentNameBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.loadImage
+import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setKeyboardVisibilityListener
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +26,7 @@ class NameFragment : Fragment(R.layout.fragment_name) {
         super.onViewCreated(view, savedInstanceState)
         binding?.apply {
             adjustScreenKeyboard()
+            clickListener()
             imgIntroOne.loadImage(resourceId = R.drawable.name_pic)
         }
     }
@@ -41,7 +44,19 @@ class NameFragment : Fragment(R.layout.fragment_name) {
                 }
             }
         }
+    }
 
+    private fun clickListener() {
+        binding?.apply {
+            btnNext.setOnClickListener { moveToNextScreen() }
+        }
+    }
+
+    fun moveToNextScreen() {
+        findNavController().safeNav(
+            currentDestId = R.id.nameFragment,
+            actionId = R.id.action_nameFragment_to_signUpFragment
+        )
     }
 
 }

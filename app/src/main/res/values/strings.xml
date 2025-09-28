@@ -30,6 +30,9 @@
     <string name="start_writing">Start Writing</string>
     <string name="enter_your_name">Enter your Name</string>
     <string name="name">Name</string>
+    <string name="welcome_back_satti">Welcome Back, Satti</string>
+    <string name="continueLabel">Continue</string>
+    <string name="cherish_every_memory_with_new_ndigital_diary">Cherish every memory with new\ndigital diary</string>
 
 
 </resources>

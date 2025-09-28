@@ -48,9 +48,9 @@ class LanguageFragment : Fragment(R.layout.fragment_language) {
     }
 
     fun moveToNextScreen() {
-        findNavController().safeNav(
-            currentDestId = R.id.languageFragment,
-            actionId = R.id.action_languageFragment_to_nameFragment
-        )
+//        findNavController().safeNav(
+//            currentDestId = R.id.languageFragment,
+//            actionId = R.id.action_languageFragment_to_permissionFragment
+//        )
     }
 }

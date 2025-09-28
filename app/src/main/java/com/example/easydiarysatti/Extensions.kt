@@ -13,6 +13,7 @@ import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -20,10 +21,12 @@ import androidx.annotation.ColorRes
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
@@ -228,3 +231,14 @@ fun Fragment.hideKeyboard() {
         imm.hideSoftInputFromWindow(v.windowToken, 0)
     }
 }
+
+fun AppCompatImageView.loadImage(
+    resourceId: Int?,
+    placeholder: Int = R.drawable.image_placeholder
+) {
+    Glide.with(this.context)
+        .load(resourceId ?: placeholder)
+        .placeholder(placeholder)
+        .into(this)
+}
+

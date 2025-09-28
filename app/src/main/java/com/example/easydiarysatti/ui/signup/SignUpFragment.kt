@@ -15,7 +15,6 @@ import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 
-
 @AndroidEntryPoint
 class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     private val viewModel by viewModels<SignUpViewModel>()
@@ -131,5 +130,6 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             actionId = R.id.action_signUpFragment_to_languageFragment
         )
     }
+
 }
 

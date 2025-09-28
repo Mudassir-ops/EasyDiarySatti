@@ -27,14 +27,23 @@
         android:id="@+id/languageFragment"
         android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
         android:label="LanguageFragment"
-        tools:layout="@layout/fragment_language" />
+        tools:layout="@layout/fragment_language">
+        <action
+            android:id="@+id/action_languageFragment_to_nameFragment"
+            app:destination="@id/nameFragment" />
+    </fragment>
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.easydiarysatti.ui.signup.SignUpFragment"
         android:label="fragment_sign_up"
-        tools:layout="@layout/fragment_sign_up" >
+        tools:layout="@layout/fragment_sign_up">
         <action
             android:id="@+id/action_signUpFragment_to_languageFragment"
             app:destination="@id/languageFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/nameFragment"
+        android:name="com.example.easydiarysatti.ui.name.NameFragment"
+        android:label="NameFragment"
+        tools:layout="@layout/fragment_name" />
 </navigation>

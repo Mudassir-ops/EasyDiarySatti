@@ -10,4 +10,6 @@
     <color name="switch_track_color">#42ABD0</color>
     <color name="switch_thumb_color">#E2E8F0</color>
     <color name="track_color">#848D9B</color>
+    <color name="stroke_color">#C6CAD1</color>
+    <color name="stroke_selected_color">#ECF7FA</color>
 </resources>

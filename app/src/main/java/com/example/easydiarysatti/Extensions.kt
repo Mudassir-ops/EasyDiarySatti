@@ -203,3 +203,9 @@ fun View.setSafeClickListener(delayMillis: Long = 1000L, onClick: (View) -> Unit
         }
     }
 }
+
+fun View.setSelectedBg(isSelected: Boolean) {
+    val drawableRes =
+        if (isSelected) R.drawable.language_item_selected else R.drawable.language_item_bg
+    this.setBackgroundResource(drawableRes)
+}

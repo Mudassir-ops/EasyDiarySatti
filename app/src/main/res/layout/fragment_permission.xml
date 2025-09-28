@@ -17,7 +17,7 @@
         android:text="@string/permissions"
         android:textAlignment="center"
         android:textColor="@color/black"
-        android:textSize="@dimen/_16ssp"
+        android:textSize="@dimen/_18ssp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -37,20 +37,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnNext"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_40sdp"
-        android:background="@drawable/btn_bg"
-        android:fontFamily="@font/outfit_medium"
-        android:text="@string/done"
-        android:textSize="@dimen/_14ssp"
-        app:backgroundTint="@color/app_primary_color"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintWidth_percent="0.85" />
 
     <View
         android:id="@+id/viewCameraAccess"
@@ -82,7 +68,7 @@
         android:fontFamily="@font/outfit"
         android:text="@string/allow_camera_access"
         android:textColor="@color/txt_color_gray"
-        android:textSize="@dimen/_14ssp"
+        android:textSize="@dimen/_13ssp"
         app:layout_constraintBottom_toBottomOf="@id/viewCameraAccess"
         app:layout_constraintStart_toEndOf="@id/icCamera"
         app:layout_constraintTop_toTopOf="@id/viewCameraAccess" />
@@ -133,7 +119,7 @@
         android:fontFamily="@font/outfit"
         android:text="@string/allow_gallery_access"
         android:textColor="@color/txt_color_gray"
-        android:textSize="@dimen/_14ssp"
+        android:textSize="@dimen/_13ssp"
         app:layout_constraintBottom_toBottomOf="@id/viewGallery"
         app:layout_constraintStart_toEndOf="@id/icGallery"
         app:layout_constraintTop_toTopOf="@id/viewGallery" />
@@ -155,4 +141,18 @@
         app:trackDecorationTint="@android:color/transparent"
         app:trackTint="@color/switch_track_selector" />
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_40sdp"
+        android:background="@drawable/btn_bg"
+        android:fontFamily="@font/outfit_medium"
+        android:text="@string/done"
+        android:textSize="@dimen/_14ssp"
+        app:backgroundTint="@color/app_primary_color"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_percent="0.85" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -11,4 +11,18 @@
     <string name="done">Done</string>
     <string name="allow_camera_access">Allow Camera Access</string>
     <string name="allow_gallery_access">Allow Gallery Access</string>
+    <string name="espa_ol">Español</string>
+    <string name="deutsch">Deutsch</string>
+    <string name="fran_ais">Français</string>
+    <string name="portugu_s">Português (PT)</string>
+    <string name="turkish">Turkish (TR)</string>
+    <string name="english">English (US)</string>
+    <string name="english_uk">English (UK)</string>
+    <string name="spanish_es">Spanish (ES)</string>
+    <string name="urdu_pk">Urdu (PK)</string>
+    <string name="arabic_ae">Arabic (AE)</string>
+    <string name="select_language">Select Language</string>
+    <string name="choose_your_preferred_language_to">Choose your preferred language to\npersonalize your diary experience.</string>
+
+
 </resources>

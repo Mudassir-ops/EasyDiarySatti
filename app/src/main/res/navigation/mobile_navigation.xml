@@ -9,7 +9,7 @@
         android:id="@+id/onBoardingFragment"
         android:name="com.example.easydiarysatti.ui.onboarding.OnBoardingFragment"
         android:label="OnBoardingFragment"
-        tools:layout="@layout/fragment_on_boarding" >
+        tools:layout="@layout/fragment_on_boarding">
         <action
             android:id="@+id/action_onBoardingFragment_to_permissionFragment"
             app:destination="@id/permissionFragment" />
@@ -19,4 +19,8 @@
         android:name="com.example.easydiarysatti.ui.permission.PermissionFragment"
         android:label="fragment_permission"
         tools:layout="@layout/fragment_permission" />
+    <fragment
+        android:id="@+id/languageFragment"
+        android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
+        android:label="LanguageFragment" />
 </navigation>

@@ -8,96 +8,165 @@
     android:background="@drawable/theme_1"
     tools:context=".ui.main.MainFragment">
 
-
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/bottom_nav"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/_60sdp"
-        android:background="@android:color/white"
-        android:backgroundTint="@null"
-        android:clipChildren="false"
-        android:gravity="center"
-        android:padding="8dp"
-        app:innerCornerSize="@dimen/_15sdp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:selectionRequired="true"
-        app:singleSelection="true">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnHome"
-            android:layout_width="@dimen/_90sdp"
-            android:layout_height="wrap_content"
-            android:elevation="@dimen/_5sdp"
-            android:fontFamily="@font/outfit_medium"
-            android:insetRight="@dimen/_5sdp"
-            android:text="@string/title_home"
-            android:textColor="@color/selector_nav_text"
-            android:textSize="@dimen/_8ssp"
-            app:backgroundTint="@color/selector_nav_background"
-            app:icon="@drawable/home_menu"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconTint="@color/selector_nav_text"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintWidth_percent="0.85" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_library"
-            android:layout_width="@dimen/_90sdp"
-            android:layout_height="wrap_content"
-            android:elevation="@dimen/_5sdp"
-            android:fontFamily="@font/outfit_medium"
-            android:insetRight="@dimen/_5sdp"
-            android:text="@string/library"
-            android:textColor="@color/selector_nav_text"
-            android:textSize="@dimen/_8ssp"
-            app:backgroundTint="@color/selector_nav_background"
-            app:cornerRadius="@dimen/_20sdp"
-            app:icon="@drawable/reading"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconTint="@color/selector_nav_text"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintWidth_percent="0.85" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_calendar"
-            android:layout_width="@dimen/_90sdp"
-            android:layout_height="wrap_content"
-            android:elevation="@dimen/_5sdp"
-            android:fontFamily="@font/outfit_medium"
-            android:text="@string/calender"
-            android:textColor="@color/selector_nav_text"
-            android:textSize="@dimen/_8ssp"
-            app:backgroundTint="@color/selector_nav_background"
-            app:icon="@drawable/home_menu"
-            app:iconGravity="textStart"
-            app:iconPadding="8dp"
-            app:iconTint="@color/selector_nav_text"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintWidth_percent="0.85" />
-
-    </com.google.android.material.button.MaterialButtonToggleGroup>
-
-
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/nav_host_fragment_activity_main2"
-        android:name="androidx.navigation.fragment.NavHostFragment"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:defaultNavHost="true"
-        app:layout_constraintBottom_toTopOf="@id/bottom_nav"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:navGraph="@navigation/mobile_navigation2" />
+        android:layout_height="0dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHeight_percent="0.13"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_menu"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_marginStart="@dimen/_20sdp"
+            android:elevation="@dimen/_100sdp"
+            android:scaleType="fitXY"
+            app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/headerTitle"
+            app:srcCompat="@drawable/ic_menu" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/headerTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:elevation="@dimen/_5sdp"
+            android:fontFamily="@font/outfit_semibold"
+            android:text="@string/title_home"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_18ssp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_remainder"
+            android:layout_width="@dimen/_30sdp"
+            android:layout_height="@dimen/_30sdp"
+            android:layout_marginEnd="@dimen/_20sdp"
+            android:elevation="@dimen/_100sdp"
+            app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/headerTitle"
+            app:srcCompat="@drawable/notification" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@drawable/main_bg_shape"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/headerLayout">
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/bottom_nav"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_60sdp"
+            android:background="@android:color/white"
+            android:backgroundTint="@null"
+            android:clipChildren="true"
+            android:clipToPadding="false"
+            android:gravity="center"
+            android:showDividers="none"
+            app:innerCornerSize="@dimen/_15sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnHome"
+                android:layout_width="@dimen/_90sdp"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_5sdp"
+                android:fontFamily="@font/outfit_medium"
+                android:insetLeft="0dp"
+                android:insetRight="5dp"
+                android:paddingStart="@dimen/_8sdp"
+                android:paddingEnd="0dp"
+                android:text="@string/title_home"
+                android:textAlignment="viewStart"
+                android:textColor="@color/selector_nav_text"
+                android:textSize="@dimen/_10ssp"
+                app:backgroundTint="@color/selector_nav_background"
+                app:icon="@drawable/home_menu"
+                app:iconGravity="start"
+                app:iconPadding="10dp"
+                app:iconTint="@color/selector_nav_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintWidth_percent="0.85" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_library"
+                android:layout_width="@dimen/_90sdp"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_5sdp"
+                android:fontFamily="@font/outfit_medium"
+                android:insetRight="@dimen/_5sdp"
+                android:paddingStart="@dimen/_8sdp"
+                android:paddingEnd="0dp"
+                android:text="@string/library"
+                android:textAlignment="viewStart"
+                android:textColor="@color/selector_nav_text"
+                android:textSize="@dimen/_10ssp"
+                app:backgroundTint="@color/selector_nav_background"
+                app:cornerRadius="@dimen/_20sdp"
+                app:icon="@drawable/reading"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@color/selector_nav_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintWidth_percent="0.85" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_calendar"
+                android:layout_width="@dimen/_90sdp"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/_5sdp"
+                android:fontFamily="@font/outfit_medium"
+                android:paddingStart="@dimen/_8sdp"
+                android:paddingEnd="0dp"
+                android:text="@string/calender"
+                android:textAlignment="viewStart"
+                android:textColor="@color/selector_nav_text"
+                android:textSize="@dimen/_10ssp"
+                app:backgroundTint="@color/selector_nav_background"
+                app:icon="@drawable/home_menu"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:iconTint="@color/selector_nav_text"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintWidth_percent="0.85" />
+
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment_activity_main2"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:defaultNavHost="true"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:navGraph="@navigation/mobile_navigation2" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

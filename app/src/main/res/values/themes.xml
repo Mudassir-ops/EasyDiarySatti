@@ -39,7 +39,7 @@
 
     <style name="RoundedImage" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">@dimen/_10sdp</item>
+        <item name="cornerSize">@dimen/_6sdp</item>
     </style>
 
 

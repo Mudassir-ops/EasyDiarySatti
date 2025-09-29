@@ -19,8 +19,8 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_menu"
-            android:layout_width="@dimen/_30sdp"
-            android:layout_height="@dimen/_30sdp"
+            android:layout_width="@dimen/_22sdp"
+            android:layout_height="@dimen/_22sdp"
             android:layout_marginStart="@dimen/_20sdp"
             android:elevation="@dimen/_100sdp"
             android:scaleType="fitXY"
@@ -46,8 +46,8 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_remainder"
-            android:layout_width="@dimen/_30sdp"
-            android:layout_height="@dimen/_30sdp"
+            android:layout_width="@dimen/_22sdp"
+            android:layout_height="@dimen/_22sdp"
             android:layout_marginEnd="@dimen/_20sdp"
             android:elevation="@dimen/_100sdp"
             app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
@@ -63,8 +63,24 @@
         android:background="@drawable/main_bg_shape"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerLayout">
+        app:layout_constraintTop_toBottomOf="@+id/headerLayout"
+        app:layout_constraintVertical_bias="0.0">
+
+
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/nav_host_fragment_activity_main2"
+            android:name="androidx.navigation.fragment.NavHostFragment"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:defaultNavHost="true"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:navGraph="@navigation/mobile_navigation2" />
+
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/bottom_nav"
@@ -74,6 +90,7 @@
             android:backgroundTint="@null"
             android:clipChildren="true"
             android:clipToPadding="false"
+            android:elevation="@dimen/_5sdp"
             android:gravity="center"
             android:showDividers="none"
             app:innerCornerSize="@dimen/_15sdp"
@@ -96,7 +113,7 @@
                 android:text="@string/title_home"
                 android:textAlignment="viewStart"
                 android:textColor="@color/selector_nav_text"
-                android:textSize="@dimen/_10ssp"
+                android:textSize="@dimen/_11ssp"
                 app:backgroundTint="@color/selector_nav_background"
                 app:icon="@drawable/home_menu"
                 app:iconGravity="start"
@@ -119,7 +136,7 @@
                 android:text="@string/library"
                 android:textAlignment="viewStart"
                 android:textColor="@color/selector_nav_text"
-                android:textSize="@dimen/_10ssp"
+                android:textSize="@dimen/_11ssp"
                 app:backgroundTint="@color/selector_nav_background"
                 app:cornerRadius="@dimen/_20sdp"
                 app:icon="@drawable/reading"
@@ -142,7 +159,7 @@
                 android:text="@string/calender"
                 android:textAlignment="viewStart"
                 android:textColor="@color/selector_nav_text"
-                android:textSize="@dimen/_10ssp"
+                android:textSize="@dimen/_11ssp"
                 app:backgroundTint="@color/selector_nav_background"
                 app:icon="@drawable/home_menu"
                 app:iconGravity="textStart"
@@ -155,17 +172,6 @@
 
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/nav_host_fragment_activity_main2"
-            android:name="androidx.navigation.fragment.NavHostFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:defaultNavHost="true"
-            app:layout_constraintBottom_toTopOf="@id/bottom_nav"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:navGraph="@navigation/mobile_navigation2" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

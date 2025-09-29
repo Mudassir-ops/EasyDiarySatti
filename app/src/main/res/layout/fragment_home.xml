@@ -4,7 +4,30 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="@dimen/_20sdp"
     tools:context=".ui.home.HomeFragment">
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_sorting"
+        android:layout_width="@dimen/_20sdp"
+        android:layout_height="@dimen/_22sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/sorting_icon" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:fontFamily="@font/outfit_medium"
+        android:shadowColor="@color/black"
+        android:text="@string/_9_sep_2025"
+        android:textColor="@color/track_color"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintBottom_toBottomOf="@+id/iv_sorting"
+        app:layout_constraintStart_toEndOf="@id/iv_sorting"
+        app:layout_constraintTop_toTopOf="@+id/iv_sorting" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/imgIntroOne"
@@ -12,11 +35,58 @@
         android:layout_height="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.5"
+        app:layout_constraintHeight_percent="0.45"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/iv_sorting"
+        app:layout_constraintVertical_bias="0.1"
         app:layout_constraintVertical_chainStyle="packed"
-        app:layout_constraintWidth_percent="0.8"
+        app:layout_constraintWidth_percent="1"
         app:srcCompat="@drawable/main_bg_image" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_onGoing_item_label_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit_bold"
+        android:text="@string/start_writing_diary"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_18ssp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imgIntroOne" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_onGoing_item_label_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_4sdp"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit"
+        android:text="@string/cherish_the_moments_of_life_and_start_nwriting_your_diary"
+        android:textAlignment="center"
+        android:textColor="@color/txt_color_gray"
+        android:textSize="@dimen/_13ssp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/icAddNotes"
+        style="@style/CustomFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_8sdp"
+        android:backgroundTint="@color/app_primary_color"
+        android:contentDescription="@string/app_name"
+        android:elevation="@dimen/_2sdp"
+        android:src="@drawable/ic_add"
+        app:fabCustomSize="@dimen/_40sdp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:maxImageSize="@dimen/_40sdp"
+        app:tint="@color/white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

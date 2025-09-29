@@ -28,5 +28,20 @@
         <item name="cornerSize">16dp</item>
     </style>
 
+    <style name="CustomFab" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="shapeAppearanceOverlay">@style/FabShape</item>
+    </style>
+
+    <style name="FabShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10dp</item>
+    </style>
+
+    <style name="RoundedImage" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/_10sdp</item>
+    </style>
+
+
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
 </resources>

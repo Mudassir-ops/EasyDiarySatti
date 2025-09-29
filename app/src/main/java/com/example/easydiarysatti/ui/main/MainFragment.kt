@@ -41,6 +41,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         binding?.apply {
             val navHostFragment =
                 childFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main2) as? NavHostFragment
+            bottomNav.check(R.id.btnHome)
             bottomNav.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
                     when (checkedId) {

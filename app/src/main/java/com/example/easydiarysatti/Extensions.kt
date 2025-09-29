@@ -299,3 +299,8 @@ fun Fragment.enableResize(enable: Boolean) {
     }
     activity?.window?.setSoftInputMode(mode)
 }
+
+fun Long.toDateString(): String {
+    val sdf = java.text.SimpleDateFormat("d MMMM, yyyy", java.util.Locale.getDefault())
+    return sdf.format(java.util.Date(this))
+}

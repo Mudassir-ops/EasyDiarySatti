@@ -2,6 +2,7 @@
     android:id="@+id/tvDate"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/_15sdp"
     android:fontFamily="@font/outfit_medium"
     android:padding="@dimen/_6sdp"
     android:textColor="@android:color/black"

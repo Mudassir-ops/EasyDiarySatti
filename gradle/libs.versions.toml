@@ -23,6 +23,7 @@ dagger_Hilt_Version = "2.57.1"
 lifecycleLivedataKtx = "2.9.4"
 lifecycleViewmodelKtx = "2.9.4"
 navigationUiKtx = "2.9.5"
+view = "2.9.0"
 viewbinding = "8.13.0"
 databindingCommon = "8.13.0"
 legacySupportV4 = "1.0.0"
@@ -54,6 +55,7 @@ androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation
 androidx-viewbinding = { group = "androidx.databinding", name = "viewbinding", version.ref = "viewbinding" }
 androidx-databinding-common = { group = "androidx.databinding", name = "databinding-common", version.ref = "databindingCommon" }
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
+view = { module = "com.kizitonwose.calendar:view", version.ref = "view" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

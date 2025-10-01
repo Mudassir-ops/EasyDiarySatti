@@ -2,9 +2,105 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parentLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.notifications.CalenderFragment">
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_onGoing_item_label_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit_medium"
+        android:paddingStart="@dimen/_5sdp"
+        android:text="20 August,2025"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_15ssp"
+        app:layout_constraintBottom_toBottomOf="@+id/calenderMonth"
+        app:layout_constraintStart_toStartOf="@+id/calendarView"
+        app:layout_constraintTop_toTopOf="@+id/calenderMonth" />
+
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/calenderMonth"
+        android:layout_width="@dimen/_100sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:layout_margin="@dimen/_20sdp"
+        android:background="@drawable/bg_month"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_calender"
+            android:layout_width="@dimen/_20sdp"
+            android:layout_height="@dimen/_20sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/date" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_8sdp"
+            android:fontFamily="@font/outfit_semibold"
+            android:text="March"
+            android:textColor="@color/app_primary_color"
+            android:textSize="@dimen/_10ssp"
+            app:layout_constraintBottom_toBottomOf="@id/iv_calender"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toEndOf="@+id/iv_calender"
+            app:layout_constraintTop_toTopOf="@+id/iv_calender" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <View
+        android:id="@+id/viewCalenderBg"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_month"
+        app:layout_constraintBottom_toBottomOf="@+id/calendarView"
+        app:layout_constraintEnd_toEndOf="@+id/calendarView"
+        app:layout_constraintStart_toStartOf="@+id/calendarView"
+        app:layout_constraintTop_toTopOf="@+id/calendarView" />
+
+    <com.kizitonwose.calendar.view.CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_200sdp"
+        android:layout_margin="@dimen/_10sdp"
+        android:padding="@dimen/_5sdp"
+        app:cv_dayViewResource="@layout/calendar_day_layout"
+        app:cv_monthHeaderResource="@layout/calendar_month_header"
+        app:layout_constraintTop_toBottomOf="@+id/calenderMonth"
+        app:layout_constraintVertical_bias="0" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvNotes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_5sdp"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:fontFamily="@font/outfit_medium"
+        android:text="@string/notes"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintEnd_toEndOf="@+id/calendarView"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="@+id/calendarView"
+        app:layout_constraintTop_toBottomOf="@+id/calendarView" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvCalenderNotes"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10sdp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintEnd_toEndOf="@+id/tvNotes"
+        app:layout_constraintStart_toStartOf="@+id/tvNotes"
+        app:layout_constraintTop_toBottomOf="@+id/tvNotes" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

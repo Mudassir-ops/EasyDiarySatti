@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
 import android.net.Uri
 import android.os.Build
@@ -16,11 +17,14 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AlertDialog
@@ -38,6 +42,7 @@ import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
 import java.util.Calendar
+
 
 fun NavController.safeNav(
     @IdRes currentDestId: Int,
@@ -304,3 +309,41 @@ fun Long.toDateString(): String {
     val sdf = java.text.SimpleDateFormat("d MMMM, yyyy", java.util.Locale.getDefault())
     return sdf.format(java.util.Date(this))
 }
+
+fun View.setRoundedBgColors(
+    @ColorInt solidColor: Int,
+    @ColorInt strokeColor: Int,
+    strokeWidth: Int = 2
+) {
+    (background as? GradientDrawable)?.mutate()?.let { it as GradientDrawable }?.apply {
+        setColor(solidColor)
+        setStroke(strokeWidth, strokeColor)
+    }
+}
+
+fun TextView.setVectorDrawable(
+    drawableRes: Int,
+    sizeInPx: Int,
+    position: DrawablePosition = DrawablePosition.START
+) {
+    val drawable = ContextCompat.getDrawable(context, drawableRes)?.apply {
+        setBounds(0, 0, sizeInPx, sizeInPx)
+    }
+
+    when (position) {
+        DrawablePosition.START -> setCompoundDrawables(drawable, null, null, null)
+        DrawablePosition.TOP -> setCompoundDrawables(null, drawable, null, null)
+        DrawablePosition.END -> setCompoundDrawables(null, null, drawable, null)
+        DrawablePosition.BOTTOM -> setCompoundDrawables(null, null, null, drawable)
+    }
+}
+
+enum class DrawablePosition { START, TOP, END, BOTTOM }
+
+
+fun Int.dpToPx(context: Context): Int =
+    TypedValue.applyDimension(
+        TypedValue.COMPLEX_UNIT_DIP,
+        this.toFloat(),
+        context.resources.displayMetrics
+    ).toInt()

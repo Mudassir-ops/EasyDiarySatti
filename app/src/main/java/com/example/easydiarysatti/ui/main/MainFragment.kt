@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
@@ -41,6 +42,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         binding?.apply {
             val navHostFragment =
                 childFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main2) as? NavHostFragment
+            val navController = navHostFragment?.navController
             bottomNav.check(R.id.btnHome)
             bottomNav.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
@@ -51,12 +53,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     }
                 }
             }
+            navController?.addOnDestinationChangedListener { _, destination, _ ->
+                when (destination.id) {
+                    R.id.navigation_createNote -> {
+                        bottomNav.visibility = View.GONE
+                        setNoteHeader()
+                    }
 
-
-//            val navHostFragment =
-//                childFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main2) as? NavHostFragment
-//            val navController = navHostFragment?.navController
-//            navController?.let { navView.setupWithNavController(it) }
+                    else -> {
+                        bottomNav.visibility = View.VISIBLE
+                        destination.label?.toString()?.setDefaultNavHeader()
+                    }
+                }
+            }
         }
     }
 
@@ -66,4 +75,24 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             resourceId = sessionManagerRepo.getBgTheme(), placeholder = R.drawable.theme_1
         )
     }
+
+    private fun setNoteHeader() {
+        binding?.apply {
+            ivMenu.setImageResource(R.drawable.back_icon)
+            headerTitle.text = ContextCompat.getString(context ?: return, R.string.add_note)
+            ivRemainder.visibility = View.GONE
+            headerSave.visibility = View.VISIBLE
+        }
+    }
+
+    private fun String.setDefaultNavHeader() {
+        binding?.apply {
+            ivMenu.setImageResource(R.drawable.ic_menu)
+            headerTitle.text = this@setDefaultNavHeader
+            ivRemainder.visibility = View.VISIBLE
+            headerSave.visibility = View.GONE
+            ivRemainder.setImageResource(R.drawable.notification)
+        }
+    }
+
 }

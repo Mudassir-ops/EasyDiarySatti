@@ -93,6 +93,7 @@ dependencies {
     implementation(libs.shimmer)
 
     implementation(libs.view)
+    implementation(libs.flexbox.layout)
 }
 
 kapt {

@@ -43,6 +43,11 @@
     <string name="cherish_the_moments_of_life_and_start_nwriting_your_diary">Cherish the moments of life and start\nwriting your diary</string>
     <string name="start_writing_diary">Start Writing Diary</string>
     <string name="notes">Notes</string>
+    <string name="create_note">Create Note</string>
+    <string name="add_note">Add Note</string>
+    <string name="save">Save</string>
+    <string name="header">Header</string>
+    <string name="write_your_thoughts_here">Write your thoughts here...</string>
 
 
 </resources>

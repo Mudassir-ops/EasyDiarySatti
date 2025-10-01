@@ -18,10 +18,13 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.util.Log
 import android.util.TypedValue
+import android.view.Gravity
 import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorInt
@@ -38,6 +41,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
@@ -347,3 +351,73 @@ fun Int.dpToPx(context: Context): Int =
         this.toFloat(),
         context.resources.displayMetrics
     ).toInt()
+
+
+fun FlexboxLayout.addTags(
+    tagList: MutableList<String>,
+    onTagClick: ((String) -> Unit)? = null,
+    onRemoveTagClick: ((String) -> Unit)? = null,
+) {
+    if (tagList.isEmpty()) {
+        this.visibility = View.GONE
+        return
+    } else {
+        this.visibility = View.VISIBLE
+    }
+    this.removeAllViews()
+    for (tag in tagList) {
+        val tagContainer = LinearLayout(this.context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(8, 8, 8, 8)
+            //  setBackgroundResource(R.drawable.bg_tag)
+            layoutParams = FlexboxLayout.LayoutParams(
+                FlexboxLayout.LayoutParams.WRAP_CONTENT,
+                FlexboxLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                marginEnd = 8
+                bottomMargin = 8
+            }
+            gravity = Gravity.CENTER_VERTICAL
+        }
+
+        val hashIcon = ImageView(this.context).apply {
+            setImageResource(R.drawable.ic_hash_small)
+            setPadding(8, 8, 4, 8)
+        }
+
+        val tagText = TextView(this.context).apply {
+            text = tag
+            setPadding(0, 8, 8, 8)
+            setTextColor(ContextCompat.getColor(context, R.color.black))
+            textSize = 14f
+            setOnClickListener {
+                onTagClick?.invoke(tag)
+            }
+        }
+
+        val closeIcon = ImageView(this.context).apply {
+            setImageResource(R.drawable.ic_baseline_close_16)
+            setPadding(8, 12, 12, 8)
+            imageTintList = ContextCompat.getColorStateList(context, R.color.black)
+            setOnClickListener {
+                val ifOnlyUnknown = tagList.any { it == "Unknown" }
+                if (ifOnlyUnknown) {
+                    onTagClick?.invoke(tag)
+                    return@setOnClickListener
+                }
+                this@addTags.removeView(tagContainer)
+                tagList.remove(tag)
+                onRemoveTagClick?.invoke(tag)
+                if (tagList.isEmpty()) {
+                    this@addTags.visibility = View.GONE
+                }
+            }
+        }
+
+        tagContainer.addView(hashIcon)
+        tagContainer.addView(tagText)
+        tagContainer.addView(closeIcon)
+
+        this.addView(tagContainer)
+    }
+}

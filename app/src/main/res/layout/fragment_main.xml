@@ -27,7 +27,8 @@
             app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="@+id/headerTitle"
-            app:srcCompat="@drawable/ic_menu" />
+            app:srcCompat="@drawable/ic_menu"
+            app:tint="@color/white" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/headerTitle"
@@ -53,7 +54,24 @@
             app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/headerTitle"
-            app:srcCompat="@drawable/notification" />
+            app:srcCompat="@drawable/notification"
+            app:tint="@color/white" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/headerSave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_15sdp"
+            android:elevation="@dimen/_5sdp"
+            android:fontFamily="@font/outfit"
+            android:visibility="gone"
+            android:text="@string/save"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_14ssp"
+            app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/headerTitle" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -66,7 +84,7 @@
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/headerLayout"
-        app:layout_constraintVertical_bias="0.0">
+        app:layout_constraintVertical_bias="1.0">
 
 
         <androidx.fragment.app.FragmentContainerView
@@ -93,6 +111,7 @@
             android:elevation="@dimen/_5sdp"
             android:gravity="center"
             android:showDividers="none"
+            android:visibility="visible"
             app:innerCornerSize="@dimen/_15sdp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintLeft_toLeftOf="parent"

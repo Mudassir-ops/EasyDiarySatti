@@ -381,13 +381,14 @@ fun FlexboxLayout.addTags(
 
         val hashIcon = ImageView(this.context).apply {
             setImageResource(R.drawable.ic_hash_small)
+            imageTintList= ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setPadding(8, 8, 4, 8)
         }
 
         val tagText = TextView(this.context).apply {
             text = tag
             setPadding(0, 8, 8, 8)
-            setTextColor(ContextCompat.getColor(context, R.color.txt_color_gray))
+            setTextColor(ContextCompat.getColor(context, R.color.tag_txt_color))
             textSize = 14f
             setOnClickListener {
                 onTagClick?.invoke(tag)
@@ -397,7 +398,7 @@ fun FlexboxLayout.addTags(
         val closeIcon = ImageView(this.context).apply {
             setImageResource(R.drawable.ic_baseline_close_16)
             setPadding(8, 12, 12, 8)
-            imageTintList = ContextCompat.getColorStateList(context, R.color.black)
+            imageTintList = ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setOnClickListener {
                 val ifOnlyUnknown = tagList.any { it == "Unknown" }
                 if (ifOnlyUnknown) {

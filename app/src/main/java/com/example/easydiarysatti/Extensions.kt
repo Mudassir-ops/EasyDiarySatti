@@ -254,7 +254,6 @@ fun AppCompatImageView.loadImage(
 ) {
     Glide.with(this.context)
         .load(resourceId ?: placeholder)
-        .placeholder(placeholder)
         .into(this)
 }
 

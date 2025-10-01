@@ -369,7 +369,7 @@ fun FlexboxLayout.addTags(
         val tagContainer = LinearLayout(this.context).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(8, 8, 8, 8)
-            //  setBackgroundResource(R.drawable.bg_tag)
+            setBackgroundResource(R.drawable.bg_tag)
             layoutParams = FlexboxLayout.LayoutParams(
                 FlexboxLayout.LayoutParams.WRAP_CONTENT,
                 FlexboxLayout.LayoutParams.WRAP_CONTENT
@@ -388,7 +388,7 @@ fun FlexboxLayout.addTags(
         val tagText = TextView(this.context).apply {
             text = tag
             setPadding(0, 8, 8, 8)
-            setTextColor(ContextCompat.getColor(context, R.color.black))
+            setTextColor(ContextCompat.getColor(context, R.color.txt_color_gray))
             textSize = 14f
             setOnClickListener {
                 onTagClick?.invoke(tag)

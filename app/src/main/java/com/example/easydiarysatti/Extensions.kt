@@ -35,6 +35,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -390,6 +391,7 @@ fun FlexboxLayout.addTags(
             setPadding(0, 8, 8, 8)
             setTextColor(ContextCompat.getColor(context, R.color.tag_txt_color))
             textSize = 14f
+            typeface = ResourcesCompat.getFont(context, R.font.outfit_medium)
             setOnClickListener {
                 onTagClick?.invoke(tag)
             }

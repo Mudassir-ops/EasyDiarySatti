@@ -108,6 +108,7 @@
             android:id="@+id/rv_notes_images"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -116,8 +117,8 @@
             android:id="@+id/flexboxLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginVertical="@dimen/_10sdp"
-            android:padding="8dp"
+            android:layout_marginVertical="@dimen/_5sdp"
+            android:padding="10dp"
             app:alignItems="center"
             app:flexDirection="row"
             app:flexWrap="wrap"
@@ -130,7 +131,7 @@
             android:id="@+id/et_description"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginVertical="@dimen/_10sdp"
+            android:layout_marginVertical="@dimen/_5sdp"
             android:background="@null"
             android:fontFamily="@font/outfit"
             android:gravity="top|start"
@@ -141,7 +142,6 @@
             app:layout_constraintHeight_percent="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/flexboxLayout" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

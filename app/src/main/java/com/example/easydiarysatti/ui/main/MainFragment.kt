@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
@@ -36,6 +37,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         super.onViewCreated(view, savedInstanceState)
         setupBottomNavBar()
         setupBgTheme()
+        setClickListeners()
     }
 
     private fun setupBottomNavBar() {
@@ -69,6 +71,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
+
+    private fun setClickListeners() {
+        binding?.apply {
+            ivMenu.setOnClickListener { findNavController().navigateUp() }
+        }
+    }
 
     private fun setupBgTheme() {
         binding?.parentLayout?.loadBackground(

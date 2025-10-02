@@ -52,7 +52,6 @@
     <string name="media">Media</string>
     <string name="text">Text</string>
     <string name="background">Background</string>
-    <string name="remainder">Remainder</string>
-
+    <string name="reminder">Reminder</string>
 
 </resources>

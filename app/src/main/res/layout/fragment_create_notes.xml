@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/outfit_medium"
         android:shadowColor="@color/black"
-        android:text="@string/remainder"
+        android:text="@string/reminder"
         android:textColor="@color/txt_color_gray"
         android:textSize="@dimen/_13ssp"
         app:layout_constraintBottom_toBottomOf="@+id/icSwitchRemainder"

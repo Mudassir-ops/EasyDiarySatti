@@ -3,10 +3,15 @@ package com.example.easydiarysatti.data.repo.impl
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
+import kotlinx.coroutines.flow.Flow
 
 class CreateNoteRepositoryImpl(
     private val localDataSource: EasyDiaryLocalDataSource
 ) : CreateNoteRepository {
+
+    override suspend fun createEmptyNote(): Long {
+        return localDataSource.createEmptyNote()
+    }
 
     override suspend fun mergeAndSave(note: CreateNoteEntity) {
         val existing = note.noteId.takeIf { it != 0L }?.let { localDataSource.getNoteById(it) }
@@ -32,6 +37,14 @@ class CreateNoteRepositoryImpl(
         } else {
             localDataSource.updateNote(merged)
         }
+    }
+
+    override suspend fun getNoteById(id: Long): CreateNoteEntity? {
+        return localDataSource.getNoteById(id)
+    }
+
+    override fun observeNoteById(id: Long): Flow<CreateNoteEntity?> {
+        return localDataSource.observeNoteById(id)
     }
 
 }

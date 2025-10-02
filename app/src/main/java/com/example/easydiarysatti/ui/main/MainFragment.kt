@@ -2,11 +2,13 @@ package com.example.easydiarysatti.ui.main
 
 import androidx.fragment.app.viewModels
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -19,6 +21,8 @@ import com.example.easydiarysatti.databinding.FragmentThemesBinding
 import com.example.easydiarysatti.databinding.FragmentThemesBinding.bind
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
+import com.example.easydiarysatti.ui.createnote.CreateNotesState
+import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.name.NameViewModel
 import com.example.easydiarysatti.viewBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -28,6 +32,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainFragment : Fragment(R.layout.fragment_main) {
     private val viewModel by viewModels<MainViewModel>()
+    private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
 
     @Inject
@@ -74,7 +79,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun setClickListeners() {
         binding?.apply {
-            ivMenu.setOnClickListener { findNavController().navigateUp() }
+            ivMenu.setOnClickListener { createNotesViewModel.sendAction(action = CreateNotesState.BackAction) }
+            headerSave.setOnClickListener {
+                Log.e("headerSave", "setClickListeners: ")
+                createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
+            }
         }
     }
 

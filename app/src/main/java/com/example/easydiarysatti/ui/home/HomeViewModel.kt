@@ -1,13 +1,23 @@
 package com.example.easydiarysatti.ui.home
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
+import com.example.easydiarysatti.data.repo.impl.EasyDiaryLocalDataSourceImpl
+import com.example.easydiarysatti.domain.repo.CreateNoteRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeViewModel : ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val createNoteRepository: CreateNoteRepository
+) : ViewModel() {
 
-    private val _text = MutableLiveData<String>().apply {
-        value = "This is home Fragment"
+    fun createEmptyNote() {
+        viewModelScope.launch {
+            createNoteRepository.createEmptyNote()
+        }
     }
-    val text: LiveData<String> = _text
+
 }

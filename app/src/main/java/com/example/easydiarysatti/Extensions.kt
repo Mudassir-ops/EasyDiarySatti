@@ -391,7 +391,7 @@ fun FlexboxLayout.addTags(
             setPadding(0, 8, 8, 8)
             setTextColor(ContextCompat.getColor(context, R.color.tag_txt_color))
             textSize = 14f
-            typeface = ResourcesCompat.getFont(context, R.font.outfit_medium)
+          //  typeface = ResourcesCompat.getFont(context, R.font.outfit_medium)
             setOnClickListener {
                 onTagClick?.invoke(tag)
             }

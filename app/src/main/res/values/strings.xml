@@ -48,6 +48,11 @@
     <string name="save">Save</string>
     <string name="header">Header</string>
     <string name="write_your_thoughts_here">Write your thoughts here...</string>
+    <string name="hash_tag">Hash Tag</string>
+    <string name="media">Media</string>
+    <string name="text">Text</string>
+    <string name="background">Background</string>
+    <string name="remainder">Remainder</string>
 
 
 </resources>

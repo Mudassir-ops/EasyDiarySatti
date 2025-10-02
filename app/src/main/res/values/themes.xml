@@ -58,6 +58,15 @@
         <item name="android:fontFamily">@font/outfit_semibold</item>
     </style>
 
+    <style name="ShapeAppearance.MaterialComponents.Capsule" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.MaterialComponents.CapsuleGroup">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
 </resources>

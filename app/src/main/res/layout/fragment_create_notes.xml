@@ -4,13 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/_20sdp"
     tools:context=".ui.createnote.CreateNotesFragment">
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_date"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_20sdp"
         android:fontFamily="@font/outfit_medium"
         android:shadowColor="@color/black"
         android:text="13-8- | 4:45 PM"
@@ -47,6 +47,7 @@
         android:id="@+id/icSwitchRemainder"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_20sdp"
         android:checked="false"
         android:scaleX="0.6"
         android:scaleY="0.6"
@@ -73,7 +74,7 @@
         android:textSize="@dimen/_14ssp"
         app:layout_constraintBottom_toBottomOf="@+id/iv_emoji"
         app:layout_constraintEnd_toStartOf="@+id/iv_emoji"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/tv_date"
         app:layout_constraintTop_toTopOf="@+id/iv_emoji" />
 
     <androidx.appcompat.widget.AppCompatImageView
@@ -85,12 +86,11 @@
         android:background="@drawable/bg_create_note"
         android:elevation="1dp"
         android:padding="@dimen/_13sdp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/icSwitchRemainder"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toEndOf="@+id/et_header"
         app:layout_constraintTop_toBottomOf="@+id/tv_date"
         app:srcCompat="@drawable/emooji_smilie" />
-
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/view_note_detail"
@@ -100,8 +100,8 @@
         android:background="@drawable/bg_create_note"
         android:padding="@dimen/_10sdp"
         app:layout_constraintBottom_toTopOf="@+id/createNote_bottom_bar"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/iv_emoji"
+        app:layout_constraintStart_toStartOf="@+id/et_header"
         app:layout_constraintTop_toBottomOf="@+id/et_header"
         app:layout_constraintVertical_bias="0">
 
@@ -149,6 +149,8 @@
         android:id="@+id/createNote_bottom_bar"
         android:layout_width="match_parent"
         android:layout_height="@dimen/_44sdp"
+        android:layout_marginHorizontal="@dimen/_15sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
         android:background="@drawable/create_note_bottom_bar_bg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -181,13 +183,14 @@
                 android:textAlignment="center"
                 android:textColor="@color/selector_nav_create_note_"
                 android:textSize="@dimen/_5ssp"
-                app:backgroundTint="@color/selector_nav_background"
+                app:backgroundTint="@color/selector_nav_create_note_bg"
                 app:icon="@drawable/create_note_bg_icon"
                 app:iconGravity="textTop"
                 app:iconPadding="3dp"
                 app:iconTint="@color/selector_nav_create_note_"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeWidth="0dp" />
+                app:strokeColor="@color/selector_nav_stroke_color_"
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_hash_tag"
@@ -199,13 +202,14 @@
                 android:textAlignment="center"
                 android:textColor="@color/selector_nav_create_note_"
                 android:textSize="@dimen/_6ssp"
-                app:backgroundTint="@color/selector_nav_background"
+                app:backgroundTint="@color/selector_nav_create_note_bg"
                 app:icon="@drawable/ic_hash_small"
                 app:iconGravity="textTop"
                 app:iconPadding="3dp"
                 app:iconTint="@color/selector_nav_create_note_"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeWidth="0dp" />
+                app:strokeColor="@color/selector_nav_stroke_color_"
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_media"
@@ -217,13 +221,14 @@
                 android:textAlignment="center"
                 android:textColor="@color/selector_nav_create_note_"
                 android:textSize="@dimen/_6ssp"
-                app:backgroundTint="@color/selector_nav_background"
+                app:backgroundTint="@color/selector_nav_create_note_bg"
                 app:icon="@drawable/create_note_media_icon"
                 app:iconGravity="textTop"
                 app:iconPadding="3dp"
                 app:iconTint="@color/selector_nav_create_note_"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeWidth="0dp" />
+                app:strokeColor="@color/selector_nav_stroke_color_"
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_text"
@@ -236,13 +241,14 @@
                 android:textAlignment="center"
                 android:textColor="@color/selector_nav_create_note_"
                 android:textSize="@dimen/_6ssp"
-                app:backgroundTint="@color/selector_nav_background"
+                app:backgroundTint="@color/selector_nav_create_note_bg"
                 app:icon="@drawable/create_note_text_icon"
                 app:iconGravity="textTop"
                 app:iconPadding="3dp"
                 app:iconTint="@color/selector_nav_create_note_"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeWidth="0dp" />
+                app:strokeColor="@color/selector_nav_stroke_color_"
+                app:strokeWidth="1dp" />
 
         </com.google.android.material.button.MaterialButtonToggleGroup>
     </androidx.constraintlayout.widget.ConstraintLayout>

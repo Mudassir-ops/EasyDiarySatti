@@ -28,7 +28,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         super.onCreate(savedInstanceState)
         createNoteEntity = CreateNoteEntity(
             feelingEmojiRes = R.drawable.emooji_excited,
-            textColor = "#FF9800",
+            textColor = "#FF8D95",
             feelingTitle = "Excited"
         )
     }

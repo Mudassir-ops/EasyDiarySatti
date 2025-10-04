@@ -39,7 +39,7 @@ inline fun Fragment.showEditFeelingsDialog(
             ivEmojiHappy to EmojiInfo(R.drawable.emoji_happy, "#42ABD0", "Happy"),
             ivEmojiCalm to EmojiInfo(R.drawable.emooji_calm, "#5EE3A9", "Calm"),
             ivEmojiSad to EmojiInfo(R.drawable.emoji_sad, "#FFDE8B", "Sad"),
-            ivEmojiExcited to EmojiInfo(R.drawable.emooji_excited, "#FF9800", "Excited"),
+            ivEmojiExcited to EmojiInfo(R.drawable.emooji_excited, "#FF8D95", "Excited"),
             ivEmojiAngry to EmojiInfo(R.drawable.emooji_angry, "#FFAC81", "Angry"),
             ivEmojiPlayful to EmojiInfo(R.drawable.emooji_playful, "#A29DFB", "Playful")
         )

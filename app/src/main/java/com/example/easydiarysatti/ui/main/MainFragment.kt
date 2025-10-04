@@ -75,14 +75,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         createNoteBottomBar.visibility = View.GONE
                         binding?.icAddNotes?.visibility = View.VISIBLE
                         bottomNav.visibility = View.VISIBLE
-                        setTagsHeader()
+                        destination.label?.toString()?.setDefaultNavHeader()
                     }
 
                     R.id.addTagsFragment2 -> {
                         createNoteBottomBar.visibility = View.GONE
                         binding?.icAddNotes?.visibility = View.GONE
                         bottomNav.visibility = View.GONE
-                        destination.label?.toString()?.setDefaultNavHeader()
+                        setTagsHeader()
+
                     }
 
                     else -> {
@@ -151,7 +152,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             ivMenu.setImageResource(R.drawable.back_icon)
             headerTitle.text = ContextCompat.getString(context ?: return, R.string.tags)
             ivRemainder.visibility = View.GONE
-            headerSave.visibility = View.VISIBLE
+            headerSave.visibility = View.GONE
         }
     }
 

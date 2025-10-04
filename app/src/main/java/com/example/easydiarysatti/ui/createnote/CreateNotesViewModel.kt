@@ -33,6 +33,7 @@ class CreateNotesViewModel @Inject constructor(
     val createdNoteId: StateFlow<Long?> = _createdNoteId
 
     private var imagesList: MutableList<String>? = mutableListOf()
+    private var tagList: MutableList<String>? = mutableListOf()
 
     fun sendAction(action: CreateNotesState) {
         viewModelScope.launch {
@@ -75,11 +76,21 @@ class CreateNotesViewModel @Inject constructor(
     }
 
 
+    fun addTags(tags: List<String>) {
+        tagList?.addAll(tags)
+    }
+
+    fun addTag(tag: String): List<String> {
+        tagList?.add(tag)
+        return tagList?.toList() ?: listOf()
+    }
+
 }
 
 sealed interface CreateNotesState {
     data object SaveNote : CreateNotesState
     data class ImagePicked(val imageUri: Uri?) : CreateNotesState
+    data class AddTag(val tag: String?) : CreateNotesState
     data object DiscardNote : CreateNotesState
     data object BackAction : CreateNotesState
     data class ShowMessage(val msg: String) : CreateNotesState

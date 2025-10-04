@@ -47,7 +47,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupFlexBox()
         observeNote()
         observeNoteAction()
         clickListeners()
@@ -67,11 +66,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
-    fun setupFlexBox() {
+    fun List<String>.setupFlexBox() {
         binding?.flexboxLayout?.apply {
             removeAllViews()
             visibility = View.VISIBLE
-            addTags(mutableListOf("Personal"), onTagClick = {
+            addTags(this@setupFlexBox as MutableList<String>, onTagClick = {
             }, onRemoveTagClick = { tag ->
             })
         }
@@ -100,13 +99,20 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 note?.let {
                     createNoteEntity = it
                     viewModel.addImages(imagePath = createNoteEntity?.images ?: listOf())
+                    viewModel.addTags(tags = createNoteEntity?.tags ?: listOf())
                     binding?.apply {
                         etHeader.setText(createNoteEntity?.title)
                         etDescription.setText(createNoteEntity?.description)
                         imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
+                        if (createNoteEntity?.tags?.isEmpty() == false) {
+                            createNoteEntity?.tags?.setupFlexBox()
+                        } else {
+                            listOf("Personal").setupFlexBox()
+                        }
                     }
                 } ?: run {
                     createNoteEntity = null
+                    listOf("Personal").setupFlexBox()
                     binding?.apply {
                         etHeader.setText(createNoteEntity?.title)
                         etDescription.setText(createNoteEntity?.description)
@@ -141,6 +147,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                                 viewModel.addImage(imagePath = note.imageUri.toString())
                             createNoteEntity = createNoteEntity?.copy(images = lastSavedNotesImages)
                             imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
+                        }
+
+                        is CreateNotesState.AddTag -> {
+                            val lastSavedNotesTags =
+                                viewModel.addTag(tag = note.tag.toString())
+                            createNoteEntity = createNoteEntity?.copy(tags = lastSavedNotesTags)
+                            createNoteEntity?.tags?.setupFlexBox()
                         }
                     }
                 }
@@ -182,4 +195,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             }
         }
     }
+
+
 }

@@ -30,7 +30,8 @@ class CreateNoteRepositoryImpl(
             textAlignment = note.textAlignment ?: existing.textAlignment,
             text = note.text ?: existing.text,
             images = note.images ?: existing.images,
-            creationTime = existing.creationTime
+            creationTime = existing.creationTime,
+            tagColor = note.tagColor ?: existing.tagColor
         ) ?: note
         if (existing == null) {
             localDataSource.insertNote(merged)

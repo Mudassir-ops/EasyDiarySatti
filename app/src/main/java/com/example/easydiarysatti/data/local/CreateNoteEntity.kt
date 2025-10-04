@@ -15,6 +15,7 @@ data class CreateNoteEntity(
     val feelingEmojiRes: Int? = null,
     val backgroundRes: Int? = null,
     val textColor: String? = null,
+    val tagColor: String? = null,
     val textSizeH1: Float? = null,
     val textSizeH2: Float? = null,
     val textSizeH3: Float? = null,

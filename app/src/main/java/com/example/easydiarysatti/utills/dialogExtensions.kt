@@ -34,14 +34,43 @@ inline fun Fragment.showEditFeelingsDialog(
     }
 
     binding.apply {
-        // Each emoji has a drawable + a predefined color (as hex string)
         val emojiMap = mapOf(
-            ivEmojiHappy to EmojiInfo(R.drawable.emoji_happy, "#42ABD0", "Happy"),
-            ivEmojiCalm to EmojiInfo(R.drawable.emooji_calm, "#5EE3A9", "Calm"),
-            ivEmojiSad to EmojiInfo(R.drawable.emoji_sad, "#FFDE8B", "Sad"),
-            ivEmojiExcited to EmojiInfo(R.drawable.emooji_excited, "#FF8D95", "Excited"),
-            ivEmojiAngry to EmojiInfo(R.drawable.emooji_angry, "#FFAC81", "Angry"),
-            ivEmojiPlayful to EmojiInfo(R.drawable.emooji_playful, "#A29DFB", "Playful")
+            ivEmojiHappy to EmojiInfo(
+                drawableRes = R.drawable.emoji_happy,
+                colorHex = "#42ABD0",
+                name = "Happy",
+                tagColor = "#D5F3FA"
+            ),
+            ivEmojiCalm to EmojiInfo(
+                drawableRes = R.drawable.emooji_calm,
+                colorHex = "#5EE3A9",
+                name = "Calm",
+                tagColor = "#D6F9E8"
+            ),
+            ivEmojiSad to EmojiInfo(
+                drawableRes = R.drawable.emoji_sad,
+                colorHex = "#FFDE8B",
+                name = "Sad",
+                tagColor = "#FFF5D1"
+            ),
+            ivEmojiExcited to EmojiInfo(
+                drawableRes = R.drawable.emooji_excited,
+                colorHex = "#FF8D95",
+                name = "Excited",
+                tagColor = "#FFD5D8"
+            ),
+            ivEmojiAngry to EmojiInfo(
+                drawableRes = R.drawable.emooji_angry,
+                colorHex = "#FFAC81",
+                name = "Angry",
+                tagColor = "#FFE1CE"
+            ),
+            ivEmojiPlayful to EmojiInfo(
+                drawableRes = R.drawable.emooji_playful,
+                colorHex = "#A29DFB",
+                name = "Playful",
+                tagColor = "#E3E0FF"
+            )
         )
 
         emojiMap.forEach { (view, pair) ->

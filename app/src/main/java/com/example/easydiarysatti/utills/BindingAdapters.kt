@@ -4,6 +4,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.util.Log
 import android.view.View
@@ -131,6 +132,31 @@ fun setTextColorHex(textView: MaterialTextView, colorString: String?) {
     } catch (e: Exception) {
         e.printStackTrace()
     }
+}
+
+
+@BindingAdapter(value = ["noteBgFillColor", "noteBgStrokeColor"], requireAll = false)
+fun MaterialTextView.setNoteItemBackground(fillColor: String?, strokeColor: String?) {
+    val drawable = ContextCompat.getDrawable(context, R.drawable.bg_note_item)?.mutate()
+    if (drawable is GradientDrawable) {
+        fillColor?.let {
+            val fillColor = lightenColor(it.toColorInt(), 0.65f)
+            drawable.setColor(fillColor)
+        }
+        strokeColor?.let {
+            val strokeWidth = context.resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._2sdp)
+            drawable.setStroke(strokeWidth, it.toColorInt())
+        }
+    }
+    background = drawable
+}
+
+
+private fun lightenColor(color: Int, factor: Float): Int {
+    val r = ((Color.red(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
+    val g = ((Color.green(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
+    val b = ((Color.blue(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
+    return Color.rgb(r, g, b)
 }
 
 @BindingAdapter("imageRs")

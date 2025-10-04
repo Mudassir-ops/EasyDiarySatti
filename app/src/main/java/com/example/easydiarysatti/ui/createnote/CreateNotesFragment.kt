@@ -29,7 +29,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         createNoteEntity = CreateNoteEntity(
             feelingEmojiRes = R.drawable.emooji_excited,
             textColor = "#FF8D95",
-            feelingTitle = "Excited"
+            feelingTitle = "Excited",
+            tagColor = "#FFD5D8"
         )
     }
 
@@ -61,7 +62,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     createNoteEntity = createNoteEntity?.copy(
                         feelingEmojiRes = emojiInfo.drawableRes,
                         textColor = emojiInfo.colorHex,
-                        feelingTitle = emojiInfo.name
+                        feelingTitle = emojiInfo.name,
+                        tagColor = emojiInfo.tagColor
                     )
                 })
             }

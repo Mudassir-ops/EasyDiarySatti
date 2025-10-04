@@ -5,6 +5,7 @@ import android.Manifest
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Rect
@@ -16,6 +17,7 @@ import android.os.Build
 import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
+import android.provider.Settings
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -409,7 +411,7 @@ fun FlexboxLayout.addTags(
             setPadding(8, 12, 12, 8)
             imageTintList = ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setOnClickListener {
-                val ifOnlyUnknown = tagList.any { it == "Unknown" }
+                val ifOnlyUnknown = tagList.any { it == "Personal" }
                 if (ifOnlyUnknown) {
                     onTagClick?.invoke(tag)
                     return@setOnClickListener
@@ -436,4 +438,37 @@ fun FragmentHomeBinding?.visible(hasNotes: Boolean) {
         rvNotes.visibility = if (hasNotes) View.VISIBLE else View.GONE
         noNotesLayout.visibility = if (hasNotes) View.GONE else View.VISIBLE
     }
+}
+
+fun showPermissionDialog(context: Context, fragment: Fragment) {
+    val builder = android.app.AlertDialog.Builder(fragment.requireActivity())
+    val dialog = builder.setTitle("Permission Required")
+        .setMessage("Required permissions have been set to 'Don't ask again'. Please enable them in settings.")
+        .setCancelable(true)
+        .setNegativeButton("Cancel") { dialogInterface, _ ->
+            dialogInterface.dismiss()
+        }
+        .setPositiveButton("Settings") { dialogInterface, _ ->
+            redirectToSystemSettings(context = context)
+            dialogInterface.dismiss()
+        }
+        .create()
+
+    dialog.setOnShowListener {
+        dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            redirectToSystemSettings(context)
+            dialog.dismiss()
+        }
+        dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE).setOnClickListener {
+            dialog.dismiss()
+        }
+    }
+    dialog.show()
+}
+
+private fun redirectToSystemSettings(context: Context) {
+    val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+    val uri = Uri.fromParts("package", context.packageName, null)
+    intent.data = uri
+    context.startActivity(intent)
 }

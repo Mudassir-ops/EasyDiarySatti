@@ -95,6 +95,8 @@ dependencies {
     implementation(libs.view)
     implementation(libs.flexbox.layout)
     implementation(libs.gson.v2110)
+
+    implementation(libs.image.cropper)
 }
 
 kapt {

@@ -26,6 +26,7 @@ lifecycleViewmodelKtx = "2.9.4"
 navigationUiKtx = "2.9.5"
 view = "2.9.0"
 flexboxlayout = "3.0.0"
+image_cropoper = "4.6.0"
 viewbinding = "8.13.0"
 databindingCommon = "8.13.0"
 legacySupportV4 = "1.0.0"
@@ -60,7 +61,7 @@ androidx-databinding-common = { group = "androidx.databinding", name = "databind
 androidx-legacy-support-v4 = { group = "androidx.legacy", name = "legacy-support-v4", version.ref = "legacySupportV4" }
 view = { module = "com.kizitonwose.calendar:view", version.ref = "view" }
 flexbox_layout = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexboxlayout" }
-
+image-cropper = { group = "com.vanniktech", name = "android-image-cropper", version.ref = "image_cropoper" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

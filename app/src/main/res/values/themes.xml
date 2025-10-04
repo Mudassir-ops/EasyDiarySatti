@@ -72,6 +72,15 @@
         <item name="android:textColor">@color/tag_txt_color</item>
     </style>
 
+    <!-- res/values/styles.xml -->
+    <style name="OnlyTopRoundedImageShape" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">@dimen/_10sdp</item>
+        <item name="cornerSizeTopRight">@dimen/_10sdp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
 
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
 </resources>

@@ -24,6 +24,8 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.core.graphics.toColorInt
+import com.canhub.cropper.CropImageView
+import java.io.File
 
 @BindingAdapter("android:text")
 fun setText(view: MaterialTextView, text: CharSequence?) {
@@ -232,3 +234,18 @@ fun loadImageDialog(view: AppCompatImageView, imageUrl: String?) {
     }
 }
 
+@BindingAdapter("imagePath")
+fun CropImageView.setImagePath(path: String?) {
+    Log.d("CropImageView", "setImagePath: $path")
+    if (path.isNullOrEmpty()) return
+    val file = File(path)
+    Log.d("CropImageView", "setImagePath: $path")
+    if (file.exists()) {
+        Log.d("CropImageView", "IfsetImagePath: $path")
+        val uri = Uri.fromFile(file)
+        this.setImageUriAsync(uri)
+    } else {
+        Log.d("CropImageView", "ElsesetImagePath: $path")
+        this.clearImage()
+    }
+}

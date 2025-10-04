@@ -1,53 +1,45 @@
 package com.example.easydiarysatti.ui.main
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
 import android.util.Log
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.flowWithLifecycle
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentMainBinding
-import com.example.easydiarysatti.databinding.FragmentThemesBinding
-import com.example.easydiarysatti.databinding.FragmentThemesBinding.bind
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
-import com.example.easydiarysatti.monthlyFormatDate
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
-import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
-import com.example.easydiarysatti.ui.home.HomeNotesState
-import com.example.easydiarysatti.ui.home.HomeViewModel
-import com.example.easydiarysatti.ui.name.NameViewModel
+import com.example.easydiarysatti.utills.ImagePickerDelegate
+import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
-import com.example.easydiarysatti.visible
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainFragment : Fragment(R.layout.fragment_main) {
     private var innerNavController: NavController? = null
-    private val viewModel by viewModels<MainViewModel>()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
+    private lateinit var imagePicker: ImagePickerDelegate
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        imagePicker = ImagePickerDelegate(this) { uri, file ->
+            showImageCropDialog(imagePath = file?.path?:return@ImagePickerDelegate, deleteImage = {
+
+            })
+            Log.d("PickedImage", "Uri: $uri, File: ${file?.absolutePath}--")
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -109,7 +101,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             actionId = R.id.action_createNotesFragment_to_addTagsFragment2
                         )
 
-                        R.id.btn_media -> Unit
+                        R.id.btn_media -> imagePicker.showPickerDialog()
                         R.id.btn_text -> Unit
                     }
                 }

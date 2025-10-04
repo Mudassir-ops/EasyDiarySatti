@@ -1,11 +1,8 @@
 package com.example.easydiarysatti.ui.createnote
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -16,9 +13,7 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
-import com.example.easydiarysatti.databinding.FragmentMainBinding
-import com.example.easydiarysatti.databinding.FragmentMainBinding.bind
-import com.example.easydiarysatti.safeNav
+import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -29,7 +24,6 @@ import kotlinx.coroutines.launch
 class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     private val binding by viewBinding(FragmentCreateNotesBinding::bind)
-
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private var createNoteEntity: CreateNoteEntity? = null
 
@@ -68,7 +62,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.flexboxLayout?.apply {
             removeAllViews()
             visibility = View.VISIBLE
-            addTags(mutableListOf("Unknown", "Satti"), onTagClick = {
+            addTags(mutableListOf("Personal"), onTagClick = {
             }, onRemoveTagClick = { tag ->
             })
         }

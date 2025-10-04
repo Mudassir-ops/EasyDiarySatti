@@ -1,11 +1,16 @@
 package com.example.easydiarysatti.utills
 
 import android.app.Dialog
+import android.graphics.BitmapFactory
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Window
 import android.view.WindowManager
 import androidx.fragment.app.Fragment
+import com.canhub.cropper.CropImage
+import com.canhub.cropper.CropImageView
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.databinding.DialogImageviewBinding
 import com.example.easydiarysatti.databinding.EditFeelingsDialogBinding
 import com.example.easydiarysatti.domain.model.EmojiInfo
 
@@ -86,3 +91,54 @@ inline fun Fragment.showEditFeelingsDialog(
     }
 }
 
+inline fun Fragment.showImageCropDialog(
+    imagePath: String,
+    crossinline deleteImage: () -> Unit
+) {
+    val binding = DialogImageviewBinding.inflate(LayoutInflater.from(this.context ?: return))
+    val imageDialog = Dialog(this.context ?: return)
+    imageDialog.run {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(binding.root)
+
+
+        this.window?.setLayout(
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.WRAP_CONTENT
+        )
+        val params = WindowManager.LayoutParams()
+        params.copyFrom(window?.attributes)
+        val displayMetrics = context.resources.displayMetrics
+        val marginWidthPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            50f,
+            displayMetrics
+        ).toInt()
+        params.width = displayMetrics.widthPixels - marginWidthPx
+        val marginHeightPx = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            300f,
+            displayMetrics
+        ).toInt()
+        params.height = displayMetrics.heightPixels - marginHeightPx
+        window?.attributes = params
+        window?.setBackgroundDrawableResource(android.R.color.transparent)
+        setCancelable(false)
+        setCanceledOnTouchOutside(false)
+        show()
+    }
+
+    binding.apply {
+        binding.cropImageView.post {
+            cropImageView.setImagePath(imagePath)
+        }
+        binding.imagePath = imagePath
+        btnSave.setOnClickListener {
+            imageDialog.dismiss()
+        }
+        ivDelete.setOnClickListener {
+            imageDialog.dismiss()
+            deleteImage()
+        }
+    }
+}

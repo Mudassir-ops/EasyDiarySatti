@@ -52,4 +52,8 @@ class CreateNoteRepositoryImpl(
         return localDataSource.observeAllNotes()
     }
 
+    override suspend fun getOldImages(noteId: Long): List<String>? {
+        return localDataSource.getOldImages(id = noteId)
+    }
+
 }

@@ -27,6 +27,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private var createNoteEntity: CreateNoteEntity? = null
 
+    private val imagesItemAdapter: ImagesItemAdapter by lazy {
+        ImagesItemAdapter(onNoteItemClick = { note -> })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +47,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         observeNote()
         observeNoteAction()
         clickListeners()
+        setupImagesRecyclerview()
         viewModel.observeNote()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
             val navController = childFragmentManager
@@ -118,6 +122,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         CreateNotesState.BackAction -> findNavController().navigateUp()
+                        is CreateNotesState.ImagePicked -> {
+                            val lastSavedNotesImages =
+                                viewModel.addImage(imagePath = note.imageUri.toString())
+                            createNoteEntity = createNoteEntity?.copy(images = lastSavedNotesImages)
+                            imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
+                        }
                     }
                 }
         }
@@ -131,4 +141,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) }
         findNavController().navigateUp()
     }
+
+    private fun setupImagesRecyclerview() {
+        binding?.rvNotesImages?.run {
+            adapter = imagesItemAdapter
+            hasFixedSize()
+        }
+    }
+
 }

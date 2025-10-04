@@ -2,6 +2,7 @@ package com.example.easydiarysatti.utills
 
 import android.app.Dialog
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Window
@@ -13,6 +14,7 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.DialogImageviewBinding
 import com.example.easydiarysatti.databinding.EditFeelingsDialogBinding
 import com.example.easydiarysatti.domain.model.EmojiInfo
+import com.example.easydiarysatti.saveBitmapToUri
 
 inline fun Fragment.showEditFeelingsDialog(
     crossinline selectedEmotion: (EmojiInfo) -> Unit
@@ -93,7 +95,7 @@ inline fun Fragment.showEditFeelingsDialog(
 
 inline fun Fragment.showImageCropDialog(
     imagePath: String,
-    crossinline deleteImage: () -> Unit
+    crossinline btnDone: (Uri?) -> Unit
 ) {
     val binding = DialogImageviewBinding.inflate(LayoutInflater.from(this.context ?: return))
     val imageDialog = Dialog(this.context ?: return)
@@ -134,11 +136,17 @@ inline fun Fragment.showImageCropDialog(
         }
         binding.imagePath = imagePath
         btnSave.setOnClickListener {
+            val bitmap = cropImageView.getCroppedImage()
+            val cropUri =
+                saveBitmapToUri(
+                    bitmap = bitmap ?: return@setOnClickListener,
+                    context = context ?: return@setOnClickListener
+                )
             imageDialog.dismiss()
+            btnDone.invoke(cropUri)
         }
         ivDelete.setOnClickListener {
             imageDialog.dismiss()
-            deleteImage()
         }
     }
 }

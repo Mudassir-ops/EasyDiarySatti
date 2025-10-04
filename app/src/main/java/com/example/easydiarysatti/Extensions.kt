@@ -8,6 +8,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -18,6 +19,7 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
 import android.provider.Settings
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.View
@@ -47,6 +49,7 @@ import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -267,6 +270,16 @@ fun AppCompatImageView.loadImage(
         .into(this)
 }
 
+
+fun AppCompatImageView.loadImage(
+    resourceString: String?,
+    placeholder: Int = R.drawable.image_placeholder
+) {
+    Glide.with(this.context)
+        .load(resourceString ?: placeholder)
+        .into(this)
+}
+
 fun View.loadBackground(
     resourceId: Int?,
     placeholder: Int = R.drawable.image_placeholder
@@ -471,4 +484,19 @@ private fun redirectToSystemSettings(context: Context) {
     val uri = Uri.fromParts("package", context.packageName, null)
     intent.data = uri
     context.startActivity(intent)
+}
+
+fun saveBitmapToUri(bitmap: Bitmap, context: Context): Uri? {
+    val imageFile =
+        File(context.cacheDir, "img_" + Calendar.getInstance().timeInMillis + ".jpg")
+    Log.e("cropFragment", "saveBitmapToUri: $imageFile")
+    try {
+        val fos = FileOutputStream(imageFile)
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+        fos.close()
+        return Uri.fromFile(imageFile)
+    } catch (e: IOException) {
+        e.printStackTrace()
+        return null
+    }
 }

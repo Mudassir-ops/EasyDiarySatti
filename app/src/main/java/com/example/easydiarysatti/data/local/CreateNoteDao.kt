@@ -67,4 +67,7 @@ interface CreateNoteDao {
     @Query("SELECT * FROM create_note_entity_table")
     fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
 
+
+    @Query("SELECT images FROM create_note_entity_table WHERE noteId = :id")
+    suspend fun getOldImages(id: Long): List<String>?
 }

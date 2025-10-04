@@ -34,10 +34,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         imagePicker = ImagePickerDelegate(this) { uri, file ->
-            showImageCropDialog(imagePath = file?.path?:return@ImagePickerDelegate, deleteImage = {
-
+            showImageCropDialog(imagePath = file?.path ?: return@ImagePickerDelegate, btnDone = {
+                createNotesViewModel.sendAction(action = CreateNotesState.ImagePicked(imageUri = it))
             })
-            Log.d("PickedImage", "Uri: $uri, File: ${file?.absolutePath}--")
         }
     }
 

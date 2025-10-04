@@ -22,5 +22,5 @@ interface EasyDiaryLocalDataSource {
     suspend fun updateText(noteId: Long, text: String)
 
     fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
-
+    suspend fun getOldImages(id: Long): List<String>?
 }

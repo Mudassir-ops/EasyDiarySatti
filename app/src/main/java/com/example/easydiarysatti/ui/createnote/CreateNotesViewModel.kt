@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.ui.createnote
 
+import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -32,6 +33,8 @@ class CreateNotesViewModel @Inject constructor(
     val createdNoteId: StateFlow<Long?> = _createdNoteId
 
     private var createNoteEntity: CreateNoteEntity? = CreateNoteEntity()
+
+    private var imagesList: MutableList<String>? = mutableListOf()
 
     fun sendAction(action: CreateNotesState) {
         viewModelScope.launch {
@@ -71,6 +74,7 @@ class CreateNotesViewModel @Inject constructor(
     fun updateFeelingTitle(feelingTitle: String) {
         createNoteEntity = createNoteEntity?.copy(feelingTitle = feelingTitle)
     }
+
     fun updateTextColor(color: String) {
         createNoteEntity = createNoteEntity?.copy(textColor = color)
     }
@@ -82,7 +86,6 @@ class CreateNotesViewModel @Inject constructor(
     fun updateBackground(bgRes: Int) {
         createNoteEntity = createNoteEntity?.copy(backgroundRes = bgRes)
     }
-
 
 
     fun updateTextSizeH1(size: Float) {
@@ -124,14 +127,18 @@ class CreateNotesViewModel @Inject constructor(
         createNoteEntity = createNoteEntity?.copy(tags = updatedTags)
     }
 
-    fun addImage(imagePath: String) {
-        val updatedImages = (createNoteEntity?.images ?: emptyList()) + imagePath
-        createNoteEntity = createNoteEntity?.copy(images = updatedImages.distinct())
+    fun addImage(imagePath: String): List<String> {
+        return (imagesList ?: emptyList()) + imagePath
     }
 
     fun removeImage(imagePath: String) {
         val updatedImages = (createNoteEntity?.images ?: emptyList()) - imagePath
         createNoteEntity = createNoteEntity?.copy(images = updatedImages)
+    }
+
+    suspend fun getOldImages() {
+
+
     }
 
     // --- CLEAR ON DESTROY ---
@@ -144,6 +151,7 @@ class CreateNotesViewModel @Inject constructor(
 
 sealed interface CreateNotesState {
     data object SaveNote : CreateNotesState
+    data class ImagePicked(val imageUri: Uri?) : CreateNotesState
     data object DiscardNote : CreateNotesState
     data object BackAction : CreateNotesState
     data class ShowMessage(val msg: String) : CreateNotesState

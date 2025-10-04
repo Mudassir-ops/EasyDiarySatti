@@ -68,4 +68,8 @@ class EasyDiaryLocalDataSourceImpl(
         return dao.observeAllNotes().distinctUntilChanged()
     }
 
+    override suspend fun getOldImages(id: Long): List<String>? {
+        return dao.getOldImages(id = id)
+    }
+
 }

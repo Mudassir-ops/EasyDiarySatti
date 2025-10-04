@@ -54,5 +54,6 @@
     <string name="background">Background</string>
     <string name="reminder">Reminder</string>
     <string name="how_you_feeling_today">How You Feeling Today?</string>
+    <string name="personal"># Personal</string>
 
 </resources>

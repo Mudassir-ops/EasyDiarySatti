@@ -68,5 +68,10 @@
         <item name="cornerSize">50%</item>
     </style>
 
+    <style name="HintTextStyle" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textColor">@color/tag_txt_color</item>
+    </style>
+
+
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
 </resources>

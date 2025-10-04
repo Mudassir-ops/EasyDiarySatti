@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_main_inner"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/createNotesFragment"
+        android:name="com.example.easydiarysatti.ui.createnote.CreateNotesFragment"
+        android:label="fragment_create_notes"
+        tools:layout="@layout/fragment_create_notes">
+        <action
+            android:id="@+id/action_createNotesFragment_to_addTagsFragment2"
+            app:destination="@id/addTagsFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/addTagsFragment2"
+        android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
+        android:label="fragment_add_tags"
+        tools:layout="@layout/fragment_add_tags" />
+    <fragment
+        android:id="@+id/libraryFragment"
+        android:name="com.example.easydiarysatti.ui.dashboard.LibraryFragment"
+        android:label="fragment_library"
+        tools:layout="@layout/fragment_library" />
+    <fragment
+        android:id="@+id/calenderFragment"
+        android:name="com.example.easydiarysatti.ui.notifications.CalenderFragment"
+        android:label="fragment_calender"
+        tools:layout="@layout/fragment_calender" />
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.easydiarysatti.ui.home.HomeFragment"
+        android:label="fragment_home"
+        tools:layout="@layout/fragment_home" >
+        <action
+            android:id="@+id/action_homeFragment_to_createNotesFragment"
+            app:destination="@id/createNotesFragment" />
+    </fragment>
+
+</navigation>

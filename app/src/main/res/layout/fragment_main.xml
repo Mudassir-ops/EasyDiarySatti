@@ -64,11 +64,11 @@
             android:layout_marginEnd="@dimen/_15sdp"
             android:elevation="@dimen/_5sdp"
             android:fontFamily="@font/outfit"
-            android:visibility="gone"
             android:text="@string/save"
             android:textAlignment="center"
             android:textColor="@color/white"
             android:textSize="@dimen/_14ssp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@+id/headerTitle" />
@@ -86,19 +86,15 @@
         app:layout_constraintTop_toBottomOf="@+id/headerLayout"
         app:layout_constraintVertical_bias="1.0">
 
-
         <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/nav_host_fragment_activity_main2"
+            android:id="@+id/nav_host_main_inner"
             android:name="androidx.navigation.fragment.NavHostFragment"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="0dp"
             app:defaultNavHost="true"
             app:layout_constraintBottom_toTopOf="@id/bottom_nav"
-            app:layout_constraintLeft_toLeftOf="parent"
-            app:layout_constraintRight_toRightOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:navGraph="@navigation/mobile_navigation2" />
-
+            app:navGraph="@navigation/nav_main_inner" />
 
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/bottom_nav"
@@ -191,7 +187,131 @@
 
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/createNote_bottom_bar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_44sdp"
+            android:layout_marginHorizontal="@dimen/_15sdp"
+            android:layout_marginBottom="@dimen/_10sdp"
+            android:background="@drawable/create_note_bottom_bar_bg"
+            android:visibility="invisible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/bottom_nav_create_note"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:backgroundTint="@null"
+                android:clipChildren="true"
+                android:clipToPadding="false"
+                android:gravity="center"
+                android:showDividers="none"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:selectionRequired="true"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.CapsuleGroup"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnBackground"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="@dimen/_68sdp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:insetLeft="@dimen/_5sdp"
+                    android:text="@string/background"
+                    android:textAlignment="center"
+                    android:textColor="@color/selector_nav_create_note_"
+                    android:textSize="@dimen/_5ssp"
+                    app:backgroundTint="@color/selector_nav_create_note_bg"
+                    app:icon="@drawable/create_note_bg_icon"
+                    app:iconGravity="textTop"
+                    app:iconPadding="3dp"
+                    app:iconTint="@color/selector_nav_create_note_"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
+                    app:strokeColor="@color/selector_nav_stroke_color_"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_hash_tag"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="@dimen/_68sdp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:insetLeft="@dimen/_5sdp"
+                    android:text="@string/hash_tag"
+                    android:textAlignment="center"
+                    android:textColor="@color/selector_nav_create_note_"
+                    android:textSize="@dimen/_6ssp"
+                    app:backgroundTint="@color/selector_nav_create_note_bg"
+                    app:icon="@drawable/ic_hash_small"
+                    app:iconGravity="textTop"
+                    app:iconPadding="3dp"
+                    app:iconTint="@color/selector_nav_create_note_"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
+                    app:strokeColor="@color/selector_nav_stroke_color_"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_media"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="@dimen/_68sdp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:insetLeft="@dimen/_5sdp"
+                    android:text="@string/media"
+                    android:textAlignment="center"
+                    android:textColor="@color/selector_nav_create_note_"
+                    android:textSize="@dimen/_6ssp"
+                    app:backgroundTint="@color/selector_nav_create_note_bg"
+                    app:icon="@drawable/create_note_media_icon"
+                    app:iconGravity="textTop"
+                    app:iconPadding="3dp"
+                    app:iconTint="@color/selector_nav_create_note_"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
+                    app:strokeColor="@color/selector_nav_stroke_color_"
+                    app:strokeWidth="1dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_text"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="@dimen/_68sdp"
+                    android:layout_height="@dimen/_40sdp"
+                    android:insetLeft="@dimen/_4sdp"
+                    android:insetRight="@dimen/_5sdp"
+                    android:text="@string/text"
+                    android:textAlignment="center"
+                    android:textColor="@color/selector_nav_create_note_"
+                    android:textSize="@dimen/_6ssp"
+                    app:backgroundTint="@color/selector_nav_create_note_bg"
+                    app:icon="@drawable/create_note_text_icon"
+                    app:iconGravity="textTop"
+                    app:iconPadding="3dp"
+                    app:iconTint="@color/selector_nav_create_note_"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
+                    app:strokeColor="@color/selector_nav_stroke_color_"
+                    app:strokeWidth="1dp" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/icAddNotes"
+            style="@style/CustomFab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_25sdp"
+            android:layout_marginBottom="@dimen/_77sdp"
+            android:backgroundTint="@color/app_primary_color"
+            android:contentDescription="@string/app_name"
+            android:elevation="@dimen/_2sdp"
+            android:src="@drawable/ic_add"
+            app:fabCustomSize="@dimen/_40sdp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:maxImageSize="@dimen/_40sdp"
+            app:tint="@color/white" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

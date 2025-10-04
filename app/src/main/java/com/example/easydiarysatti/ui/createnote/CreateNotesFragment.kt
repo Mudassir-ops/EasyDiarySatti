@@ -1,8 +1,12 @@
 package com.example.easydiarysatti.ui.createnote
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.flowWithLifecycle
@@ -12,6 +16,9 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
+import com.example.easydiarysatti.databinding.FragmentMainBinding
+import com.example.easydiarysatti.databinding.FragmentMainBinding.bind
+import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -20,9 +27,12 @@ import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
+
     private val binding by viewBinding(FragmentCreateNotesBinding::bind)
+
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private var createNoteEntity: CreateNoteEntity? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,6 +51,17 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         observeNoteAction()
         clickListeners()
         viewModel.observeNote()
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
+            val navController = childFragmentManager
+                .findFragmentById(R.id.nav_host_main_inner)
+                ?.findNavController()
+            if (navController?.popBackStack() == true) {
+                navController.navigateUp()
+            } else {
+                isEnabled = false
+                activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+        }
     }
 
     fun setupFlexBox() {

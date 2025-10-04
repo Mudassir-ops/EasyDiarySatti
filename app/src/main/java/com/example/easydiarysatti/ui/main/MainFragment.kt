@@ -9,6 +9,9 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
@@ -21,16 +24,24 @@ import com.example.easydiarysatti.databinding.FragmentThemesBinding
 import com.example.easydiarysatti.databinding.FragmentThemesBinding.bind
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
+import com.example.easydiarysatti.monthlyFormatDate
+import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
+import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
+import com.example.easydiarysatti.ui.home.HomeNotesState
+import com.example.easydiarysatti.ui.home.HomeViewModel
 import com.example.easydiarysatti.ui.name.NameViewModel
 import com.example.easydiarysatti.viewBinding
+import com.example.easydiarysatti.visible
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainFragment : Fragment(R.layout.fragment_main) {
+    private var innerNavController: NavController? = null
     private val viewModel by viewModels<MainViewModel>()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
@@ -47,35 +58,64 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun setupBottomNavBar() {
         binding?.apply {
-            val navHostFragment =
-                childFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main2) as? NavHostFragment
-            val navController = navHostFragment?.navController
+            val innerNavHost =
+                childFragmentManager.findFragmentById(R.id.nav_host_main_inner) as NavHostFragment
+            innerNavController = innerNavHost.navController
             bottomNav.check(R.id.btnHome)
             bottomNav.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
                     when (checkedId) {
-                        R.id.btnHome -> navHostFragment?.navController?.navigate(R.id.navigation_home)
-                        R.id.btn_library -> navHostFragment?.navController?.navigate(R.id.navigation_dashboard)
-                        R.id.btn_calendar -> navHostFragment?.navController?.navigate(R.id.navigation_notifications)
+                        R.id.btnHome -> innerNavController?.navigate(R.id.homeFragment)
+                        R.id.btn_library -> innerNavController?.navigate(R.id.libraryFragment)
+                        R.id.btn_calendar -> innerNavController?.navigate(R.id.calenderFragment)
                     }
                 }
             }
-            navController?.addOnDestinationChangedListener { _, destination, _ ->
+            innerNavController?.addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
-                    R.id.navigation_createNote -> {
-                        bottomNav.visibility = View.GONE
+                    R.id.createNotesFragment -> {
+                        Log.e(
+                            "setClickListeners",
+                            "setClickListeners79: ${innerNavController?.currentDestination?.label}",
+                        )
+                        createNoteBottomBar.visibility = View.VISIBLE
+                        bottomNav.visibility = View.INVISIBLE
+                        binding?.icAddNotes?.visibility = View.GONE
                         setNoteHeader()
                     }
 
+                    R.id.homeFragment -> {
+                        createNoteBottomBar.visibility = View.GONE
+                        binding?.icAddNotes?.visibility = View.VISIBLE
+                        bottomNav.visibility = View.VISIBLE
+                        destination.label?.toString()?.setDefaultNavHeader()
+                    }
+
                     else -> {
+                        createNoteBottomBar.visibility = View.GONE
+                        binding?.icAddNotes?.visibility = View.GONE
                         bottomNav.visibility = View.VISIBLE
                         destination.label?.toString()?.setDefaultNavHeader()
                     }
                 }
             }
+
+            bottomNavCreateNote.addOnButtonCheckedListener { group, checkedId, isChecked ->
+                if (isChecked) {
+                    when (checkedId) {
+                        R.id.btnBackground -> Unit
+                        R.id.btn_hash_tag -> innerNavController?.safeNav(
+                            currentDestId = R.id.createNotesFragment,
+                            actionId = R.id.action_createNotesFragment_to_addTagsFragment2
+                        )
+
+                        R.id.btn_media -> Unit
+                        R.id.btn_text -> Unit
+                    }
+                }
+            }
         }
     }
-
 
     private fun setClickListeners() {
         binding?.apply {
@@ -83,6 +123,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             headerSave.setOnClickListener {
                 Log.e("headerSave", "setClickListeners: ")
                 createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
+            }
+            icAddNotes.setOnClickListener {
+                Log.e(
+                    "setClickListeners",
+                    "setClickListeners: ${innerNavController?.currentDestination?.label}",
+                )
+                innerNavController?.safeNav(
+                    currentDestId = R.id.homeFragment,
+                    actionId = R.id.action_homeFragment_to_createNotesFragment
+                )
             }
         }
     }

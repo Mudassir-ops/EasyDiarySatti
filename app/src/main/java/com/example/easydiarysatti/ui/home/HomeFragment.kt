@@ -38,15 +38,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun clickListener() {
         binding?.apply {
-            icAddNotes.setOnClickListener { moveToNextScreen() }
         }
     }
 
     private fun moveToNextScreen() {
-        findNavController().safeNav(
-            currentDestId = R.id.navigation_home,
-            actionId = R.id.action_navigation_home_to_navigation_createNote
-        )
+//        findNavController().safeNav(
+//            currentDestId = R.id.navigation_home,
+//            actionId = R.id.action_navigation_home_to_navigation_createNote
+//        )
     }
 
     private fun setupRecyclerView() {

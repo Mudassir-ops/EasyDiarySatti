@@ -1,256 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fillViewport="true"
     tools:context=".ui.createnote.CreateNotesFragment">
 
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tv_date"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_20sdp"
-        android:fontFamily="@font/outfit_medium"
-        android:shadowColor="@color/black"
-        android:text="13-8- | 4:45 PM"
-        android:textColor="@color/black"
-        android:textSize="@dimen/_13ssp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_bottom_arrow"
-        android:layout_width="@dimen/_12sdp"
-        android:layout_height="@dimen/_12sdp"
-        android:layout_marginHorizontal="@dimen/_10sdp"
-        app:layout_constraintBottom_toBottomOf="@+id/tv_date"
-        app:layout_constraintStart_toEndOf="@+id/tv_date"
-        app:layout_constraintTop_toTopOf="@+id/tv_date"
-        app:srcCompat="@drawable/down_arrow" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/label_remainder"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/outfit_medium"
-        android:shadowColor="@color/black"
-        android:text="@string/reminder"
-        android:textColor="@color/txt_color_gray"
-        android:textSize="@dimen/_13ssp"
-        app:layout_constraintBottom_toBottomOf="@+id/icSwitchRemainder"
-        app:layout_constraintEnd_toStartOf="@+id/icSwitchRemainder"
-        app:layout_constraintTop_toTopOf="@+id/icSwitchRemainder" />
-
-    <com.google.android.material.materialswitch.MaterialSwitch
-        android:id="@+id/icSwitchRemainder"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/_20sdp"
-        android:checked="false"
-        android:scaleX="0.6"
-        android:scaleY="0.6"
-        android:text=""
-        android:thumb="@drawable/custom_thumb"
-        app:layout_constraintBottom_toBottomOf="@id/tv_date"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/tv_date"
-        app:thumbTint="@null"
-        app:track="@drawable/custom_track"
-        app:trackDecorationTint="@android:color/transparent"
-        app:trackTint="@color/switch_track_selector" />
-
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/et_header"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@drawable/bg_create_note"
-        android:fontFamily="@font/outfit_medium"
-        android:hint="@string/header"
-        android:maxLength="30"
-        android:paddingHorizontal="@dimen/_10sdp"
-        android:textAlignment="viewStart"
-        android:textSize="@dimen/_14ssp"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_emoji"
-        app:layout_constraintEnd_toStartOf="@+id/iv_emoji"
-        app:layout_constraintStart_toStartOf="@+id/tv_date"
-        app:layout_constraintTop_toTopOf="@+id/iv_emoji" />
-
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_emoji"
-        android:layout_width="@dimen/_45sdp"
-        android:layout_height="@dimen/_45sdp"
-        android:layout_marginStart="@dimen/_10sdp"
-        android:layout_marginTop="@dimen/_15sdp"
-        android:background="@drawable/bg_create_note"
-        android:elevation="2dp"
-        android:padding="@dimen/_10sdp"
-        app:layout_constraintEnd_toEndOf="@+id/icSwitchRemainder"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintStart_toEndOf="@+id/et_header"
-        app:layout_constraintTop_toBottomOf="@+id/tv_date"
-        app:srcCompat="@drawable/emooji_smilie" />
-
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/view_note_detail"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_15sdp"
-        android:background="@drawable/bg_create_note"
-        android:padding="@dimen/_10sdp"
-        app:layout_constraintBottom_toTopOf="@+id/createNote_bottom_bar"
-        app:layout_constraintEnd_toEndOf="@+id/iv_emoji"
-        app:layout_constraintStart_toStartOf="@+id/et_header"
-        app:layout_constraintTop_toBottomOf="@+id/et_header"
-        app:layout_constraintVertical_bias="0">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rv_notes_images"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.flexbox.FlexboxLayout
-            android:id="@+id/flexboxLayout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginVertical="@dimen/_5sdp"
-            app:alignItems="center"
-            app:flexDirection="row"
-            app:flexWrap="wrap"
-            app:justifyContent="flex_start"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/rv_notes_images" />
-
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/et_description"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginVertical="@dimen/_5sdp"
-            android:background="@null"
-            android:fontFamily="@font/outfit"
-            android:gravity="top|start"
-            android:hint="@string/write_your_thoughts_here"
-            android:textSize="@dimen/_12ssp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.5"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/flexboxLayout" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/createNote_bottom_bar"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/_44sdp"
-        android:layout_marginHorizontal="@dimen/_15sdp"
-        android:layout_marginBottom="@dimen/_10sdp"
-        android:background="@drawable/create_note_bottom_bar_bg"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:layout_height="wrap_content"
+        android:padding="@dimen/_20sdp">
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/bottom_nav"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:backgroundTint="@null"
-            android:clipChildren="true"
-            android:clipToPadding="false"
-            android:gravity="center"
-            android:showDividers="none"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/outfit_medium"
+            android:text="13-8- | 4:45 PM"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_13ssp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:selectionRequired="true"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.CapsuleGroup"
-            app:singleSelection="true">
+            tools:ignore="HardcodedText" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnBackground"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="@dimen/_68sdp"
-                android:layout_height="@dimen/_40sdp"
-                android:insetLeft="@dimen/_5sdp"
-                android:text="@string/background"
-                android:textAlignment="center"
-                android:textColor="@color/selector_nav_create_note_"
-                android:textSize="@dimen/_5ssp"
-                app:backgroundTint="@color/selector_nav_create_note_bg"
-                app:icon="@drawable/create_note_bg_icon"
-                app:iconGravity="textTop"
-                app:iconPadding="3dp"
-                app:iconTint="@color/selector_nav_create_note_"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeColor="@color/selector_nav_stroke_color_"
-                app:strokeWidth="1dp" />
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_bottom_arrow"
+            android:layout_width="@dimen/_12sdp"
+            android:layout_height="@dimen/_12sdp"
+            android:layout_marginStart="@dimen/_6sdp"
+            app:layout_constraintBottom_toBottomOf="@id/tv_date"
+            app:layout_constraintStart_toEndOf="@id/tv_date"
+            app:srcCompat="@drawable/down_arrow" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_hash_tag"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="@dimen/_68sdp"
-                android:layout_height="@dimen/_40sdp"
-                android:insetLeft="@dimen/_5sdp"
-                android:text="@string/hash_tag"
-                android:textAlignment="center"
-                android:textColor="@color/selector_nav_create_note_"
-                android:textSize="@dimen/_6ssp"
-                app:backgroundTint="@color/selector_nav_create_note_bg"
-                app:icon="@drawable/ic_hash_small"
-                app:iconGravity="textTop"
-                app:iconPadding="3dp"
-                app:iconTint="@color/selector_nav_create_note_"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeColor="@color/selector_nav_stroke_color_"
-                app:strokeWidth="1dp" />
+        <com.google.android.material.materialswitch.MaterialSwitch
+            android:id="@+id/icSwitchRemainder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:scaleX="0.6"
+            android:scaleY="0.6"
+            android:thumb="@drawable/custom_thumb"
+            app:layout_constraintBottom_toBottomOf="@id/tv_date"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tv_date"
+            app:thumbTint="@null"
+            app:track="@drawable/custom_track"
+            app:trackTint="@color/switch_track_selector" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_media"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="@dimen/_68sdp"
-                android:layout_height="@dimen/_40sdp"
-                android:insetLeft="@dimen/_5sdp"
-                android:text="@string/media"
-                android:textAlignment="center"
-                android:textColor="@color/selector_nav_create_note_"
-                android:textSize="@dimen/_6ssp"
-                app:backgroundTint="@color/selector_nav_create_note_bg"
-                app:icon="@drawable/create_note_media_icon"
-                app:iconGravity="textTop"
-                app:iconPadding="3dp"
-                app:iconTint="@color/selector_nav_create_note_"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeColor="@color/selector_nav_stroke_color_"
-                app:strokeWidth="1dp" />
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/label_remainder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:text="@string/reminder"
+            android:textColor="@color/txt_color_gray"
+            android:textSize="@dimen/_13ssp"
+            app:layout_constraintBaseline_toBaselineOf="@id/icSwitchRemainder"
+            app:layout_constraintEnd_toStartOf="@id/icSwitchRemainder" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_text"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="@dimen/_68sdp"
-                android:layout_height="@dimen/_40sdp"
-                android:insetLeft="@dimen/_4sdp"
-                android:insetRight="@dimen/_5sdp"
-                android:text="@string/text"
-                android:textAlignment="center"
-                android:textColor="@color/selector_nav_create_note_"
-                android:textSize="@dimen/_6ssp"
-                app:backgroundTint="@color/selector_nav_create_note_bg"
-                app:icon="@drawable/create_note_text_icon"
-                app:iconGravity="textTop"
-                app:iconPadding="3dp"
-                app:iconTint="@color/selector_nav_create_note_"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.Capsule"
-                app:strokeColor="@color/selector_nav_stroke_color_"
-                app:strokeWidth="1dp" />
+        <!-- Header + Emoji -->
+        <androidx.appcompat.widget.AppCompatEditText
+            android:id="@+id/et_header"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_45sdp"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:background="@drawable/bg_create_note"
+            android:hint="@string/header"
+            android:maxLength="30"
+            android:paddingHorizontal="@dimen/_10sdp"
+            android:textSize="@dimen/_14ssp"
+            app:layout_constraintEnd_toStartOf="@id/iv_emoji"
+            app:layout_constraintHorizontal_chainStyle="packed"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_date" />
 
-        </com.google.android.material.button.MaterialButtonToggleGroup>
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_emoji"
+            android:layout_width="@dimen/_45sdp"
+            android:layout_height="@dimen/_45sdp"
+            android:layout_marginStart="@dimen/_10sdp"
+            android:background="@drawable/bg_create_note"
+            android:padding="@dimen/_10sdp"
+            app:layout_constraintBottom_toBottomOf="@id/et_header"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/et_header"
+            app:srcCompat="@drawable/emooji_smilie" />
+
+        <!-- Note Detail Section -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/view_note_detail"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:background="@drawable/bg_create_note"
+            android:padding="@dimen/_10sdp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/et_header">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_notes_images"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <com.google.android.flexbox.FlexboxLayout
+                android:id="@+id/flexboxLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="@dimen/_5sdp"
+                app:alignItems="center"
+                app:flexDirection="row"
+                app:flexWrap="wrap"
+                app:justifyContent="flex_start"
+                app:layout_constraintTop_toBottomOf="@id/rv_notes_images" />
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/et_description"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:background="@null"
+                android:gravity="top|start"
+                android:hint="@string/write_your_thoughts_here"
+                android:maxLines="5"
+                android:minHeight="@dimen/_80sdp"
+                android:textSize="@dimen/_12ssp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/flexboxLayout" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

@@ -72,6 +72,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             visibility = View.VISIBLE
             addTags(this@setupFlexBox as MutableList<String>, onTagClick = {
             }, onRemoveTagClick = { tag ->
+                viewModel.removeTag(tag = tag)
             })
         }
     }

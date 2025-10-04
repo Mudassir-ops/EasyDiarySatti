@@ -85,6 +85,10 @@ class CreateNotesViewModel @Inject constructor(
         return tagList?.toList() ?: listOf()
     }
 
+    fun removeTag(tag: String) {
+        tagList?.remove(tag)
+    }
+
 }
 
 sealed interface CreateNotesState {

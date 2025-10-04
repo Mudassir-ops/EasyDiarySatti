@@ -44,7 +44,7 @@
             android:layout_height="wrap_content"
             android:fontFamily="@font/outfit"
             android:hint="@string/personal"
-            android:maxLength="40"
+            android:maxLength="15"
             android:textColor="@color/tag_txt_color"
             android:textColorHint="@color/tag_txt_color"
             android:textSize="@dimen/_14ssp"

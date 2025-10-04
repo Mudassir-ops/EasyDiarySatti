@@ -19,11 +19,12 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_note_header"
+            capitalizeFirst="@{noteEntity.title}"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:fontFamily="@font/outfit_bold"
-            android:text="@{noteEntity.title}"
             android:textAlignment="viewStart"
+            android:textAllCaps="false"
             android:textColor="@color/tag_txt_color"
             android:textSize="@dimen/_14ssp"
             app:layout_constraintEnd_toStartOf="@+id/tv_not_time"
@@ -34,6 +35,7 @@
             android:id="@+id/tv_note_description"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp"
             android:fontFamily="@font/outfit"
             android:maxLines="2"
             android:text="@{noteEntity.description}"
@@ -80,6 +82,7 @@
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_feeling"
+            drawableStartCompat="@{noteEntity.feelingEmojiRes}"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/_5sdp"
@@ -91,9 +94,11 @@
             android:paddingStart="@dimen/_10sdp"
             android:paddingEnd="@dimen/_15sdp"
             android:text="Calm"
+            app:drawableTint="@{@color/tag_txt_color}"
             android:textColor="@color/tag_txt_color"
             android:textSize="@dimen/_11ssp"
-            app:drawableStartCompat="@drawable/ic_person_svg"
+            app:drawableHeightDp="@{18f}"
+            app:drawableWidthDp="@{18f}"
             app:layout_constraintBottom_toBottomOf="@+id/tv_tag"
             app:layout_constraintStart_toEndOf="@+id/tv_tag"
             app:layout_constraintTop_toTopOf="@+id/tv_tag" />

@@ -85,7 +85,7 @@
         android:layout_marginTop="@dimen/_15sdp"
         android:background="@drawable/bg_create_note"
         android:elevation="2dp"
-        android:padding="@dimen/_13sdp"
+        android:padding="@dimen/_10sdp"
         app:layout_constraintEnd_toEndOf="@+id/icSwitchRemainder"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toEndOf="@+id/et_header"

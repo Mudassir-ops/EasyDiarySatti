@@ -91,7 +91,7 @@
         android:id="@+id/rvNotes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_26sdp"
+        android:layout_marginVertical="@dimen/_15sdp"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"

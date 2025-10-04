@@ -52,6 +52,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.apply {
             ivEmoji.setOnClickListener {
                 showEditFeelingsDialog(selectedEmotion = { selectedEmojiRes ->
+                    ivEmoji.setTag(R.id.emoji_resource_tag, selectedEmojiRes)
                     ivEmoji.setImageResource(selectedEmojiRes)
                 })
             }
@@ -79,12 +80,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 .collect { note ->
                     when (note) {
                         CreateNotesState.SaveNote -> {
-                            createNoteEntity = CreateNoteEntity(
-                                title = binding?.etHeader?.text?.toString().orEmpty(),
-                                description = binding?.etDescription?.text?.toString().orEmpty(),
-                            )
-                            createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) }
-                            findNavController().navigateUp()
+                            saveNote()
                         }
 
                         CreateNotesState.DiscardNote -> {
@@ -101,4 +97,14 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
+    private fun saveNote() {
+        createNoteEntity = CreateNoteEntity(
+            title = binding?.etHeader?.text?.toString().orEmpty(),
+            description = binding?.etDescription?.text?.toString().orEmpty(),
+            feelingEmojiRes = binding?.ivEmoji?.getTag(R.id.emoji_resource_tag) as? Int
+                ?: R.drawable.emooji_smilie
+        )
+        createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) }
+        findNavController().navigateUp()
+    }
 }

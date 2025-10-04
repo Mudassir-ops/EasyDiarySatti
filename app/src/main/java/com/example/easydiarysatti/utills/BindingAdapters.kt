@@ -7,10 +7,12 @@ import android.net.Uri
 import android.util.Log
 import android.view.View
 import androidx.annotation.ColorInt
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.databinding.BindingAdapter
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
@@ -24,6 +26,14 @@ import java.util.Locale
 fun setText(view: MaterialTextView, text: CharSequence?) {
     view.text = text
 }
+
+@BindingAdapter("capitalizeFirst")
+fun MaterialTextView.setCapitalizedText(text: String?) {
+    this.text = text?.replaceFirstChar {
+        if (it.isLowerCase()) it.titlecase() else it.toString()
+    } ?: ""
+}
+
 
 @BindingAdapter("formattedTime")
 fun MaterialTextView.setFormattedTime(timestamp: Long?) {
@@ -45,6 +55,38 @@ fun AppCompatImageView.showIfHasImages(images: List<Any>?) {
 fun MaterialTextView.setFirstTagText(tags: List<String>?) {
     text = tags?.firstOrNull() ?: "Personal"
 }
+
+
+@BindingAdapter(
+    value = ["drawableStartCompat", "drawableWidthDp", "drawableHeightDp", "drawableTint"],
+    requireAll = false
+)
+fun setDrawableStartCompat(
+    view: MaterialTextView,
+    drawableRes: Int?,
+    widthDp: Float?,
+    heightDp: Float?,
+    tintColor: Int?
+) {
+    if (drawableRes == null) {
+        view.setCompoundDrawablesRelativeWithIntrinsicBounds(null, null, null, null)
+        return
+    }
+
+    val context = view.context
+    val drawable = AppCompatResources.getDrawable(context, drawableRes)?.mutate() ?: return
+
+    val density = context.resources.displayMetrics.density
+    val w = ((widthDp ?: 24f) * density).toInt()
+    val h = ((heightDp ?: 24f) * density).toInt()
+    drawable.setBounds(0, 0, w, h)
+    tintColor?.let { color ->
+        val wrapped = DrawableCompat.wrap(drawable)
+        DrawableCompat.setTint(wrapped, color)
+        view.setCompoundDrawablesRelative(wrapped, null, null, null)
+    } ?: view.setCompoundDrawablesRelative(drawable, null, null, null)
+}
+
 
 @BindingAdapter("android:visibility")
 fun setVisibility(view: View, isVisible: Boolean) {

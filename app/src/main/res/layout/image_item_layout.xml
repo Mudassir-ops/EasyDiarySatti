@@ -5,11 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="@dimen/_160sdp"
     android:layout_marginVertical="@dimen/_5sdp"
-    android:scaleType="fitXY"
+    android:adjustViewBounds="true"
+    android:scaleType="centerCrop"
     app:layout_constraintBottom_toTopOf="@+id/closeButton"
     app:layout_constraintEnd_toEndOf="parent"
     app:layout_constraintStart_toStartOf="parent"
     app:layout_constraintTop_toTopOf="parent"
-    app:layout_constraintVertical_bias="0"
-    app:shapeAppearanceOverlay="@style/OnlyTopRoundedImageShape"
-    app:srcCompat="@drawable/theme_1" />
+    app:shapeAppearanceOverlay="@style/OnlyTopRoundedImageShape" />

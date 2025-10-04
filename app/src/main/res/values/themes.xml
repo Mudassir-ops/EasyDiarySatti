@@ -75,7 +75,7 @@
     <!-- res/values/styles.xml -->
     <style name="OnlyTopRoundedImageShape" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerRadius">@dimen/_20sdp</item>
+        <item name="cornerRadius">@dimen/_60sdp</item>
     </style>
 
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />

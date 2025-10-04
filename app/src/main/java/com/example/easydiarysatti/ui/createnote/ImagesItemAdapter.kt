@@ -5,10 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.ImageItemLayoutBinding
-import com.example.easydiarysatti.databinding.NoteItemLayoutBinding
-import com.example.easydiarysatti.loadImage
+import com.example.easydiarysatti.loadAdaptiveImage
 
 class ImagesItemAdapter(
     private val onNoteItemClick: (String) -> Unit
@@ -17,7 +15,7 @@ class ImagesItemAdapter(
     inner class ImagesItemViewHolder(private val binding: ImageItemLayoutBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(noteEntity: String) {
-            binding.ivNoteImage.loadImage(resourceString = noteEntity)
+            binding.ivNoteImage.loadAdaptiveImage(noteEntity)
             binding.root.setOnClickListener {
                 onNoteItemClick.invoke(noteEntity)
             }

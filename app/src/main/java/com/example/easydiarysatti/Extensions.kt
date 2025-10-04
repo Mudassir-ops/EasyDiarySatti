@@ -43,6 +43,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.google.android.flexbox.FlexboxLayout
@@ -271,14 +273,66 @@ fun AppCompatImageView.loadImage(
 }
 
 
-fun AppCompatImageView.loadImage(
-    resourceString: String?,
-    placeholder: Int = R.drawable.image_placeholder
+
+
+fun AppCompatImageView.loadAdaptiveImage(
+    imagePath: String?,
+    placeholder: Int = R.drawable.image_placeholder,
 ) {
     Glide.with(this.context)
-        .load(resourceString ?: placeholder)
-        .into(this)
+        .asBitmap()
+        .load(imagePath ?: placeholder)
+        .placeholder(placeholder)
+        .error(placeholder)
+        .into(object : CustomTarget<Bitmap>() {
+            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                val targetWidth = width
+                val targetHeight = height
+
+                if (targetWidth <= 0 || targetHeight <= 0) {
+                    // View not measured yet; reload later
+                    post { loadAdaptiveImage(imagePath, placeholder) }
+                    return
+                }
+
+                val resizedBitmap = resizeToFitView(resource, targetWidth, targetHeight)
+                setImageBitmap(resizedBitmap)
+            }
+
+            override fun onLoadCleared(placeholder: Drawable?) {
+                setImageDrawable(placeholder)
+            }
+        })
 }
+
+/**
+ * Resize the image to fit nicely inside the target view without distortion.
+ * - Keeps aspect ratio
+ * - Crops slightly if needed for balance
+ */
+private fun resizeToFitView(
+    source: Bitmap,
+    targetWidth: Int,
+    targetHeight: Int
+): Bitmap {
+    val srcWidth = source.width
+    val srcHeight = source.height
+    val srcRatio = srcWidth.toFloat() / srcHeight
+    val targetRatio = targetWidth.toFloat() / targetHeight
+
+    return if (srcRatio > targetRatio) {
+        // Source is wider than target → crop width
+        val newWidth = (srcHeight * targetRatio).toInt()
+        val xOffset = (srcWidth - newWidth) / 2
+        Bitmap.createBitmap(source, xOffset, 0, newWidth, srcHeight)
+    } else {
+        // Source is taller → crop height
+        val newHeight = (srcWidth / targetRatio).toInt()
+        val yOffset = (srcHeight - newHeight) / 2
+        Bitmap.createBitmap(source, 0, yOffset, srcWidth, newHeight)
+    }
+}
+
 
 fun View.loadBackground(
     resourceId: Int?,

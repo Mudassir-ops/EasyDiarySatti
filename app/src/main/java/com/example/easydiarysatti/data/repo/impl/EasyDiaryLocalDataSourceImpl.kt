@@ -72,4 +72,8 @@ class EasyDiaryLocalDataSourceImpl(
         return dao.getOldImages(id = id)
     }
 
+    override fun observeAllImages(): Flow<List<String>?> {
+        return dao.observeAllImages().distinctUntilChanged()
+    }
+
 }

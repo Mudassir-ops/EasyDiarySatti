@@ -128,7 +128,8 @@ class CreateNotesViewModel @Inject constructor(
     }
 
     fun addImage(imagePath: String): List<String> {
-        return (imagesList ?: emptyList()) + imagePath
+        imagesList?.add(imagePath)
+        return imagesList?.toList() ?: listOf()
     }
 
     fun removeImage(imagePath: String) {

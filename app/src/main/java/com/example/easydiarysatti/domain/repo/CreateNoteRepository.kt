@@ -8,6 +8,7 @@ interface CreateNoteRepository {
     suspend fun getNoteById(id: Long): CreateNoteEntity?
     fun observeNoteById(id: Long): kotlinx.coroutines.flow.Flow<CreateNoteEntity?>
     fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
+    fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
 
     suspend fun getOldImages(noteId: Long): List<String>?
 }

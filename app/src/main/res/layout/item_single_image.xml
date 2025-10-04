@@ -16,12 +16,13 @@
         android:layout_marginTop="@dimen/_10sdp"
         android:background="?attr/selectableItemBackground"
         android:scaleType="fitXY"
+        app:srcCompat="@drawable/intro_1"
         app:layout_constraintBottom_toTopOf="@+id/tv_title"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.384"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:shapeAppearanceOverlay="@style/RoundedImage"
-        app:srcCompat="@drawable/theme_1" />
+        app:shapeAppearanceOverlay="@style/RoundedImage" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_title"

@@ -52,6 +52,10 @@ class CreateNoteRepositoryImpl(
         return localDataSource.observeAllNotes()
     }
 
+    override fun observeAllImages(): Flow<List<String>?> {
+        return localDataSource.observeAllImages()
+    }
+
     override suspend fun getOldImages(noteId: Long): List<String>? {
         return localDataSource.getOldImages(id = noteId)
     }

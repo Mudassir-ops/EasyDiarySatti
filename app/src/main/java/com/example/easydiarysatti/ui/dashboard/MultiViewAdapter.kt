@@ -1,16 +1,19 @@
 package com.example.easydiarysatti.ui.dashboard
 
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.net.toUri
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.easydiarysatti.databinding.ItemDateHeaderBinding
 import com.example.easydiarysatti.databinding.ItemSingleImageBinding
 
 class MultiViewAdapter(
-    private val items: List<LibraryItem>,
     private val onImageClick: (String, String) -> Unit
-) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+) : ListAdapter<LibraryItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
     companion object {
         const val TYPE_DATE = 0
@@ -18,7 +21,7 @@ class MultiViewAdapter(
     }
 
     override fun getItemViewType(position: Int): Int {
-        return when (items[position]) {
+        return when (getItem(position)) {
             is LibraryItem.DateItem -> TYPE_DATE
             is LibraryItem.ImagesItem -> TYPE_IMAGE
         }
@@ -49,13 +52,11 @@ class MultiViewAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = items[position]) {
+        when (val item = getItem(position)) {
             is LibraryItem.DateItem -> (holder as DateViewHolder).bind(item)
             is LibraryItem.ImagesItem -> (holder as ImageViewHolder).bind(item)
         }
     }
-
-    override fun getItemCount(): Int = items.size
 
     class DateViewHolder(private val binding: ItemDateHeaderBinding) :
         RecyclerView.ViewHolder(binding.root) {
@@ -70,22 +71,34 @@ class MultiViewAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: LibraryItem.ImagesItem) {
-            Glide.with(binding.root.context)
+            Glide.with(binding.imageView.context)
                 .load(item.imagePaths)
-                .thumbnail(
-                    Glide.with(binding.root.context)
-                        .load(binding.root.context)
-                        .override(200)
-                )
+                .thumbnail(0.1f)
+                .centerCrop()
                 .into(binding.imageView)
-
-
-
-            binding.tvTitle.text = "Satti"
+            binding.tvTitle.text = item.noteTitle
             binding.imageView.setOnClickListener {
-                //  onImageClick(item.imagePaths, item.date)
+                onImageClick(item.imagePaths, item.date)
             }
         }
     }
 
+    class DiffCallback : DiffUtil.ItemCallback<LibraryItem>() {
+        override fun areItemsTheSame(oldItem: LibraryItem, newItem: LibraryItem): Boolean {
+            return when {
+                oldItem is LibraryItem.DateItem && newItem is LibraryItem.DateItem ->
+                    oldItem.date == newItem.date
+
+                oldItem is LibraryItem.ImagesItem && newItem is LibraryItem.ImagesItem ->
+                    oldItem.imagePaths == newItem.imagePaths
+
+                else -> false
+            }
+        }
+
+        override fun areContentsTheSame(oldItem: LibraryItem, newItem: LibraryItem): Boolean {
+            return oldItem == newItem
+        }
+    }
 }
+

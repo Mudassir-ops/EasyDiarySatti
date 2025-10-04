@@ -28,7 +28,7 @@
             app:cropGuidelines="on"
             app:cropGuidelinesColor="@color/unselected_color"
             app:cropGuidelinesThickness="@dimen/_2sdp"
-            app:cropScaleType="centerCrop"
+            app:cropScaleType="fitCenter"
             app:layout_constraintBottom_toTopOf="@id/btnSave"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

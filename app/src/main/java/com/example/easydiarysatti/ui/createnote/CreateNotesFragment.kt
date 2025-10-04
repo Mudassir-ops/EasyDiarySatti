@@ -30,7 +30,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             feelingEmojiRes = R.drawable.emooji_excited,
             textColor = "#FF8D95",
             feelingTitle = "Excited",
-            tagColor = "#FFD5D8"
+            tagColor = "#F8B903"
         )
     }
 

@@ -34,42 +34,44 @@ inline fun Fragment.showEditFeelingsDialog(
     }
 
     binding.apply {
+
+
         val emojiMap = mapOf(
             ivEmojiHappy to EmojiInfo(
                 drawableRes = R.drawable.emoji_happy,
                 colorHex = "#42ABD0",
                 name = "Happy",
-                tagColor = "#D5F3FA"
+                tagColor = "#9870E2"
             ),
             ivEmojiCalm to EmojiInfo(
                 drawableRes = R.drawable.emooji_calm,
                 colorHex = "#5EE3A9",
                 name = "Calm",
-                tagColor = "#D6F9E8"
+                tagColor = "#981B9C"
             ),
             ivEmojiSad to EmojiInfo(
                 drawableRes = R.drawable.emoji_sad,
                 colorHex = "#FFDE8B",
                 name = "Sad",
-                tagColor = "#FFF5D1"
+                tagColor = "#DB2256"
             ),
             ivEmojiExcited to EmojiInfo(
                 drawableRes = R.drawable.emooji_excited,
                 colorHex = "#FF8D95",
                 name = "Excited",
-                tagColor = "#FFD5D8"
+                tagColor = "#F8B903"
             ),
             ivEmojiAngry to EmojiInfo(
                 drawableRes = R.drawable.emooji_angry,
                 colorHex = "#FFAC81",
                 name = "Angry",
-                tagColor = "#FFE1CE"
+                tagColor = "#CD0C4E"
             ),
             ivEmojiPlayful to EmojiInfo(
                 drawableRes = R.drawable.emooji_playful,
                 colorHex = "#A29DFB",
                 name = "Playful",
-                tagColor = "#E3E0FF"
+                tagColor = "#0DF21B"
             )
         )
 

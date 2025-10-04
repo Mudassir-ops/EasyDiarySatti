@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.utills
 
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.net.Uri
@@ -21,6 +22,7 @@ import com.google.android.material.textview.MaterialTextView
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.core.graphics.toColorInt
 
 @BindingAdapter("android:text")
 fun setText(view: MaterialTextView, text: CharSequence?) {
@@ -115,6 +117,20 @@ fun loadLottieAnimationFromType(view: LottieAnimationView, lottieRes: Int?) {
 @BindingAdapter("tint")
 fun AppCompatImageView.setTintColor(@ColorInt color: Int?) {
     color?.let { setColorFilter(it, PorterDuff.Mode.SRC_IN) }
+}
+
+@BindingAdapter("app:textColorHex")
+fun setTextColorHex(textView: MaterialTextView, colorString: String?) {
+    if (colorString.isNullOrBlank()) return
+    try {
+        if (colorString.startsWith("#")) {
+            textView.setTextColor(colorString.toColorInt())
+        } else {
+            textView.setTextColor(ContextCompat.getColor(textView.context, R.color.tag_txt_color))
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
 }
 
 @BindingAdapter("imageRs")

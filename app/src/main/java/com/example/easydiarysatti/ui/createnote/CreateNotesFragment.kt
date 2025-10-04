@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.ui.createnote
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -23,6 +24,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private val binding by viewBinding(FragmentCreateNotesBinding::bind)
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private var createNoteEntity: CreateNoteEntity? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         createNoteEntity = CreateNoteEntity()
@@ -51,9 +53,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     fun clickListeners() {
         binding?.apply {
             ivEmoji.setOnClickListener {
-                showEditFeelingsDialog(selectedEmotion = { selectedEmojiRes ->
-                    ivEmoji.setTag(R.id.emoji_resource_tag, selectedEmojiRes)
+                showEditFeelingsDialog(selectedEmotion = { selectedEmojiRes, selectedEmojiColor ->
                     ivEmoji.setImageResource(selectedEmojiRes)
+                    createNoteEntity?.copy(
+                        feelingEmojiRes = selectedEmojiRes,
+                        textColor = selectedEmojiColor
+                    )
                 })
             }
         }
@@ -98,11 +103,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     }
 
     private fun saveNote() {
-        createNoteEntity = CreateNoteEntity(
+        createNoteEntity?.copy(
             title = binding?.etHeader?.text?.toString().orEmpty(),
-            description = binding?.etDescription?.text?.toString().orEmpty(),
-            feelingEmojiRes = binding?.ivEmoji?.getTag(R.id.emoji_resource_tag) as? Int
-                ?: R.drawable.emooji_smilie
+            description = binding?.etDescription?.text?.toString().orEmpty()
         )
         createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) }
         findNavController().navigateUp()

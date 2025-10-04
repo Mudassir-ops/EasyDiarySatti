@@ -25,11 +25,11 @@
             android:fontFamily="@font/outfit_bold"
             android:textAlignment="viewStart"
             android:textAllCaps="false"
-            android:textColor="@color/tag_txt_color"
             android:textSize="@dimen/_14ssp"
             app:layout_constraintEnd_toStartOf="@+id/tv_not_time"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:textColorHex="@{noteEntity.textColor}" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_note_description"
@@ -94,10 +94,10 @@
             android:paddingStart="@dimen/_10sdp"
             android:paddingEnd="@dimen/_15sdp"
             android:text="Calm"
-            app:drawableTint="@{@color/tag_txt_color}"
             android:textColor="@color/tag_txt_color"
             android:textSize="@dimen/_11ssp"
             app:drawableHeightDp="@{18f}"
+            app:drawableTint="@{@color/tag_txt_color}"
             app:drawableWidthDp="@{18f}"
             app:layout_constraintBottom_toBottomOf="@+id/tv_tag"
             app:layout_constraintStart_toEndOf="@+id/tv_tag"

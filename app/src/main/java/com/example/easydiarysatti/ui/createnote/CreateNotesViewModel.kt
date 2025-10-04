@@ -71,6 +71,9 @@ class CreateNotesViewModel @Inject constructor(
     fun updateFeelingTitle(feelingTitle: String) {
         createNoteEntity = createNoteEntity?.copy(feelingTitle = feelingTitle)
     }
+    fun updateTextColor(color: String) {
+        createNoteEntity = createNoteEntity?.copy(textColor = color)
+    }
 
     fun updateFeelingEmoji(emojiRes: Int) {
         createNoteEntity = createNoteEntity?.copy(feelingEmojiRes = emojiRes)
@@ -80,9 +83,7 @@ class CreateNotesViewModel @Inject constructor(
         createNoteEntity = createNoteEntity?.copy(backgroundRes = bgRes)
     }
 
-    fun updateTextColor(color: String) {
-        createNoteEntity = createNoteEntity?.copy(textColor = color)
-    }
+
 
     fun updateTextSizeH1(size: Float) {
         createNoteEntity = createNoteEntity?.copy(textSizeH1 = size)

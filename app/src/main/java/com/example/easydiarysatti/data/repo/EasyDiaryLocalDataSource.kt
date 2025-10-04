@@ -21,5 +21,6 @@ interface EasyDiaryLocalDataSource {
     suspend fun updateTextAlignment(noteId: Long, alignment: String)
     suspend fun updateText(noteId: Long, text: String)
 
+    fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
 
 }

@@ -16,10 +16,34 @@ import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.example.easydiarysatti.R
 import com.google.android.material.textview.MaterialTextView
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @BindingAdapter("android:text")
 fun setText(view: MaterialTextView, text: CharSequence?) {
     view.text = text
+}
+
+@BindingAdapter("formattedTime")
+fun MaterialTextView.setFormattedTime(timestamp: Long?) {
+    timestamp?.let {
+        val date = Date(it)
+        val sdf = SimpleDateFormat("h:mm a", Locale.getDefault())
+        text = sdf.format(date)
+    } ?: run {
+        text = "--:--"
+    }
+}
+
+@BindingAdapter("showIfHasImages")
+fun AppCompatImageView.showIfHasImages(images: List<Any>?) {
+    visibility = if (!images.isNullOrEmpty()) View.VISIBLE else View.GONE
+}
+
+@BindingAdapter("firstTagText")
+fun MaterialTextView.setFirstTagText(tags: List<String>?) {
+    text = tags?.firstOrNull() ?: "Personal"
 }
 
 @BindingAdapter("android:visibility")

@@ -7,5 +7,5 @@ interface CreateNoteRepository {
     suspend fun mergeAndSave(note: CreateNoteEntity)
     suspend fun getNoteById(id: Long): CreateNoteEntity?
     fun observeNoteById(id: Long): kotlinx.coroutines.flow.Flow<CreateNoteEntity?>
-
+    fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
 }

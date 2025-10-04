@@ -42,6 +42,7 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
@@ -382,7 +383,7 @@ fun FlexboxLayout.addTags(
 
         val hashIcon = ImageView(this.context).apply {
             setImageResource(R.drawable.ic_hash_small)
-            imageTintList= ContextCompat.getColorStateList(context, R.color.tag_txt_color)
+            imageTintList = ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setPadding(8, 8, 4, 8)
         }
 
@@ -391,7 +392,7 @@ fun FlexboxLayout.addTags(
             setPadding(0, 8, 8, 8)
             setTextColor(ContextCompat.getColor(context, R.color.tag_txt_color))
             textSize = 14f
-          //  typeface = ResourcesCompat.getFont(context, R.font.outfit_medium)
+            //  typeface = ResourcesCompat.getFont(context, R.font.outfit_medium)
             setOnClickListener {
                 onTagClick?.invoke(tag)
             }
@@ -421,5 +422,12 @@ fun FlexboxLayout.addTags(
         tagContainer.addView(closeIcon)
 
         this.addView(tagContainer)
+    }
+}
+
+fun FragmentHomeBinding?.visible(hasNotes: Boolean) {
+    this?.apply {
+        rvNotes.visibility = if (hasNotes) View.VISIBLE else View.GONE
+        noNotesLayout.visibility = if (hasNotes) View.GONE else View.VISIBLE
     }
 }

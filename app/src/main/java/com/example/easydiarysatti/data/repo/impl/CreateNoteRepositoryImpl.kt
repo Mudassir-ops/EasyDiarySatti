@@ -47,4 +47,8 @@ class CreateNoteRepositoryImpl(
         return localDataSource.observeNoteById(id)
     }
 
+    override fun observeAllNotes(): Flow<List<CreateNoteEntity>?> {
+        return localDataSource.observeAllNotes()
+    }
+
 }

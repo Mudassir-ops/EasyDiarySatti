@@ -64,4 +64,7 @@ interface CreateNoteDao {
     @Query("UPDATE create_note_entity_table SET images = :images WHERE noteId = :noteId")
     suspend fun updateImages(noteId: Long, images: List<String>)
 
+    @Query("SELECT * FROM create_note_entity_table")
+    fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
+
 }

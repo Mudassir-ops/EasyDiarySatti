@@ -3,6 +3,8 @@ package com.example.easydiarysatti.data.repo.impl
 import com.example.easydiarysatti.data.local.CreateNoteDao
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 
 class EasyDiaryLocalDataSourceImpl(
     private val dao: CreateNoteDao
@@ -61,5 +63,9 @@ class EasyDiaryLocalDataSourceImpl(
         dao.updateTextAlignment(noteId, alignment)
 
     override suspend fun updateText(noteId: Long, text: String) = dao.updateText(noteId, text)
+
+    override fun observeAllNotes(): Flow<List<CreateNoteEntity>?> {
+        return dao.observeAllNotes().distinctUntilChanged()
+    }
 
 }

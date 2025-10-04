@@ -91,7 +91,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
                         }
 
-                        CreateNotesState.BackAction ->findNavController().navigateUp()
+                        CreateNotesState.BackAction -> findNavController().navigateUp()
                     }
                 }
         }

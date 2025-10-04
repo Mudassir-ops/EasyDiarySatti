@@ -120,6 +120,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     "setClickListeners",
                     "setClickListeners: ${innerNavController?.currentDestination?.label}",
                 )
+                createNotesViewModel.setCurrentNoteId(noteId = -1)
                 innerNavController?.safeNav(
                     currentDestId = R.id.homeFragment,
                     actionId = R.id.action_homeFragment_to_createNotesFragment

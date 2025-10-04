@@ -25,7 +25,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val viewModel by viewModels<HomeViewModel>()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val notesItemAdapter: NotesItemAdapter by lazy {
-        NotesItemAdapter(onNoteItemClick = { note -> })
+        NotesItemAdapter(onNoteItemClick = { note ->
+            createNotesViewModel.setCurrentNoteId(noteId = note.noteId)
+            moveToNextScreen()
+        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -42,10 +45,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun moveToNextScreen() {
-//        findNavController().safeNav(
-//            currentDestId = R.id.navigation_home,
-//            actionId = R.id.action_navigation_home_to_navigation_createNote
-//        )
+        findNavController().safeNav(
+            currentDestId = R.id.homeFragment,
+            actionId = R.id.action_homeFragment_to_createNotesFragment
+        )
     }
 
     private fun setupRecyclerView() {

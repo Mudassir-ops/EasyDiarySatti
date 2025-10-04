@@ -273,36 +273,40 @@ fun AppCompatImageView.loadImage(
 }
 
 
-
-
 fun AppCompatImageView.loadAdaptiveImage(
     imagePath: String?,
     placeholder: Int = R.drawable.image_placeholder,
 ) {
     Glide.with(this.context)
-        .asBitmap()
-        .load(imagePath ?: placeholder)
-        .placeholder(placeholder)
-        .error(placeholder)
-        .into(object : CustomTarget<Bitmap>() {
-            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                val targetWidth = width
-                val targetHeight = height
+        .load(imagePath)
+        .thumbnail(0.1f)
+        .centerCrop()
+        .into(this)
 
-                if (targetWidth <= 0 || targetHeight <= 0) {
-                    // View not measured yet; reload later
-                    post { loadAdaptiveImage(imagePath, placeholder) }
-                    return
-                }
-
-                val resizedBitmap = resizeToFitView(resource, targetWidth, targetHeight)
-                setImageBitmap(resizedBitmap)
-            }
-
-            override fun onLoadCleared(placeholder: Drawable?) {
-                setImageDrawable(placeholder)
-            }
-        })
+//    Glide.with(this.context)
+//        .asBitmap()
+//        .load(imagePath ?: placeholder)
+//        .placeholder(placeholder)
+//        .error(placeholder)
+//        .into(object : CustomTarget<Bitmap>() {
+//            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+//                val targetWidth = width
+//                val targetHeight = height
+//
+//                if (targetWidth <= 0 || targetHeight <= 0) {
+//                    // View not measured yet; reload later
+//                    post { loadAdaptiveImage(imagePath, placeholder) }
+//                    return
+//                }
+//
+//                val resizedBitmap = resizeToFitView(resource, targetWidth, targetHeight)
+//                setImageBitmap(resizedBitmap)
+//            }
+//
+//            override fun onLoadCleared(placeholder: Drawable?) {
+//                setImageDrawable(placeholder)
+//            }
+//        })
 }
 
 /**
@@ -365,6 +369,24 @@ fun Fragment.setKeyboardVisibilityListener(onVisibilityChanged: (Boolean) -> Uni
         val screenHeight = contentView.rootView.height
         val keypadHeight = screenHeight - r.bottom
         onVisibilityChanged(keypadHeight > screenHeight * 0.15)
+    }
+    contentView.viewTreeObserver.addOnGlobalLayoutListener(listener)
+    viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
+        override fun onDestroy(owner: LifecycleOwner) {
+            contentView.viewTreeObserver.removeOnGlobalLayoutListener(listener)
+        }
+    })
+}
+
+fun Fragment.setKeyboardVisibilityListenerCreateNote(onVisibilityChanged: (Boolean) -> Unit) {
+    val activity = activity ?: return
+    val contentView = activity.findViewById<View>(android.R.id.content)
+    val listener = ViewTreeObserver.OnGlobalLayoutListener {
+        val r = Rect()
+        contentView.getWindowVisibleDisplayFrame(r)
+        val screenHeight = contentView.rootView.height
+        val keypadHeight = screenHeight - r.bottom
+        onVisibilityChanged(keypadHeight > screenHeight * 0.5)
     }
     contentView.viewTreeObserver.addOnGlobalLayoutListener(listener)
     viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {

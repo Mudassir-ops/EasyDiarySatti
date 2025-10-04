@@ -6,6 +6,7 @@ import android.view.View
 import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
@@ -13,6 +14,9 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
+import com.example.easydiarysatti.enableResize
+import com.example.easydiarysatti.setKeyboardVisibilityListener
+import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
 import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
@@ -47,6 +51,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         observeNote()
         observeNoteAction()
         clickListeners()
+        adjustScreenKeyboard()
         setupImagesRecyclerview()
         viewModel.observeNote()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
@@ -93,11 +98,20 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { note ->
                 note?.let {
+                    createNoteEntity = it
+                    viewModel.addImages(imagePath = createNoteEntity?.images ?: listOf())
                     binding?.apply {
-                        etHeader.setText(it.title)
-                        etDescription.setText(it.description)
+                        etHeader.setText(createNoteEntity?.title)
+                        etDescription.setText(createNoteEntity?.description)
+                        imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
                     }
                 } ?: run {
+                    createNoteEntity = null
+                    binding?.apply {
+                        etHeader.setText(createNoteEntity?.title)
+                        etDescription.setText(createNoteEntity?.description)
+                        imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
+                    }
                     Log.e("observeNote", "observeNote:Null Note ")
                 }
             }
@@ -149,4 +163,23 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
+    private fun adjustScreenKeyboard() {
+        setKeyboardVisibilityListenerCreateNote { isVisible ->
+            viewLifecycleOwner.lifecycleScope.launch {
+                if (isVisible) {
+                    enableResize(true)
+                    binding?.nestedScrollView?.post {
+                        if (view != null && viewLifecycleOwner.lifecycle.currentState.isAtLeast(
+                                Lifecycle.State.STARTED
+                            )
+                        ) {
+                            binding?.nestedScrollView?.fullScroll(View.FOCUS_DOWN)
+                        }
+                    }
+                } else {
+                    enableResize(false)
+                }
+            }
+        }
+    }
 }

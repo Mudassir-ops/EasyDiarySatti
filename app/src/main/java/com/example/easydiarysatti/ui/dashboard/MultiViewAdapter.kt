@@ -76,6 +76,7 @@ class MultiViewAdapter(
                 .thumbnail(0.1f)
                 .centerCrop()
                 .into(binding.imageView)
+
             binding.tvTitle.text = item.noteTitle
             binding.imageView.setOnClickListener {
                 onImageClick(item.imagePaths, item.date)

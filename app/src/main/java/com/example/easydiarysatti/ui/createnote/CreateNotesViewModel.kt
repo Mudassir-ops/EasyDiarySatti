@@ -32,8 +32,6 @@ class CreateNotesViewModel @Inject constructor(
     private val _createdNoteId = MutableStateFlow<Long?>(null)
     val createdNoteId: StateFlow<Long?> = _createdNoteId
 
-    private var createNoteEntity: CreateNoteEntity? = CreateNoteEntity()
-
     private var imagesList: MutableList<String>? = mutableListOf()
 
     fun sendAction(action: CreateNotesState) {
@@ -42,7 +40,6 @@ class CreateNotesViewModel @Inject constructor(
             _notesActionState.send(action)
         }
     }
-
 
     fun mergeAndSave(createNoteEntity: CreateNoteEntity) {
         viewModelScope.launch {
@@ -57,74 +54,19 @@ class CreateNotesViewModel @Inject constructor(
                 createNoteRepository.observeNoteById(id).distinctUntilChanged().collect { note ->
                     Log.e("observeNote", "observeNote:$note ")
                     _noteState.value = note
-                    createNoteEntity = note
                 }
             }
         }
     }
 
-    fun updateTitle(title: String) {
-        createNoteEntity = createNoteEntity?.copy(title = title)
+    fun setCurrentNoteId(noteId: Long) {
+        viewModelScope.launch {
+            _createdNoteId.emit(noteId)
+        }
     }
 
-    fun updateDescription(description: String) {
-        createNoteEntity = createNoteEntity?.copy(description = description)
-    }
-
-    fun updateFeelingTitle(feelingTitle: String) {
-        createNoteEntity = createNoteEntity?.copy(feelingTitle = feelingTitle)
-    }
-
-    fun updateTextColor(color: String) {
-        createNoteEntity = createNoteEntity?.copy(textColor = color)
-    }
-
-    fun updateFeelingEmoji(emojiRes: Int) {
-        createNoteEntity = createNoteEntity?.copy(feelingEmojiRes = emojiRes)
-    }
-
-    fun updateBackground(bgRes: Int) {
-        createNoteEntity = createNoteEntity?.copy(backgroundRes = bgRes)
-    }
-
-
-    fun updateTextSizeH1(size: Float) {
-        createNoteEntity = createNoteEntity?.copy(textSizeH1 = size)
-    }
-
-    fun updateTextSizeH2(size: Float) {
-        createNoteEntity = createNoteEntity?.copy(textSizeH2 = size)
-    }
-
-    fun updateTextSizeH3(size: Float) {
-        createNoteEntity = createNoteEntity?.copy(textSizeH3 = size)
-    }
-
-    fun updateFont(font: String) {
-        createNoteEntity = createNoteEntity?.copy(textFont = font)
-    }
-
-    fun updateAlignment(alignment: String) {
-        createNoteEntity = createNoteEntity?.copy(textAlignment = alignment)
-    }
-
-    fun updateText(text: String) {
-        createNoteEntity = createNoteEntity?.copy(text = text)
-    }
-
-    fun updateCreationTime(time: Long) {
-        createNoteEntity = createNoteEntity?.copy(creationTime = time)
-    }
-
-    // --- LIST UPDATES ---
-    fun addTag(tag: String) {
-        val updatedTags = (createNoteEntity?.tags ?: emptyList()) + tag
-        createNoteEntity = createNoteEntity?.copy(tags = updatedTags.distinct())
-    }
-
-    fun removeTag(tag: String) {
-        val updatedTags = (createNoteEntity?.tags ?: emptyList()) - tag
-        createNoteEntity = createNoteEntity?.copy(tags = updatedTags)
+    fun addImages(imagePath: List<String>) {
+        imagesList?.addAll(imagePath)
     }
 
     fun addImage(imagePath: String): List<String> {
@@ -132,21 +74,6 @@ class CreateNotesViewModel @Inject constructor(
         return imagesList?.toList() ?: listOf()
     }
 
-    fun removeImage(imagePath: String) {
-        val updatedImages = (createNoteEntity?.images ?: emptyList()) - imagePath
-        createNoteEntity = createNoteEntity?.copy(images = updatedImages)
-    }
-
-    suspend fun getOldImages() {
-
-
-    }
-
-    // --- CLEAR ON DESTROY ---
-    override fun onCleared() {
-        super.onCleared()
-        createNoteEntity = null
-    }
 
 }
 

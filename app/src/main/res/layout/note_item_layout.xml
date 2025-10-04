@@ -78,6 +78,26 @@
             app:layout_constraintStart_toStartOf="@+id/tv_note_description"
             app:layout_constraintTop_toBottomOf="@+id/tv_note_description" />
 
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_feeling"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:background="@drawable/bg_note_item"
+            android:drawablePadding="@dimen/_5sdp"
+            android:fontFamily="@font/outfit_medium"
+            android:gravity="center"
+            android:paddingVertical="@dimen/_6sdp"
+            android:paddingStart="@dimen/_10sdp"
+            android:paddingEnd="@dimen/_15sdp"
+            android:text="Calm"
+            android:textColor="@color/tag_txt_color"
+            android:textSize="@dimen/_11ssp"
+            app:drawableStartCompat="@drawable/ic_person_svg"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_tag"
+            app:layout_constraintStart_toEndOf="@+id/tv_tag"
+            app:layout_constraintTop_toTopOf="@+id/tv_tag" />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_gallery"
             android:layout_width="@dimen/_15sdp"

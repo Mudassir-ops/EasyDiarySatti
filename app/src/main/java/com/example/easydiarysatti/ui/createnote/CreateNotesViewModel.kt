@@ -40,12 +40,6 @@ class CreateNotesViewModel @Inject constructor(
         }
     }
 
-    fun startNewNote() {
-        viewModelScope.launch {
-            val noteId = createNoteRepository.createEmptyNote()
-            _createdNoteId.value = noteId
-        }
-    }
 
     fun mergeAndSave(createNoteEntity: CreateNoteEntity) {
         viewModelScope.launch {

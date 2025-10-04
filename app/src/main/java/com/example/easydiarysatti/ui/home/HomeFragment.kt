@@ -36,7 +36,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun clickListener() {
         binding?.apply {
-            createNotesViewModel.startNewNote()
             icAddNotes.setOnClickListener { moveToNextScreen() }
         }
     }

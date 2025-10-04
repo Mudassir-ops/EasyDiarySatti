@@ -2,7 +2,6 @@ package com.example.easydiarysatti.utills
 
 import android.content.Context
 import android.util.AttributeSet
-import com.example.easydiarysatti.R
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 

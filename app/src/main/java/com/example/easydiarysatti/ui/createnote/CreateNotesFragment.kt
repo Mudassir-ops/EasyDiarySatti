@@ -12,6 +12,7 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
+import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
@@ -49,10 +50,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     @OptIn(FlowPreview::class)
     fun clickListeners() {
         binding?.apply {
-
+            ivEmoji.setOnClickListener {
+                showEditFeelingsDialog(selectedEmotion = { selectedEmojiRes ->
+                    ivEmoji.setImageResource(selectedEmojiRes)
+                })
+            }
         }
     }
-
 
     fun observeNote() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -77,7 +81,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         CreateNotesState.SaveNote -> {
                             createNoteEntity = CreateNoteEntity(
                                 title = binding?.etHeader?.text?.toString().orEmpty(),
-                                description = binding?.etHeader?.text?.toString().orEmpty(),
+                                description = binding?.etDescription?.text?.toString().orEmpty(),
                             )
                             createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) }
                             findNavController().navigateUp()

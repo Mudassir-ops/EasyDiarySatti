@@ -1,6 +1,5 @@
 package com.example.easydiarysatti.ui.createnote
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -27,7 +26,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        createNoteEntity = CreateNoteEntity()
+        createNoteEntity = CreateNoteEntity(
+            feelingEmojiRes = R.drawable.emooji_excited,
+            textColor = "#FF9800",
+            feelingTitle = "Excited"
+        )
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -53,11 +56,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     fun clickListeners() {
         binding?.apply {
             ivEmoji.setOnClickListener {
-                showEditFeelingsDialog(selectedEmotion = { selectedEmojiRes, selectedEmojiColor ->
-                    ivEmoji.setImageResource(selectedEmojiRes)
-                    createNoteEntity?.copy(
-                        feelingEmojiRes = selectedEmojiRes,
-                        textColor = selectedEmojiColor
+                showEditFeelingsDialog(selectedEmotion = { emojiInfo ->
+                    ivEmoji.setImageResource(emojiInfo.drawableRes)
+                    createNoteEntity = createNoteEntity?.copy(
+                        feelingEmojiRes = emojiInfo.drawableRes,
+                        textColor = emojiInfo.colorHex,
+                        feelingTitle = emojiInfo.name
                     )
                 })
             }
@@ -103,7 +107,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     }
 
     private fun saveNote() {
-        createNoteEntity?.copy(
+        createNoteEntity = createNoteEntity?.copy(
             title = binding?.etHeader?.text?.toString().orEmpty(),
             description = binding?.etDescription?.text?.toString().orEmpty()
         )

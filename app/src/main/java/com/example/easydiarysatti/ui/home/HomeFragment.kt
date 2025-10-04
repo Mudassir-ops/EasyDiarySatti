@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
+import com.example.easydiarysatti.monthlyFormatDate
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
@@ -32,6 +33,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         clickListener()
         setupRecyclerView()
         observeAllNotes()
+        setupTodayDate()
     }
 
     private fun clickListener() {
@@ -72,6 +74,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                         else -> Unit
                     }
                 }
+        }
+    }
+
+    private fun setupTodayDate() {
+        binding?.tvDate?.apply {
+            val currentTimestamp = System.currentTimeMillis()
+            val formattedDate = context?.monthlyFormatDate(currentTimestamp)
+            text = formattedDate
         }
     }
 

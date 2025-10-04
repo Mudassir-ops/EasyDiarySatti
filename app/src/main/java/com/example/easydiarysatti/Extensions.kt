@@ -47,7 +47,10 @@ import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
+import java.util.Locale
 
 
 fun NavController.safeNav(
@@ -117,6 +120,11 @@ fun View.setCustomRipple(
 
     // 3) Set click
     setOnClickListener { onClick() }
+}
+
+fun Context?.monthlyFormatDate(timestamp: Long): String {
+    val sdf = SimpleDateFormat("d MMMM, yyyy", Locale.getDefault())
+    return sdf.format(Date(timestamp))
 }
 
 fun Activity?.showExitDialog() {

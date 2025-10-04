@@ -7,9 +7,10 @@ import android.view.WindowManager
 import androidx.fragment.app.Fragment
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.EditFeelingsDialogBinding
+import com.example.easydiarysatti.domain.model.EmojiInfo
 
 inline fun Fragment.showEditFeelingsDialog(
-    crossinline selectedEmotion: (Int, String) -> Unit
+    crossinline selectedEmotion: (EmojiInfo) -> Unit
 ) {
     val binding = EditFeelingsDialogBinding.inflate(LayoutInflater.from(context ?: return))
     val imageDialog = Dialog(context ?: return)
@@ -35,18 +36,17 @@ inline fun Fragment.showEditFeelingsDialog(
     binding.apply {
         // Each emoji has a drawable + a predefined color (as hex string)
         val emojiMap = mapOf(
-            ivEmojiHappy to (R.drawable.emoji_happy to "#42ABD0"),
-            ivEmojiCalm to (R.drawable.emooji_calm to "#5EE3A9"),
-            ivEmojiSad to (R.drawable.emoji_sad to "#FFDE8B"),
-            ivEmojiExcited to (R.drawable.emooji_excited to "#FF9800"),
-            ivEmojiAngry to (R.drawable.emooji_angry to "#FFAC81"),
-            ivEmojiPlayful to (R.drawable.emooji_playful to "#A29DFB")
+            ivEmojiHappy to EmojiInfo(R.drawable.emoji_happy, "#42ABD0", "Happy"),
+            ivEmojiCalm to EmojiInfo(R.drawable.emooji_calm, "#5EE3A9", "Calm"),
+            ivEmojiSad to EmojiInfo(R.drawable.emoji_sad, "#FFDE8B", "Sad"),
+            ivEmojiExcited to EmojiInfo(R.drawable.emooji_excited, "#FF9800", "Excited"),
+            ivEmojiAngry to EmojiInfo(R.drawable.emooji_angry, "#FFAC81", "Angry"),
+            ivEmojiPlayful to EmojiInfo(R.drawable.emooji_playful, "#A29DFB", "Playful")
         )
 
         emojiMap.forEach { (view, pair) ->
-            val (resId, colorHex) = pair
             view.setOnClickListener {
-                selectedEmotion(resId, colorHex)
+                selectedEmotion(pair)
                 imageDialog.dismiss()
             }
         }

@@ -65,10 +65,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             innerNavController?.addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
                     R.id.createNotesFragment -> {
-                        Log.e(
-                            "setClickListeners",
-                            "setClickListeners79: ${innerNavController?.currentDestination?.label}",
-                        )
                         createNoteBottomBar.visibility = View.VISIBLE
                         bottomNav.visibility = View.INVISIBLE
                         binding?.icAddNotes?.visibility = View.GONE
@@ -79,6 +75,13 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         createNoteBottomBar.visibility = View.GONE
                         binding?.icAddNotes?.visibility = View.VISIBLE
                         bottomNav.visibility = View.VISIBLE
+                        setTagsHeader()
+                    }
+
+                    R.id.addTagsFragment2 -> {
+                        createNoteBottomBar.visibility = View.GONE
+                        binding?.icAddNotes?.visibility = View.GONE
+                        bottomNav.visibility = View.GONE
                         destination.label?.toString()?.setDefaultNavHeader()
                     }
 
@@ -90,7 +93,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     }
                 }
             }
-
             bottomNavCreateNote.addOnButtonCheckedListener { group, checkedId, isChecked ->
                 if (isChecked) {
                     when (checkedId) {
@@ -139,6 +141,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         binding?.apply {
             ivMenu.setImageResource(R.drawable.back_icon)
             headerTitle.text = ContextCompat.getString(context ?: return, R.string.add_note)
+            ivRemainder.visibility = View.GONE
+            headerSave.visibility = View.VISIBLE
+        }
+    }
+
+    private fun setTagsHeader() {
+        binding?.apply {
+            ivMenu.setImageResource(R.drawable.back_icon)
+            headerTitle.text = ContextCompat.getString(context ?: return, R.string.tags)
             ivRemainder.visibility = View.GONE
             headerSave.visibility = View.VISIBLE
         }

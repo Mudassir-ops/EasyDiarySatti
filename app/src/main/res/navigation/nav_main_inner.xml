@@ -17,7 +17,7 @@
     <fragment
         android:id="@+id/addTagsFragment2"
         android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
-        android:label="fragment_add_tags"
+        android:label="@string/tags"
         tools:layout="@layout/fragment_add_tags" />
     <fragment
         android:id="@+id/libraryFragment"
@@ -33,7 +33,7 @@
         android:id="@+id/homeFragment"
         android:name="com.example.easydiarysatti.ui.home.HomeFragment"
         android:label="fragment_home"
-        tools:layout="@layout/fragment_home" >
+        tools:layout="@layout/fragment_home">
         <action
             android:id="@+id/action_homeFragment_to_createNotesFragment"
             app:destination="@id/createNotesFragment" />

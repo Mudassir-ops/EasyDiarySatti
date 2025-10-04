@@ -56,5 +56,6 @@
     <string name="how_you_feeling_today">How You Feeling Today?</string>
     <string name="personal"># Personal</string>
     <string name="no_data_in_library">No Data Found In Library</string>
+    <string name="tags">Tags</string>
 
 </resources>

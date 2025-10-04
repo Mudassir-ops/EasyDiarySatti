@@ -36,7 +36,7 @@ fun setText(view: MaterialTextView, text: CharSequence?) {
 fun MaterialTextView.setCapitalizedText(text: String?) {
     this.text = text?.replaceFirstChar {
         if (it.isLowerCase()) it.titlecase() else it.toString()
-    } ?: ""
+    } ?: "No title"
 }
 
 

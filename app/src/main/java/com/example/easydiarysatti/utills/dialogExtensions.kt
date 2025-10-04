@@ -53,7 +53,7 @@ inline fun Fragment.showEditFeelingsDialog(
                 drawableRes = R.drawable.emoji_sad,
                 colorHex = "#FFDE8B",
                 name = "Sad",
-                tagColor = "#DB2256"
+                tagColor = "#848D9B"
             ),
             ivEmojiExcited to EmojiInfo(
                 drawableRes = R.drawable.emooji_excited,
@@ -65,7 +65,7 @@ inline fun Fragment.showEditFeelingsDialog(
                 drawableRes = R.drawable.emooji_angry,
                 colorHex = "#FFAC81",
                 name = "Angry",
-                tagColor = "#CD0C4E"
+                tagColor = "#475569"
             ),
             ivEmojiPlayful to EmojiInfo(
                 drawableRes = R.drawable.emooji_playful,

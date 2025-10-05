@@ -77,7 +77,7 @@ interface CreateNoteDao {
     fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
 
 
-    @Query("SELECT * FROM create_note_entity_table WHERE creationTime BETWEEN :startOfDay AND :endOfDay")
+    @Query("SELECT * FROM create_note_entity_table WHERE creationTime BETWEEN :startOfDay AND :endOfDay ORDER BY creationTime DESC")
     fun observeNotesForDay(
         startOfDay: Long,
         endOfDay: Long

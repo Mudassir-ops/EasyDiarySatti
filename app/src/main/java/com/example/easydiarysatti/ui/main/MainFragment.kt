@@ -6,6 +6,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.easydiarysatti.R
@@ -19,6 +20,8 @@ import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -67,28 +70,28 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     R.id.createNotesFragment -> {
                         createNoteBottomBar.visibility = View.VISIBLE
                         bottomNav.visibility = View.INVISIBLE
-                        binding?.icAddNotes?.visibility = View.GONE
+                        binding?.icAddNotes?.visibility = View.INVISIBLE
                         setNoteHeader()
                     }
 
                     R.id.homeFragment -> {
-                        createNoteBottomBar.visibility = View.GONE
+                        createNoteBottomBar.visibility = View.INVISIBLE
                         binding?.icAddNotes?.visibility = View.VISIBLE
                         bottomNav.visibility = View.VISIBLE
                         destination.label?.toString()?.setDefaultNavHeader()
                     }
 
                     R.id.addTagsFragment2 -> {
-                        createNoteBottomBar.visibility = View.GONE
-                        binding?.icAddNotes?.visibility = View.GONE
-                        bottomNav.visibility = View.GONE
+                        createNoteBottomBar.visibility = View.INVISIBLE
+                        binding?.icAddNotes?.visibility = View.INVISIBLE
+                        bottomNav.visibility = View.INVISIBLE
                         setTagsHeader()
 
                     }
 
                     else -> {
-                        createNoteBottomBar.visibility = View.GONE
-                        binding?.icAddNotes?.visibility = View.GONE
+                        createNoteBottomBar.visibility = View.INVISIBLE
+                        binding?.icAddNotes?.visibility = View.INVISIBLE
                         bottomNav.visibility = View.VISIBLE
                         destination.label?.toString()?.setDefaultNavHeader()
                     }
@@ -105,6 +108,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
                         R.id.btn_media -> imagePicker.showPickerDialog()
                         R.id.btn_text -> Unit
+                    }
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        delay(200)
+                        group.clearChecked()
                     }
                 }
             }

@@ -11,12 +11,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.example.easydiarysatti.DrawablePosition
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentCalenderBinding
 import com.example.easydiarysatti.dpToPx
 import com.example.easydiarysatti.setRoundedBgColors
 import com.example.easydiarysatti.setVectorDrawable
+import com.example.easydiarysatti.ui.model.DayViewContainer
+import com.example.easydiarysatti.ui.model.MonthViewContainer
 import com.example.easydiarysatti.viewBinding
 import com.google.android.material.textview.MaterialTextView
 import com.kizitonwose.calendar.core.CalendarDay
@@ -26,6 +29,8 @@ import com.kizitonwose.calendar.view.MonthDayBinder
 import com.kizitonwose.calendar.view.MonthHeaderFooterBinder
 import com.kizitonwose.calendar.view.ViewContainer
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -40,7 +45,8 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding?.parentLayout?.post {
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(100) // 100ms delay lets the UI render smoothly
             setupCalender()
         }
 
@@ -139,11 +145,3 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
 }
 
 
-class MonthViewContainer(view: View) : ViewContainer(view) {
-    val legendLayout: LinearLayout = view.findViewById(R.id.legendLayout)
-}
-
-class DayViewContainer(view: View) : ViewContainer(view) {
-    val textView: MaterialTextView? = view.findViewById(R.id.calendarDayText)
-    val imageView: AppCompatImageView? = view.findViewById(R.id.calendarDayIcon)
-}

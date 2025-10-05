@@ -120,7 +120,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         tags = listOf(),
                         images = listOf(),
 
-                    )
+                        )
                     listOf("Personal").setupFlexBox()
                     binding?.apply {
                         etHeader.setText(createNoteEntity?.title)

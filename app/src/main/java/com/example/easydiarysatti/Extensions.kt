@@ -9,6 +9,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Bitmap
+import android.graphics.Color
+import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -37,18 +39,17 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
-import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textview.MaterialTextView
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -57,6 +58,7 @@ import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -592,4 +594,32 @@ fun getDayRangeMillis(localDate: LocalDate): Pair<Long, Long> {
     val startOfDay = localDate.atStartOfDay(zoneId).toInstant().toEpochMilli()
     val endOfDay = localDate.plusDays(1).atStartOfDay(zoneId).toInstant().toEpochMilli() - 1
     return startOfDay to endOfDay
+}
+
+fun dateFormatter(): DateTimeFormatter =
+    DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.getDefault())
+
+fun lightenColor(color: Int, factor: Float): Int {
+    val r = ((Color.red(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
+    val g = ((Color.green(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
+    val b = ((Color.blue(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
+    return Color.rgb(r, g, b)
+}
+
+fun AppCompatImageView.setCustomDayEmojiBackground(
+    fillColor: String?,
+    strokeColor: String?
+) {
+    val drawable = ContextCompat.getDrawable(context, R.drawable.bg_note_item)?.mutate()
+    if (drawable is GradientDrawable) {
+        fillColor?.let {
+            drawable.setColor(lightenColor(it.toColorInt(), 0.65f))
+        }
+        strokeColor?.let {
+            val strokeWidth = context.resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._1sdp)
+            drawable.setStroke(strokeWidth, it.toColorInt())
+        }
+    }
+    setColorFilter(ContextCompat.getColor(context, R.color.tag_txt_color), PorterDuff.Mode.SRC_IN)
+    background = drawable
 }

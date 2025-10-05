@@ -11,7 +11,8 @@
         android:layout_height="40dp"
         android:gravity="center"
         android:text="1"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:visibility="gone" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/calendarDayIcon"
@@ -20,10 +21,10 @@
         android:layout_gravity="center"
         android:background="@drawable/bg_rounded_day"
         android:gravity="center"
-        android:padding="@dimen/_2sdp"
+        android:padding="@dimen/_8sdp"
         android:scaleType="centerInside"
         android:src="@drawable/upset"
-        android:visibility="gone"
+        android:visibility="visible"
         app:tint="@color/black" />
 
 </FrameLayout>

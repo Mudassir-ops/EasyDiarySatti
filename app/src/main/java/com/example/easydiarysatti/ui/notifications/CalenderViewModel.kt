@@ -1,19 +1,20 @@
 package com.example.easydiarysatti.ui.notifications
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
-import com.example.easydiarysatti.ui.home.HomeNotesState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import java.time.Instant
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.ZoneId
 import javax.inject.Inject
 
 @HiltViewModel
@@ -21,39 +22,45 @@ class CalenderViewModel @Inject constructor(
     private val repository: CreateNoteRepository
 ) : ViewModel() {
 
-    private val _allCalenderNotesState = MutableStateFlow<HomeNotesState>(HomeNotesState.Loading)
-    val allCalenderNotesState: StateFlow<HomeNotesState> = _allCalenderNotesState
-    private var observeJob: Job? = null
+    private val _uiState = MutableStateFlow(CalenderUiState(isLoading = true))
+    val uiState: StateFlow<CalenderUiState> = _uiState
 
-    fun observeAllCalenderNotes(
-        startOfDay: Long,
-        endOfDay: Long
-    ) {
-        Log.e("currentDay", "setupCalender: $startOfDay--$endOfDay")
-        observeJob?.cancel()
-        _allCalenderNotesState.value = HomeNotesState.Loading
-        observeJob = repository.observeNotesForDay(startOfDay = startOfDay, endOfDay = endOfDay)
-            .onStart {
-                _allCalenderNotesState.value = HomeNotesState.Loading
+    fun loadMonth(month: YearMonth) {
+        val startOfMonth =
+            month.atDay(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val endOfMonth =
+            month.atEndOfMonth().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        repository.observeNotesForDay(startOfMonth, endOfMonth)
+            .onStart { _uiState.value = _uiState.value.copy(isLoading = true) }
+            .map { notes ->
+                notes?.groupBy {
+                    Instant.ofEpochMilli(it.creationTime).atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                } ?: emptyMap()
             }
-            .catch { e ->
-                _allCalenderNotesState.value = HomeNotesState.Error(e.message ?: "Unknown error")
-            }
-            .onEach { notes ->
-                if (notes?.isEmpty() == true) {
-                    _allCalenderNotesState.value =
-                        HomeNotesState.Error("No notes found")
-                } else {
-                    notes?.let { _allCalenderNotesState.value = HomeNotesState.Success(it) }
-                }
+            .onEach { grouped ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    notesByDate = grouped
+                )
             }
             .launchIn(viewModelScope)
     }
 
+    fun selectDay(date: LocalDate) {
+        _uiState.value = _uiState.value.copy(selectedDay = date)
+    }
+
+    fun currentDayNotes() {
+        val today = LocalDate.now()
+        selectDay(today)
+    }
+
 }
 
-sealed interface CalenderNotesState {
-    object Loading : CalenderNotesState
-    data class Success(val notes: List<CreateNoteEntity>) : CalenderNotesState
-    data class Error(val message: String) : CalenderNotesState
-}
+
+data class CalenderUiState(
+    val isLoading: Boolean = false,
+    val notesByDate: Map<LocalDate, List<CreateNoteEntity>> = emptyMap(),
+    val selectedDay: LocalDate? = null
+)

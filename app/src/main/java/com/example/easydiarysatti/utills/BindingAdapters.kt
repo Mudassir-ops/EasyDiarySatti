@@ -25,6 +25,7 @@ import java.util.Date
 import java.util.Locale
 import androidx.core.graphics.toColorInt
 import com.canhub.cropper.CropImageView
+import com.example.easydiarysatti.lightenColor
 import java.io.File
 
 @BindingAdapter("android:text")
@@ -153,13 +154,6 @@ fun MaterialTextView.setNoteItemBackground(fillColor: String?, strokeColor: Stri
     background = drawable
 }
 
-
-private fun lightenColor(color: Int, factor: Float): Int {
-    val r = ((Color.red(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
-    val g = ((Color.green(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
-    val b = ((Color.blue(color) * (1 - factor) / 255 + factor) * 255).toInt().coerceIn(0, 255)
-    return Color.rgb(r, g, b)
-}
 
 @BindingAdapter("imageRs")
 fun loadImage(view: AppCompatImageView, image: Int?) {

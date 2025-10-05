@@ -14,8 +14,9 @@ import java.time.DayOfWeek
 
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentCalenderBinding
+import com.example.easydiarysatti.dateFormatter
 import com.example.easydiarysatti.getShortDisplayNameCompat
-import com.example.easydiarysatti.ui.home.HomeNotesState
+import com.example.easydiarysatti.setCustomDayEmojiBackground
 import com.example.easydiarysatti.ui.model.DayViewContainer
 import com.example.easydiarysatti.ui.model.MonthViewContainer
 import com.example.easydiarysatti.utills.ShimmerAdapter
@@ -30,8 +31,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -46,104 +45,19 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         })
     }
 
+    private val formatter by lazy { dateFormatter() }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
-            shimmerAdapter = ShimmerCalenderAdapter(30)
-            binding?.rvCalendarShimmer?.adapter = shimmerAdapter
-            binding?.shimmerLayout?.startShimmer()
-            delay(100)
-            setupCalender()
-            currentDayNotes()
-            observeAllNotes()
-            binding?.apply {
-                binding?.shimmerLayout?.visibility = View.GONE
-                binding?.calendarView?.apply {
-                    alpha = 0f
-                    visibility = View.VISIBLE
-                    animate().alpha(1f).setDuration(200).start()
-                }
-            }
-
+            initialCalenderPageSetup()
         }
     }
 
     private fun setupCalender() {
-        binding?.calendarView?.apply {
-            monthHeaderBinder = object : MonthHeaderFooterBinder<MonthViewContainer> {
-                override fun create(view: View) = MonthViewContainer(view)
-                override fun bind(container: MonthViewContainer, data: CalendarMonth) {
-                    if (container.legendLayout.tag == null) {
-                        container.legendLayout.tag = data.yearMonth
-                        val daysOfWeek = daysOfWeek()
-                        container.legendLayout.children.forEachIndexed { index, view ->
-                            (view as TextView).text =
-                                daysOfWeek[index].getShortDisplayNameCompat()
-
-                        }
-                    }
-                }
-            }
-        }
-
-        binding?.calendarView?.apply {
-            val currentMonth = YearMonth.now()
-            val firstMonth = currentMonth.minusMonths(12)
-            val lastMonth = currentMonth.plusMonths(12)
-            val firstDayOfWeek =
-                DayOfWeek.MONDAY
-            setup(firstMonth, lastMonth, firstDayOfWeek)
-            Log.e("currentMonth", "setupCalender: $currentMonth")
-
-
-            dayBinder = object : MonthDayBinder<DayViewContainer> {
-                override fun create(view: View) = DayViewContainer(view)
-                override fun bind(container: DayViewContainer, data: CalendarDay) {
-                    container.imageView?.setOnClickListener {
-                        currentDayNotes()
-                    }
-                    container.textView?.setOnClickListener {
-                        val formatter =
-                            DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.getDefault())
-                        val formattedDate = data.date.format(formatter)
-                        binding?.tvOnGoingItemLabel1?.text = formattedDate
-
-                        val startOfDay = data.date.atStartOfDay(ZoneId.systemDefault()).toInstant()
-                            .toEpochMilli()
-                        val endOfDay =
-                            data.date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
-                                .toEpochMilli() - 1
-
-                        viewModel.observeAllCalenderNotes(startOfDay, endOfDay)
-                    }
-
-
-                    val today = LocalDate.now()
-                    val formatter = DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.getDefault())
-                    binding?.tvOnGoingItemLabel1?.text = today.format(formatter)
-
-                    container.textView?.text = data.date.dayOfMonth.toString()
-                    if (data.date == LocalDate.now()) {
-                        //   container.textView.text = "\uD83C\uDF1F"
-                        container.textView?.visibility = View.GONE
-                        container.imageView?.visibility = View.VISIBLE
-                    } else {
-                        container.textView?.setBackgroundResource(R.drawable.bg_rounded_day)
-                    }
-
-                }
-            }
-            monthScrollListener = { month ->
-                val yearMonth = month.yearMonth
-                val monthName = yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
-                binding?.tvMonth?.text = monthName
-            }
-            val rowHeight = resources.getDimensionPixelSize(R.dimen.activity_day_height)
-            binding?.calendarView?.layoutParams?.height = rowHeight * 4
-            scrollToMonth(currentMonth)
-        }
+        setupCustomCalenderMonth()
+        customCalenderDaySetup()
     }
-
 
     private fun setupRecyclerView() {
         binding?.rvCalenderNotes?.run {
@@ -154,34 +68,131 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
 
     private fun observeAllNotes() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.allCalenderNotesState
-                .flowWithLifecycle(viewLifecycleOwner.lifecycle)
-                .collect { state ->
-                    when (state) {
-                        is HomeNotesState.Success -> {
-                            setupRecyclerView()
-                            calenderItemAdapter.submitList(state.notes)
-                        }
-
-                        is HomeNotesState.Error -> {
-                            calenderItemAdapter.submitList(listOf())
-                        }
-
-                        else -> {
-                            shimmerAdapterNotes = ShimmerAdapter(10)
-                            binding?.rvCalendarShimmer?.adapter = shimmerAdapterNotes
-                        }
-                    }
+            viewModel.uiState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { state ->
+                if (!state.isLoading) {
+                    setupRecyclerView()
+                    calenderItemAdapter.submitList(
+                        state.notesByDate[state.selectedDay] ?: emptyList()
+                    )
+                    binding?.calendarView?.notifyCalendarChanged()
                 }
+            }
         }
     }
 
-    private fun currentDayNotes() {
-        val today = LocalDate.now()
-        val startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val endOfToday =
-            today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
-        viewModel.observeAllCalenderNotes(startOfToday, endOfToday)
+    private suspend fun initialCalenderPageSetup() {
+        shimmerAdapter = ShimmerCalenderAdapter(30)
+        binding?.rvCalendarShimmer?.adapter = shimmerAdapter
+        binding?.shimmerLayout?.startShimmer()
+        delay(100)
+        setupCalender()
+        val currentMonth = YearMonth.now()
+        viewModel.loadMonth(currentMonth)
+        viewModel.currentDayNotes()
+        observeAllNotes()
+        binding?.apply {
+            binding?.shimmerLayout?.visibility = View.GONE
+            binding?.calendarView?.apply {
+                alpha = 0f
+                visibility = View.VISIBLE
+                animate().alpha(1f).setDuration(200).start()
+            }
+        }
+    }
+
+    private fun setupCustomCalenderMonth() {
+        binding?.calendarView?.apply {
+            monthHeaderBinder = object : MonthHeaderFooterBinder<MonthViewContainer> {
+                override fun create(view: View) = MonthViewContainer(view)
+                override fun bind(container: MonthViewContainer, data: CalendarMonth) {
+                    if (container.legendLayout.tag == null) {
+                        container.legendLayout.tag = data.yearMonth
+                        val daysOfWeek = daysOfWeek()
+                        container.legendLayout.children.forEachIndexed { index, view ->
+                            (view as TextView).text = daysOfWeek[index].getShortDisplayNameCompat()
+
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private fun customCalenderDaySetup() {
+        binding?.calendarView?.apply {
+            val currentMonth = YearMonth.now()
+            val firstMonth = currentMonth.minusMonths(12)
+            val lastMonth = currentMonth.plusMonths(12)
+            val firstDayOfWeek = DayOfWeek.MONDAY
+            setup(firstMonth, lastMonth, firstDayOfWeek)
+            Log.e("currentMonth", "setupCalender: $currentMonth")
+
+            dayBinder = object : MonthDayBinder<DayViewContainer> {
+                override fun create(view: View) = DayViewContainer(view)
+                override fun bind(container: DayViewContainer, data: CalendarDay) {
+                    val notesForDay = viewModel.uiState.value.notesByDate[data.date]
+                    val noteEntity = notesForDay?.lastOrNull()
+                    if (noteEntity?.feelingEmojiRes != null) {
+                        container.textView?.visibility = View.GONE
+                        container.imageView?.visibility = View.VISIBLE
+                        container.imageView?.setImageResource(noteEntity.feelingEmojiRes)
+                        container.imageView?.setCustomDayEmojiBackground(
+                            fillColor = noteEntity.tagColor,
+                            strokeColor = noteEntity.tagColor
+                        )
+                    } else {
+                        container.imageView?.visibility = View.GONE
+                        container.textView?.visibility = View.VISIBLE
+                    }
+
+                    container.textView?.text = data.date.dayOfMonth.toString()
+                    container.textView?.setOnClickListener {
+                        val formattedDate = data.date.format(formatter)
+                        binding?.tvOnGoingItemLabel1?.text = formattedDate
+                        viewModel.selectDay(data.date)
+                    }
+                    container.imageView?.setOnClickListener {
+                        viewModel.currentDayNotes()
+                    }
+                }
+            }
+            monthScrollListener = { month ->
+                month.monthScrollListener()
+            }
+            currentMonth.setupDynamicCalenderView()
+        }
+    }
+
+    private fun CalendarMonth.monthScrollListener() {
+        val yearMonth = this.yearMonth
+        val monthName = yearMonth.month.getDisplayName(TextStyle.FULL, Locale.getDefault())
+        binding?.tvMonth?.text = monthName
+
+        viewModel.loadMonth(yearMonth)
+    }
+
+    private fun YearMonth.setupDynamicCalenderView() {
+        val rowHeight = resources.getDimensionPixelSize(R.dimen.activity_day_height)
+        binding?.calendarView?.apply {
+            layoutParams.height = rowHeight * 4
+            scrollToMonth(this@setupDynamicCalenderView)
+        }
+    }
+
+    private fun CalendarDay.styleCalenderCurrentDay(container: DayViewContainer) {
+        if (date == LocalDate.now()) {
+            container.textView?.visibility = View.GONE
+            container.imageView?.visibility = View.VISIBLE
+        } else {
+            container.textView?.setBackgroundResource(R.drawable.bg_rounded_day)
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        binding?.shimmerLayout?.stopShimmer()
+        shimmerAdapterNotes = null
+        shimmerAdapter = null
     }
 }
 

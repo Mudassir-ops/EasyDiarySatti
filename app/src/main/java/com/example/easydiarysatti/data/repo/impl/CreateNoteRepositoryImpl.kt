@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.data.repo.impl
 
+import android.util.Log
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
@@ -15,6 +16,7 @@ class CreateNoteRepositoryImpl(
 
     override suspend fun mergeAndSave(note: CreateNoteEntity) {
         val existing = note.noteId.takeIf { it != 0L }?.let { localDataSource.getNoteById(it) }
+        Log.e("headerSaveSatti", "setClickListeners:$existing ")
         val merged = existing?.copy(
             title = note.title ?: existing.title,
             description = note.description ?: existing.description,
@@ -34,8 +36,10 @@ class CreateNoteRepositoryImpl(
             tagColor = note.tagColor ?: existing.tagColor
         ) ?: note
         if (existing == null) {
+            Log.e("headerSaveSatti", "39->setClickListeners:$existing ")
             localDataSource.insertNote(merged)
         } else {
+            Log.e("headerSaveSatti", "42->setClickListeners:$existing ")
             localDataSource.updateNote(merged)
         }
     }

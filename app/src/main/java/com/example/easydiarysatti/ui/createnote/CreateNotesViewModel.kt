@@ -43,6 +43,7 @@ class CreateNotesViewModel @Inject constructor(
     }
 
     fun mergeAndSave(createNoteEntity: CreateNoteEntity) {
+        Log.e("headerSaveSatti", "setClickListeners:$createNoteEntity ")
         viewModelScope.launch {
             createNoteRepository.mergeAndSave(createNoteEntity)
         }

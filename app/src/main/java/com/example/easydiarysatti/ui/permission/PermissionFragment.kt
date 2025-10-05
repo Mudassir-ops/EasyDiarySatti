@@ -50,10 +50,10 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
             registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { results ->
                 val allGranted = results.all { it.value }
                 if (allGranted) {
-                    binding?.icSwitchCamera?.isChecked = true
+                    binding?.icSwitchGallery?.isChecked = true
                     galleryDeniedCount = 0
                 } else {
-                    binding?.icSwitchCamera?.isChecked = false
+                    binding?.icSwitchGallery?.isChecked = false
                     galleryDeniedCount++
                     if (galleryDeniedCount >= 2) {
                         showPermissionDialog(context ?: return@registerForActivityResult, this)

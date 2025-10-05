@@ -112,7 +112,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
                     }
                 } ?: run {
-                    createNoteEntity = null
+                    createNoteEntity = CreateNoteEntity(
+                        feelingEmojiRes = R.drawable.emooji_excited,
+                        textColor = "#FF8D95",
+                        feelingTitle = "Excited",
+                        tagColor = "#F8B903"
+                    )
                     listOf("Personal").setupFlexBox()
                     binding?.apply {
                         etHeader.setText(createNoteEntity?.title)
@@ -129,6 +134,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.notesActionState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
                 .collect { note ->
+                    Log.e("headerSaveSatti", "setClickListeners:$note ")
                     when (note) {
                         CreateNotesState.SaveNote -> {
                             saveNote()
@@ -166,7 +172,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             title = binding?.etHeader?.text?.toString().orEmpty(),
             description = binding?.etDescription?.text?.toString().orEmpty()
         )
-        createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) }
+        createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) } ?: run {
+            Log.e("headerSaveSatti", "setClickListeners:$createNoteEntity is Null ")
+        }
         findNavController().navigateUp()
     }
 

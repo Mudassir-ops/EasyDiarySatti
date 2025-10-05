@@ -585,9 +585,10 @@ fun saveBitmapToUri(bitmap: Bitmap, context: Context): Uri? {
 
 fun DayOfWeek.getShortDisplayNameCompat(locale: Locale = Locale.getDefault()): String {
     val shortWeekdays = DateFormatSymbols(locale).shortWeekdays
-    val dayIndex = (this.ordinal + 2) % 7 + 1
+    val dayIndex = if (this == DayOfWeek.SUNDAY) 1 else this.value + 1
     return shortWeekdays[dayIndex]
 }
+
 
 fun getDayRangeMillis(localDate: LocalDate): Pair<Long, Long> {
     val zoneId = ZoneId.systemDefault()

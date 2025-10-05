@@ -24,6 +24,7 @@ import com.example.easydiarysatti.utills.ShimmerCalenderAdapter
 import com.example.easydiarysatti.viewBinding
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.CalendarMonth
+import com.kizitonwose.calendar.core.WeekDay
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.view.MonthDayBinder
 import com.kizitonwose.calendar.view.MonthHeaderFooterBinder
@@ -31,7 +32,11 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.MonthDay
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
+import java.time.temporal.WeekFields
+import java.util.Calendar
 import java.util.Locale
 
 @AndroidEntryPoint
@@ -44,7 +49,6 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         CalenderItemAdapter(onNoteItemClick = { note ->
         })
     }
-
     private val formatter by lazy { dateFormatter() }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -52,6 +56,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         viewLifecycleOwner.lifecycleScope.launch {
             initialCalenderPageSetup()
         }
+        setupCurrentDate()
     }
 
     private fun setupCalender() {
@@ -110,7 +115,6 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                         val daysOfWeek = daysOfWeek()
                         container.legendLayout.children.forEachIndexed { index, view ->
                             (view as TextView).text = daysOfWeek[index].getShortDisplayNameCompat()
-
                         }
                     }
                 }
@@ -123,10 +127,8 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
             val currentMonth = YearMonth.now()
             val firstMonth = currentMonth.minusMonths(12)
             val lastMonth = currentMonth.plusMonths(12)
-            val firstDayOfWeek = DayOfWeek.MONDAY
+            val firstDayOfWeek = WeekFields.of(Locale.getDefault()).firstDayOfWeek
             setup(firstMonth, lastMonth, firstDayOfWeek)
-            Log.e("currentMonth", "setupCalender: $currentMonth")
-
             dayBinder = object : MonthDayBinder<DayViewContainer> {
                 override fun create(view: View) = DayViewContainer(view)
                 override fun bind(container: DayViewContainer, data: CalendarDay) {
@@ -137,14 +139,13 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                         container.imageView?.visibility = View.VISIBLE
                         container.imageView?.setImageResource(noteEntity.feelingEmojiRes)
                         container.imageView?.setCustomDayEmojiBackground(
-                            fillColor = noteEntity.tagColor,
-                            strokeColor = noteEntity.tagColor
+                            fillColor = noteEntity.textColor,
+                            strokeColor = noteEntity.textColor
                         )
                     } else {
                         container.imageView?.visibility = View.GONE
                         container.textView?.visibility = View.VISIBLE
                     }
-
                     container.textView?.text = data.date.dayOfMonth.toString()
                     container.textView?.setOnClickListener {
                         val formattedDate = data.date.format(formatter)
@@ -152,6 +153,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                         viewModel.selectDay(data.date)
                     }
                     container.imageView?.setOnClickListener {
+                        setupCurrentDate()
                         viewModel.currentDayNotes()
                     }
                 }
@@ -186,6 +188,14 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         } else {
             container.textView?.setBackgroundResource(R.drawable.bg_rounded_day)
         }
+    }
+
+
+    private fun setupCurrentDate() {
+        val today = LocalDate.now()
+        val formatter = dateFormatter()
+        val formattedDate = today.format(formatter)
+        binding?.tvOnGoingItemLabel1?.text = formattedDate
     }
 
     override fun onDestroyView() {

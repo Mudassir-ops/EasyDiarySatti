@@ -75,4 +75,8 @@ interface CreateNoteDao {
     @Query("SELECT images FROM create_note_entity_table")
     fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
 
+
+    @Query("SELECT * FROM create_note_entity_table")
+    fun observeCalenderNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
+
 }

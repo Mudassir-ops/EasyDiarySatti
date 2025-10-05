@@ -52,7 +52,9 @@ import com.google.android.material.snackbar.Snackbar
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
+import java.time.DayOfWeek
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -575,4 +577,10 @@ fun saveBitmapToUri(bitmap: Bitmap, context: Context): Uri? {
         e.printStackTrace()
         return null
     }
+}
+
+fun DayOfWeek.getShortDisplayNameCompat(locale: Locale = Locale.getDefault()): String {
+    val shortWeekdays = DateFormatSymbols(locale).shortWeekdays
+    val dayIndex = (this.ordinal + 2) % 7 + 1
+    return shortWeekdays[dayIndex]
 }

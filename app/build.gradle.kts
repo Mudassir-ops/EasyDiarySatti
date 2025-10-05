@@ -35,6 +35,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+        isCoreLibraryDesugaringEnabled = true
+
     }
     buildFeatures {
         viewBinding = true
@@ -97,6 +99,8 @@ dependencies {
     implementation(libs.gson.v2110)
 
     implementation(libs.image.cropper)
+
+    coreLibraryDesugaring ("com.android.tools:desugar_jdk_libs:2.0.4")
 }
 
 kapt {

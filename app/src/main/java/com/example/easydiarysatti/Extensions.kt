@@ -609,7 +609,8 @@ fun lightenColor(color: Int, factor: Float): Int {
 
 fun AppCompatImageView.setCustomDayEmojiBackground(
     fillColor: String?,
-    strokeColor: String?
+    strokeColor: String?,
+    dayNow: Boolean = false
 ) {
     val drawable = ContextCompat.getDrawable(context, R.drawable.bg_note_item)?.mutate()
     if (drawable is GradientDrawable) {
@@ -621,6 +622,19 @@ fun AppCompatImageView.setCustomDayEmojiBackground(
             drawable.setStroke(strokeWidth, it.toColorInt())
         }
     }
-    setColorFilter(ContextCompat.getColor(context, R.color.tag_txt_color), PorterDuff.Mode.SRC_IN)
+    if (dayNow) {
+        setColorFilter(
+            ContextCompat.getColor(context, R.color.red_color),
+            PorterDuff.Mode.SRC_IN
+        )
+    } else {
+        setColorFilter(
+            ContextCompat.getColor(context, R.color.tag_txt_color),
+            PorterDuff.Mode.SRC_IN
+        )
+    }
     background = drawable
 }
+
+fun Context.dpToPx(dp: Int): Int =
+    (dp * resources.displayMetrics.density).toInt()

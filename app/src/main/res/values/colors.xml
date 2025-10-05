@@ -15,6 +15,7 @@
     <color name="pin_bg">#EDEEF0</color>
     <color name="pin_border">#AAB1BA</color>
     <color name="unselected_color">#CCCCCC33</color>
+    <color name="red_color">#EB0050</color>
     <color name="calender_bg_color">#A8D8E9</color>
     <color name="tag_bg_color">#F5F5F5</color>
     <color name="tag_txt_color">#475569</color>

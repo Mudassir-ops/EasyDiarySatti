@@ -134,27 +134,24 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                 override fun bind(container: DayViewContainer, data: CalendarDay) {
                     val notesForDay = viewModel.uiState.value.notesByDate[data.date]
                     val noteEntity = notesForDay?.firstOrNull()
+                    val isToday = data.date == LocalDate.now()
+
                     if (noteEntity?.feelingEmojiRes != null) {
                         container.textView?.visibility = View.GONE
                         container.imageView?.visibility = View.VISIBLE
                         container.imageView?.setImageResource(noteEntity.feelingEmojiRes)
                         container.imageView?.setCustomDayEmojiBackground(
                             fillColor = noteEntity.textColor,
-                            strokeColor = noteEntity.textColor
+                            strokeColor = noteEntity.textColor,
+                            dayNow = isToday
                         )
                     } else {
                         container.imageView?.visibility = View.GONE
                         container.textView?.visibility = View.VISIBLE
                     }
                     container.textView?.text = data.date.dayOfMonth.toString()
-                    container.textView?.setOnClickListener {
-                        val formattedDate = data.date.format(formatter)
-                        binding?.tvOnGoingItemLabel1?.text = formattedDate
-                        viewModel.selectDay(data.date)
-                    }
-                    container.imageView?.setOnClickListener {
-                        setupCurrentDate()
-                        viewModel.currentDayNotes()
+                    container.parentLayout?.setOnClickListener {
+                        data.onDayClick()
                     }
                 }
             }
@@ -196,6 +193,13 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         val formatter = dateFormatter()
         val formattedDate = today.format(formatter)
         binding?.tvOnGoingItemLabel1?.text = formattedDate
+    }
+
+    private fun CalendarDay.onDayClick() {
+        val formattedDate = date.format(formatter)
+        binding?.tvOnGoingItemLabel1?.text = formattedDate
+        Log.e("currentMonth", "setupCalender: $formattedDate")
+        viewModel.selectDay(date)
     }
 
     override fun onDestroyView() {

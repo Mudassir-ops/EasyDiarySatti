@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.ui.model
 
 import android.view.View
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.widget.AppCompatImageView
 import com.example.easydiarysatti.R
@@ -13,5 +14,6 @@ class MonthViewContainer(view: View) : ViewContainer(view) {
 
 class DayViewContainer(view: View) : ViewContainer(view) {
     val textView: MaterialTextView? = view.findViewById(R.id.calendarDayText)
+    val parentLayout: FrameLayout? = view.findViewById(R.id.parentLayout)
     val imageView: AppCompatImageView? = view.findViewById(R.id.calendarDayIcon)
 }

@@ -116,7 +116,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         feelingEmojiRes = R.drawable.emooji_excited,
                         textColor = "#FF8D95",
                         feelingTitle = "Excited",
-                        tagColor = "#F8B903"
+                        tagColor = "#F8B903",
+                        tags = listOf(),
+                        images = listOf(),
+
                     )
                     listOf("Personal").setupFlexBox()
                     binding?.apply {

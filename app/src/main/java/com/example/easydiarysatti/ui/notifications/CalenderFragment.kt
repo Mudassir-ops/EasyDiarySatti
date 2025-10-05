@@ -14,6 +14,7 @@ import java.time.YearMonth
 import java.time.DayOfWeek
 
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCalenderBinding
 import com.example.easydiarysatti.dateFormatter
 import com.example.easydiarysatti.getShortDisplayNameCompat
@@ -136,20 +137,10 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                     val notesForDay = viewModel.uiState.value.notesByDate[data.date]
                     val noteEntity = notesForDay?.firstOrNull()
                     val isToday = data.date == LocalDate.now()
-
-                    if (noteEntity?.feelingEmojiRes != null) {
-                        container.textView?.visibility = View.GONE
-                        container.imageView?.visibility = View.VISIBLE
-                        container.imageView?.setImageResource(noteEntity.feelingEmojiRes)
-                        container.imageView?.setCustomDayEmojiBackground(
-                            fillColor = noteEntity.textColor,
-                            strokeColor = noteEntity.textColor,
-                            dayNow = isToday
-                        )
-                    } else {
-                        container.imageView?.visibility = View.GONE
-                        container.textView?.visibility = View.VISIBLE
-                    }
+                    container.styleCalenderCurrentDay(
+                        noteEntity = noteEntity,
+                        isToday = isToday
+                    )
                     container.textView?.text = data.date.dayOfMonth.toString()
                     container.parentLayout?.setOnClickListener {
                         data.onDayClick()
@@ -179,12 +170,22 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         }
     }
 
-    private fun CalendarDay.styleCalenderCurrentDay(container: DayViewContainer) {
-        if (date == LocalDate.now()) {
-            container.textView?.visibility = View.GONE
-            container.imageView?.visibility = View.VISIBLE
+    private fun DayViewContainer.styleCalenderCurrentDay(
+        noteEntity: CreateNoteEntity?,
+        isToday: Boolean
+    ) {
+        if (noteEntity?.feelingEmojiRes != null) {
+            textView?.visibility = View.GONE
+            imageView?.visibility = View.VISIBLE
+            imageView?.setImageResource(noteEntity.feelingEmojiRes)
+            imageView?.setCustomDayEmojiBackground(
+                fillColor = noteEntity.textColor,
+                strokeColor = noteEntity.textColor,
+                dayNow = isToday
+            )
         } else {
-            container.textView?.setBackgroundResource(R.drawable.bg_rounded_day)
+            imageView?.visibility = View.GONE
+            textView?.visibility = View.VISIBLE
         }
     }
 

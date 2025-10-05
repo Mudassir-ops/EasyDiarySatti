@@ -131,7 +131,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                 override fun create(view: View) = DayViewContainer(view)
                 override fun bind(container: DayViewContainer, data: CalendarDay) {
                     val notesForDay = viewModel.uiState.value.notesByDate[data.date]
-                    val noteEntity = notesForDay?.lastOrNull()
+                    val noteEntity = notesForDay?.firstOrNull()
                     if (noteEntity?.feelingEmojiRes != null) {
                         container.textView?.visibility = View.GONE
                         container.imageView?.visibility = View.VISIBLE

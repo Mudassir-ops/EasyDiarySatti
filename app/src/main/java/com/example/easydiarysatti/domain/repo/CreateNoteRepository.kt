@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.domain.repo
 
 import com.example.easydiarysatti.data.local.CreateNoteEntity
+import kotlinx.coroutines.flow.Flow
 
 interface CreateNoteRepository {
     suspend fun createEmptyNote(): Long
@@ -11,4 +12,8 @@ interface CreateNoteRepository {
     fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
 
     suspend fun getOldImages(noteId: Long): List<String>?
+    fun observeNotesForDay(
+        startOfDay: Long,
+        endOfDay: Long
+    ): Flow<List<CreateNoteEntity>?>
 }

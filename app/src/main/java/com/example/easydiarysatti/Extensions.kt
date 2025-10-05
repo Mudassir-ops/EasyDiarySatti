@@ -55,6 +55,8 @@ import java.io.IOException
 import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -583,4 +585,11 @@ fun DayOfWeek.getShortDisplayNameCompat(locale: Locale = Locale.getDefault()): S
     val shortWeekdays = DateFormatSymbols(locale).shortWeekdays
     val dayIndex = (this.ordinal + 2) % 7 + 1
     return shortWeekdays[dayIndex]
+}
+
+fun getDayRangeMillis(localDate: LocalDate): Pair<Long, Long> {
+    val zoneId = ZoneId.systemDefault()
+    val startOfDay = localDate.atStartOfDay(zoneId).toInstant().toEpochMilli()
+    val endOfDay = localDate.plusDays(1).atStartOfDay(zoneId).toInstant().toEpochMilli() - 1
+    return startOfDay to endOfDay
 }

@@ -30,6 +30,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
@@ -53,6 +54,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
             binding?.shimmerLayout?.startShimmer()
             delay(100)
             setupCalender()
+            currentDayNotes()
             observeAllNotes()
             binding?.apply {
                 binding?.shimmerLayout?.visibility = View.GONE
@@ -83,6 +85,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                 }
             }
         }
+
         binding?.calendarView?.apply {
             val currentMonth = YearMonth.now()
             val firstMonth = currentMonth.minusMonths(12)
@@ -96,12 +99,24 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
             dayBinder = object : MonthDayBinder<DayViewContainer> {
                 override fun create(view: View) = DayViewContainer(view)
                 override fun bind(container: DayViewContainer, data: CalendarDay) {
+                    container.imageView?.setOnClickListener {
+                        currentDayNotes()
+                    }
                     container.textView?.setOnClickListener {
                         val formatter =
                             DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.getDefault())
                         val formattedDate = data.date.format(formatter)
                         binding?.tvOnGoingItemLabel1?.text = formattedDate
+
+                        val startOfDay = data.date.atStartOfDay(ZoneId.systemDefault()).toInstant()
+                            .toEpochMilli()
+                        val endOfDay =
+                            data.date.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant()
+                                .toEpochMilli() - 1
+
+                        viewModel.observeAllCalenderNotes(startOfDay, endOfDay)
                     }
+
 
                     val today = LocalDate.now()
                     val formatter = DateTimeFormatter.ofPattern("d MMMM, yyyy", Locale.getDefault())
@@ -149,7 +164,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                         }
 
                         is HomeNotesState.Error -> {
-
+                            calenderItemAdapter.submitList(listOf())
                         }
 
                         else -> {
@@ -159,6 +174,14 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                     }
                 }
         }
+    }
+
+    private fun currentDayNotes() {
+        val today = LocalDate.now()
+        val startOfToday = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val endOfToday =
+            today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
+        viewModel.observeAllCalenderNotes(startOfToday, endOfToday)
     }
 }
 

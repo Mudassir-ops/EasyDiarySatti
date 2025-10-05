@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface CreateNoteDao {
@@ -76,7 +77,10 @@ interface CreateNoteDao {
     fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
 
 
-    @Query("SELECT * FROM create_note_entity_table")
-    fun observeCalenderNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
+    @Query("SELECT * FROM create_note_entity_table WHERE creationTime BETWEEN :startOfDay AND :endOfDay")
+    fun observeNotesForDay(
+        startOfDay: Long,
+        endOfDay: Long
+    ): Flow<List<CreateNoteEntity>?>
 
 }

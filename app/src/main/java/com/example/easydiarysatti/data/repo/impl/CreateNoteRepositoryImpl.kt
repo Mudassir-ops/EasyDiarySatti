@@ -64,4 +64,11 @@ class CreateNoteRepositoryImpl(
         return localDataSource.getOldImages(id = noteId)
     }
 
+    override fun observeNotesForDay(
+        startOfDay: Long,
+        endOfDay: Long
+    ): Flow<List<CreateNoteEntity>?> {
+        return localDataSource.observeNotesForDay(startOfDay = startOfDay, endOfDay = endOfDay)
+    }
+
 }

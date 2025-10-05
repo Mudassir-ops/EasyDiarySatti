@@ -27,7 +27,7 @@ class EasyDiaryLocalDataSourceImpl(
         return dao.getNoteById(id = id)
     }
 
-    override fun observeNoteById(id: Long): kotlinx.coroutines.flow.Flow<CreateNoteEntity?> {
+    override fun observeNoteById(id: Long): Flow<CreateNoteEntity?> {
         return dao.observeNoteById(id = id)
     }
 
@@ -74,6 +74,13 @@ class EasyDiaryLocalDataSourceImpl(
 
     override fun observeAllImages(): Flow<List<String>?> {
         return dao.observeAllImages().distinctUntilChanged()
+    }
+
+    override fun observeNotesForDay(
+        startOfDay: Long,
+        endOfDay: Long
+    ): Flow<List<CreateNoteEntity>?> {
+        return dao.observeNotesForDay(startOfDay = startOfDay, endOfDay = endOfDay)
     }
 
 }

@@ -636,5 +636,4 @@ fun AppCompatImageView.setCustomDayEmojiBackground(
     background = drawable
 }
 
-fun Context.dpToPx(dp: Int): Int =
-    (dp * resources.displayMetrics.density).toInt()
+

@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.ui.notifications
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -171,7 +172,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
     }
 
     private fun YearMonth.setupDynamicCalenderView() {
-        val rowHeight = resources.getDimensionPixelSize(R.dimen.activity_day_height)
+        val rowHeight = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._57sdp)
         binding?.calendarView?.apply {
             layoutParams.height = rowHeight * 4
             scrollToMonth(this@setupDynamicCalenderView)
@@ -186,7 +187,6 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
             container.textView?.setBackgroundResource(R.drawable.bg_rounded_day)
         }
     }
-
 
     private fun setupCurrentDate() {
         val today = LocalDate.now()
@@ -208,6 +208,9 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         shimmerAdapterNotes = null
         shimmerAdapter = null
     }
+
+    fun dpToPx(dp: Int): Int =
+        (dp * resources.displayMetrics.density).toInt()
 }
 
 

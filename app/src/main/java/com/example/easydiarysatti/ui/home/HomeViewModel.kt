@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
@@ -26,8 +27,14 @@ class HomeViewModel @Inject constructor(
     private val _allNotesState = MutableStateFlow<HomeNotesState>(HomeNotesState.Loading)
     val allNotesState: StateFlow<HomeNotesState> = _allNotesState
 
+    private val _sortOrder = MutableStateFlow<Boolean?>(false)
+    val sortOrder: StateFlow<Boolean?> = _sortOrder
+
+    var currentSortOrder = false
+
     init {
         observeAllNotes()
+        observeSortOrders()
     }
 
     fun observeAllNotes() {
@@ -49,9 +56,25 @@ class HomeViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun updateSortOrder(isAscending: Boolean) {
+
+    fun observeSortOrders() {
         viewModelScope.launch {
-            createNoteRepository.updateSortOrder(isAscending = isAscending)
+            createNoteRepository.observeSortOrder().distinctUntilChanged()
+                .onStart {
+                }
+                .catch { e ->
+                    e.printStackTrace()
+                }
+                .onEach { notes ->
+                    _sortOrder.value = notes
+                }
+                .launchIn(viewModelScope)
+        }
+    }
+
+    fun updateSortOrder() {
+        viewModelScope.launch {
+            createNoteRepository.updateSortOrder(isAscending = false)
         }
     }
 }

@@ -90,7 +90,22 @@ interface CreateNoteDao {
         endOfDay: Long
     ): Flow<List<CreateNoteEntity>?>
 
-    @Query("UPDATE create_note_entity_table SET isAscending = :isAscending")
-    suspend fun updateSortOrder(isAscending: Boolean)
+    @Query(
+        """
+    UPDATE create_note_entity_table
+    SET isAscending = NOT (
+        COALESCE(
+            (SELECT isAscending FROM create_note_entity_table LIMIT 1),
+            0
+        )
+    )
+"""
+    )
+    suspend fun toggleSortOrder()
+
+
+    @Query("SELECT isAscending FROM create_note_entity_table LIMIT 1")
+    fun observeSortOrder(): Flow<Boolean?>
+
 
 }

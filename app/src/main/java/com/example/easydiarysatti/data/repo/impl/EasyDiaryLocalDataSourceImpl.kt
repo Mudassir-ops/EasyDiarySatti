@@ -84,7 +84,11 @@ class EasyDiaryLocalDataSourceImpl(
     }
 
     override suspend fun updateSortOrder(isAscending: Boolean) {
-       return dao.updateSortOrder(isAscending)
+        return dao.toggleSortOrder()
+    }
+
+    override fun observeSortOrder(): Flow<Boolean?> {
+       return dao.observeSortOrder()
     }
 
 }

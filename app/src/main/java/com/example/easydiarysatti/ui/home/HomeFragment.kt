@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.monthlyFormatDate
@@ -18,6 +19,7 @@ import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
 import com.example.easydiarysatti.viewBinding
 import com.example.easydiarysatti.visible
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -25,7 +27,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val binding by viewBinding(FragmentHomeBinding::bind)
     private val viewModel by viewModels<HomeViewModel>()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
-    private var sortingOrder = false
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(onNoteItemClick = { note ->
             createNotesViewModel.setupNoteEntity(createNoteEntity = note)
@@ -39,15 +40,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupRecyclerView()
         observeAllNotes()
         setupTodayDate()
+        observeSortOrder()
         setStyledDateTime(binding?.tvDate ?: return, R.color.track_color)
     }
 
     private fun clickListener() {
         binding?.apply {
             ivSorting.setOnClickListener {
-                sortingOrder = !sortingOrder
-                ivSorting.rotation = if (sortingOrder) 180f else 0f
-                viewModel.updateSortOrder(isAscending = sortingOrder)
+                viewModel.updateSortOrder()
             }
         }
     }
@@ -73,10 +73,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 .collect { state ->
                     when (state) {
                         is HomeNotesState.Success -> {
-                            sortingOrder = state.notes.firstOrNull()?.isAscending == false
-                            binding?.ivSorting?.rotation = if (sortingOrder) 180f else 0f
                             binding?.visible(hasNotes = true)
                             notesItemAdapter.submitList(state.notes)
+                            if (state.notes.isEmpty()) return@collect
+                            val layoutManager =
+                                binding?.rvNotes?.layoutManager as? LinearLayoutManager
+                                    ?: return@collect
+                            if (viewModel.currentSortOrder) {
+                                layoutManager.scrollToPositionWithOffset(state.notes.size - 1, 0)
+                            } else {
+                                layoutManager.scrollToPositionWithOffset(0, 0)
+                            }
                         }
 
                         is HomeNotesState.Error -> {
@@ -97,4 +104,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    private fun observeSortOrder() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.sortOrder
+                .flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                .collect { isAscending ->
+                    viewModel.currentSortOrder = isAscending == true
+                    binding?.ivSorting?.animate()
+                        ?.rotation(if (isAscending == true) 0f else 180f)
+                        ?.setDuration(300)
+                        ?.start()
+                }
+        }
+    }
 }

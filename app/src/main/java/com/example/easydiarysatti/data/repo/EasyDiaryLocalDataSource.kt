@@ -32,4 +32,5 @@ interface EasyDiaryLocalDataSource {
     ): Flow<List<CreateNoteEntity>?>
 
     suspend fun updateSortOrder(isAscending: Boolean)
+    fun observeSortOrder(): Flow<Boolean?>
 }

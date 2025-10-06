@@ -74,4 +74,8 @@ class CreateNoteRepositoryImpl(
     override suspend fun updateSortOrder(isAscending: Boolean) {
         return localDataSource.updateSortOrder(isAscending)
     }
+
+    override fun observeSortOrder(): Flow<Boolean?> {
+        return localDataSource.observeSortOrder()
+    }
 }

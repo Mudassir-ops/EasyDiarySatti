@@ -58,5 +58,6 @@
     <string name="no_data_in_library">No Data Found In Library</string>
     <string name="tags">Tags</string>
     <string name="no_notes_for_current_day">No Notes For Selected Day</string>
+    <string name="change_background">Change Background</string>
 
 </resources>

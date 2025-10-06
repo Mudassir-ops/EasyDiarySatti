@@ -352,23 +352,23 @@ private fun resizeToFitView(
 
 fun View.loadBackground(
     resourceId: Int?,
-    placeholder: Int = R.drawable.image_placeholder
+    placeholder: Int? = null
 ) {
-    Glide.with(this.context)
+    val request = Glide.with(context)
         .load(resourceId ?: placeholder)
-        .placeholder(placeholder)
-        .into(object : com.bumptech.glide.request.target.CustomTarget<Drawable>() {
-            override fun onResourceReady(
-                resource: Drawable,
-                transition: com.bumptech.glide.request.transition.Transition<in Drawable>?
-            ) {
-                background = resource
-            }
+    placeholder?.let { request.placeholder(it) }
+    request.into(object : com.bumptech.glide.request.target.CustomTarget<Drawable>() {
+        override fun onResourceReady(
+            resource: Drawable,
+            transition: com.bumptech.glide.request.transition.Transition<in Drawable>?
+        ) {
+            background = resource
+        }
 
-            override fun onLoadCleared(placeholder: Drawable?) {
-                background = placeholder
-            }
-        })
+        override fun onLoadCleared(placeholderDrawable: Drawable?) {
+            background = placeholderDrawable
+        }
+    })
 }
 
 
@@ -645,7 +645,6 @@ fun AppCompatImageView.setCustomDayEmojiBackground(
 fun setStyledDateTime(tvDate: MaterialTextView, colorId: Int) {
     val formatter = SimpleDateFormat("dd-MM-yy | h:mm a", Locale.getDefault())
     val formatted = formatter.format(Date()).uppercase(Locale.getDefault())
-    // Split into parts
     val parts = formatted.split("|")
     val datePart = parts.getOrNull(0)?.trim() ?: ""
     val timePart = parts.getOrNull(1)?.trim() ?: ""

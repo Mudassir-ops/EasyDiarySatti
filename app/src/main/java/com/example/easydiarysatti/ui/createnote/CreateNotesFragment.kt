@@ -15,6 +15,7 @@ import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
+import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
 import com.example.easydiarysatti.setStyledDateTime
@@ -22,6 +23,7 @@ import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -46,33 +48,37 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        observeNote()
-        observeNoteAction()
-        clickListeners()
-        adjustScreenKeyboard()
-        setupImagesRecyclerview()
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-            val navController = childFragmentManager
-                .findFragmentById(R.id.nav_host_main_inner)
-                ?.findNavController()
-            if (navController?.popBackStack() == true) {
-                navController.navigateUp()
-            } else {
-                isEnabled = false
-                activity?.onBackPressedDispatcher?.onBackPressed()
+        viewLifecycleOwner.lifecycleScope.launch {
+            delay(100)
+            observeNote()
+            observeNoteAction()
+            clickListeners()
+            adjustScreenKeyboard()
+            setupImagesRecyclerview()
+            activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
+                val navController = childFragmentManager.findFragmentById(R.id.nav_host_main_inner)
+                    ?.findNavController()
+                if (navController?.popBackStack() == true) {
+                    navController.navigateUp()
+                } else {
+                    isEnabled = false
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }
             }
+            setStyledDateTime(binding?.tvDate ?: return@launch, R.color.black)
         }
-        setStyledDateTime(binding?.tvDate ?: return,R.color.black)
     }
 
     fun List<String>.setupFlexBox() {
         binding?.flexboxLayout?.apply {
             removeAllViews()
             visibility = View.VISIBLE
-            addTags(this@setupFlexBox as MutableList<String>, onTagClick = {
-            }, onRemoveTagClick = { tag ->
-                viewModel.removeTag(tag = tag)
-            })
+            addTags(
+                this@setupFlexBox as MutableList<String>,
+                onTagClick = {},
+                onRemoveTagClick = { tag ->
+                    viewModel.removeTag(tag = tag)
+                })
         }
     }
 
@@ -113,6 +119,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             listOf("Personal").setupFlexBox()
                         }
                         ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
+                        nestedScrollView.loadBackground(
+                            resourceId = createNoteEntity?.backgroundRes,
+                            placeholder = R.drawable.theme_1
+                        )
                     }
                 } ?: run {
                     createNoteEntity = CreateNoteEntity(
@@ -162,8 +172,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         is CreateNotesState.AddTag -> {
-                            val lastSavedNotesTags =
-                                viewModel.addTag(tag = note.tag.toString())
+                            val lastSavedNotesTags = viewModel.addTag(tag = note.tag.toString())
                             createNoteEntity = createNoteEntity?.copy(tags = lastSavedNotesTags)
                             Log.e(
                                 "MudassirSattiTag-->",
@@ -177,6 +186,14 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             findNavController().safeNav(
                                 currentDestId = R.id.createNotesFragment,
                                 actionId = R.id.action_createNotesFragment_to_addTagsFragment2,
+                            )
+                        }
+
+                        is CreateNotesState.ChangeBg -> {
+                            createNoteEntity =
+                                createNoteEntity?.copy(backgroundRes = note.bgImageRes)
+                            binding?.nestedScrollView?.loadBackground(
+                                resourceId = createNoteEntity?.backgroundRes
                             )
                         }
                     }

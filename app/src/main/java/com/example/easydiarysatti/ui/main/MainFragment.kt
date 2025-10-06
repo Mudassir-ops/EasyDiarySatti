@@ -6,6 +6,7 @@ import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -17,10 +18,13 @@ import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.utills.ImagePickerDelegate
+import com.example.easydiarysatti.utills.MultiImageAdapter
+import com.example.easydiarysatti.utills.showBackgroundDialog
 import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,11 +38,38 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
+    private val noteBgList: List<Int?> by lazy {
+        listOf(
+            null,
+            R.drawable.note_bg_1,
+            R.drawable.note_bg_2,
+            R.drawable.note_bg_3,
+            R.drawable.note_bg_4,
+            R.drawable.note_bg_3,
+        )
+    }
+    private val multiImageAdapter: MultiImageAdapter by lazy {
+        MultiImageAdapter(items = noteBgList, onUploadClick = {
+            val imagePicker = ImagePickerDelegate(this) { uri, file ->
+
+            }
+            imagePicker.showPickerDialog()
+        }, onImageClick = {
+            createNotesViewModel.sendAction(
+                CreateNotesState.ChangeBg(
+                    bgImageRes = it ?: return@MultiImageAdapter
+                )
+            )
+        })
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         imagePicker = ImagePickerDelegate(this) { uri, file ->
             showImageCropDialog(imagePath = file?.path ?: return@ImagePickerDelegate, btnDone = {
                 createNotesViewModel.sendAction(action = CreateNotesState.ImagePicked(imageUri = it))
+            }, closeDialog = {
+                binding?.bottomNavCreateNote?.clearChecked()
             })
         }
     }
@@ -100,17 +131,27 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             bottomNavCreateNote.addOnButtonCheckedListener { group, checkedId, isChecked ->
                 if (isChecked) {
                     when (checkedId) {
-                        R.id.btnBackground -> Unit
-                        R.id.btn_hash_tag -> {
-                            createNotesViewModel.sendAction(CreateNotesState.TagAction)
+                        R.id.btnBackground -> {
+                            showBackgroundDialog(
+                                adapterMultiImageAdapter = multiImageAdapter,
+                                closeDialog = {
+                                    binding?.bottomNavCreateNote?.clearChecked()
+                                })
                         }
 
-                        R.id.btn_media -> imagePicker.showPickerDialog()
+                        R.id.btn_hash_tag -> {
+                            createNotesViewModel.sendAction(CreateNotesState.TagAction)
+                            viewLifecycleOwner.lifecycleScope.launch {
+                                delay(200)
+                                group.clearChecked()
+                            }
+                        }
+
+                        R.id.btn_media -> {
+                            imagePicker.showPickerDialog()
+                        }
+
                         R.id.btn_text -> Unit
-                    }
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        delay(200)
-                        group.clearChecked()
                     }
                 }
             }
@@ -136,7 +177,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun setupBgTheme() {
         binding?.parentLayout?.loadBackground(
-            resourceId = sessionManagerRepo.getBgTheme(), placeholder = R.drawable.theme_1
+            resourceId = sessionManagerRepo.getBgTheme(),
+            placeholder = R.drawable.theme_1
         )
     }
 

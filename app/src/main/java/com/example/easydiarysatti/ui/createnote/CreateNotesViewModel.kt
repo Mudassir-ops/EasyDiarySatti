@@ -75,14 +75,14 @@ class CreateNotesViewModel @Inject constructor(
     fun removeTag(tag: String) {
         tagList?.remove(tag)
     }
-    fun clearImages(){
+
+    fun clearImages() {
         imagesList?.clear()
     }
 
-    fun clearTags(){
+    fun clearTags() {
         tagList?.clear()
     }
-
 }
 
 sealed interface CreateNotesState {
@@ -92,5 +92,6 @@ sealed interface CreateNotesState {
     data object TagAction : CreateNotesState
     data object DiscardNote : CreateNotesState
     data object BackAction : CreateNotesState
+    data class ChangeBg(val bgImageRes: Int) : CreateNotesState
     data class ShowMessage(val msg: String) : CreateNotesState
 }

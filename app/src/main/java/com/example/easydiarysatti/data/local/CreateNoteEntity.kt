@@ -1,9 +1,12 @@
 package com.example.easydiarysatti.data.local
 
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 @Entity(tableName = "create_note_entity_table")
 @TypeConverters(ListStringConverter::class)
 data class CreateNoteEntity(
@@ -25,5 +28,5 @@ data class CreateNoteEntity(
     val creationTime: Long = System.currentTimeMillis(),
     val tags: List<String>? = null,
     val images: List<String>? = null,
-)
+): Parcelable
 

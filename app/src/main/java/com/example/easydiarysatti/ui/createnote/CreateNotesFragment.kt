@@ -15,9 +15,9 @@ import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
-import com.example.easydiarysatti.setKeyboardVisibilityListener
+import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
-import com.example.easydiarysatti.utills.ImagePickerDelegate
+import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,7 +30,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private val binding by viewBinding(FragmentCreateNotesBinding::bind)
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private var createNoteEntity: CreateNoteEntity? = null
-
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
         ImagesItemAdapter(onNoteItemClick = { note -> })
     }
@@ -52,7 +51,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         clickListeners()
         adjustScreenKeyboard()
         setupImagesRecyclerview()
-        viewModel.observeNote()
         activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
             val navController = childFragmentManager
                 .findFragmentById(R.id.nav_host_main_inner)
@@ -64,6 +62,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
         }
+        setStyledDateTime(binding?.tvDate ?: return,R.color.black)
     }
 
     fun List<String>.setupFlexBox() {
@@ -98,7 +97,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { note ->
                 note?.let {
+                    createNoteEntity = null
                     createNoteEntity = it
+                    viewModel.clearTags()
+                    viewModel.clearImages()
                     viewModel.addImages(imagePath = createNoteEntity?.images ?: listOf())
                     viewModel.addTags(tags = createNoteEntity?.tags ?: listOf())
                     binding?.apply {
@@ -110,6 +112,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         } else {
                             listOf("Personal").setupFlexBox()
                         }
+                        ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
                     }
                 } ?: run {
                     createNoteEntity = CreateNoteEntity(
@@ -119,8 +122,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         tagColor = "#F8B903",
                         tags = listOf(),
                         images = listOf(),
-
-                        )
+                    )
                     listOf("Personal").setupFlexBox()
                     binding?.apply {
                         etHeader.setText(createNoteEntity?.title)
@@ -163,7 +165,19 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             val lastSavedNotesTags =
                                 viewModel.addTag(tag = note.tag.toString())
                             createNoteEntity = createNoteEntity?.copy(tags = lastSavedNotesTags)
+                            Log.e(
+                                "MudassirSattiTag-->",
+                                "observeNoteAction: ${createNoteEntity?.tags}",
+                            )
                             createNoteEntity?.tags?.setupFlexBox()
+                        }
+
+                        CreateNotesState.TagAction -> {
+                            viewModel.setupNoteEntity(createNoteEntity = createNoteEntity)
+                            findNavController().safeNav(
+                                currentDestId = R.id.createNotesFragment,
+                                actionId = R.id.action_createNotesFragment_to_addTagsFragment2,
+                            )
                         }
                     }
                 }
@@ -207,6 +221,5 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             }
         }
     }
-
 
 }

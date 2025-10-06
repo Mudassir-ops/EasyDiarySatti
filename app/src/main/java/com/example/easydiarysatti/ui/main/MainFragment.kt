@@ -101,10 +101,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 if (isChecked) {
                     when (checkedId) {
                         R.id.btnBackground -> Unit
-                        R.id.btn_hash_tag -> innerNavController?.safeNav(
-                            currentDestId = R.id.createNotesFragment,
-                            actionId = R.id.action_createNotesFragment_to_addTagsFragment2
-                        )
+                        R.id.btn_hash_tag -> {
+                            createNotesViewModel.sendAction(CreateNotesState.TagAction)
+                        }
 
                         R.id.btn_media -> imagePicker.showPickerDialog()
                         R.id.btn_text -> Unit
@@ -126,11 +125,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
             }
             icAddNotes.setOnClickListener {
-                Log.e(
-                    "setClickListeners",
-                    "setClickListeners: ${innerNavController?.currentDestination?.label}",
-                )
-                createNotesViewModel.setCurrentNoteId(noteId = -1)
+                createNotesViewModel.setupNoteEntity(createNoteEntity = null)
                 innerNavController?.safeNav(
                     currentDestId = R.id.homeFragment,
                     actionId = R.id.action_homeFragment_to_createNotesFragment

@@ -131,4 +131,21 @@
         app:layout_constraintTop_toBottomOf="@+id/tvNotes"
         tools:listitem="@layout/note_item_layout" />
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_no_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_8sdp"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit"
+        android:text="@string/no_notes_for_current_day"
+        android:textAlignment="center"
+        android:textColor="@color/txt_color_gray"
+        android:textSize="@dimen/_14ssp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/rvCalenderNotes"
+        app:layout_constraintEnd_toEndOf="@+id/rvCalenderNotes"
+        app:layout_constraintStart_toStartOf="@+id/rvCalenderNotes"
+        app:layout_constraintTop_toTopOf="@+id/rvCalenderNotes" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

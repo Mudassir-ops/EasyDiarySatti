@@ -12,6 +12,7 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.monthlyFormatDate
 import com.example.easydiarysatti.safeNav
+import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
 import com.example.easydiarysatti.viewBinding
@@ -26,7 +27,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(onNoteItemClick = { note ->
-            createNotesViewModel.setCurrentNoteId(noteId = note.noteId)
+            createNotesViewModel.setupNoteEntity(createNoteEntity = note)
             moveToNextScreen()
         })
     }
@@ -37,6 +38,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupRecyclerView()
         observeAllNotes()
         setupTodayDate()
+        setStyledDateTime(binding?.tvDate ?: return, R.color.track_color)
     }
 
     private fun clickListener() {

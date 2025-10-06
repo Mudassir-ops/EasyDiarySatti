@@ -77,10 +77,17 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.uiState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { state ->
                 if (!state.isLoading) {
-                    setupRecyclerView()
-                    calenderItemAdapter.submitList(
-                        state.notesByDate[state.selectedDay] ?: emptyList()
-                    )
+                    if (state.notesByDate[state.selectedDay]?.isEmpty() == false) {
+                        binding?.tvNoData?.visibility = View.GONE
+                        binding?.rvCalenderNotes?.visibility = View.VISIBLE
+                        setupRecyclerView()
+                        calenderItemAdapter.submitList(
+                            state.notesByDate[state.selectedDay] ?: emptyList()
+                        )
+                    } else {
+                        binding?.tvNoData?.visibility = View.VISIBLE
+                        binding?.rvCalenderNotes?.visibility = View.GONE
+                    }
                     binding?.calendarView?.notifyCalendarChanged()
                 }
             }
@@ -210,8 +217,6 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         shimmerAdapter = null
     }
 
-    fun dpToPx(dp: Int): Int =
-        (dp * resources.displayMetrics.density).toInt()
 }
 
 

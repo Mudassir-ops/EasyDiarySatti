@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/onBoardingFragment">
+    app:startDestination="@+id/mainFragment">
 
     <fragment
         android:id="@+id/onBoardingFragment"
@@ -23,6 +23,7 @@
             android:id="@+id/action_permissionFragment_to_nameFragment"
             app:destination="@id/nameFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/languageFragment"
         android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
@@ -32,6 +33,7 @@
             android:id="@+id/action_languageFragment_to_themesFragment"
             app:destination="@id/themesFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.easydiarysatti.ui.signup.SignUpFragment"

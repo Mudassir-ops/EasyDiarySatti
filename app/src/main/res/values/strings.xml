@@ -47,7 +47,7 @@
     <string name="add_note">Add Note</string>
     <string name="save">Save</string>
     <string name="header">Header</string>
-    <string name="write_your_thoughts_here">Write your thoughts here...</string>
+    <string name="write_your_thoughts_here">Write your thoughts here…</string>
     <string name="hash_tag">Hash Tag</string>
     <string name="media">Media</string>
     <string name="text">Text</string>
@@ -57,5 +57,6 @@
     <string name="personal"># Personal</string>
     <string name="no_data_in_library">No Data Found In Library</string>
     <string name="tags">Tags</string>
+    <string name="no_notes_for_current_day">No Notes For Selected Day</string>
 
 </resources>

@@ -13,7 +13,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="@dimen/_20sdp">
+        android:paddingHorizontal="@dimen/_20sdp"
+        android:paddingVertical="@dimen/_10sdp">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_date"
@@ -22,7 +23,7 @@
             android:fontFamily="@font/outfit_medium"
             android:text="13-8- | 4:45 PM"
             android:textColor="@color/black"
-            android:textSize="@dimen/_13ssp"
+            android:textSize="@dimen/_12ssp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText" />
@@ -55,10 +56,9 @@
             android:id="@+id/label_remainder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/_8sdp"
             android:text="@string/reminder"
             android:textColor="@color/txt_color_gray"
-            android:textSize="@dimen/_13ssp"
+            android:textSize="@dimen/_12ssp"
             app:layout_constraintBaseline_toBaselineOf="@id/icSwitchRemainder"
             app:layout_constraintEnd_toStartOf="@id/icSwitchRemainder" />
 

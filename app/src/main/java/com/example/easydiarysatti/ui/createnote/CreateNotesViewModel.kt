@@ -29,8 +29,6 @@ class CreateNotesViewModel @Inject constructor(
     private val _noteState = MutableStateFlow<CreateNoteEntity?>(null)
     val noteState: StateFlow<CreateNoteEntity?> = _noteState
 
-    private val _createdNoteId = MutableStateFlow<Long?>(null)
-    val createdNoteId: StateFlow<Long?> = _createdNoteId
 
     private var imagesList: MutableList<String>? = mutableListOf()
     private var tagList: MutableList<String>? = mutableListOf()
@@ -49,21 +47,9 @@ class CreateNotesViewModel @Inject constructor(
         }
     }
 
-    fun observeNote() {
+    fun setupNoteEntity(createNoteEntity: CreateNoteEntity?) {
         viewModelScope.launch {
-            createdNoteId.filterNotNull().collect { id ->
-                Log.e("observeNote", "observeNote:$id ")
-                createNoteRepository.observeNoteById(id).distinctUntilChanged().collect { note ->
-                    Log.e("observeNote", "observeNote:$note ")
-                    _noteState.value = note
-                }
-            }
-        }
-    }
-
-    fun setCurrentNoteId(noteId: Long) {
-        viewModelScope.launch {
-            _createdNoteId.emit(noteId)
+            _noteState.value = createNoteEntity
         }
     }
 
@@ -89,6 +75,13 @@ class CreateNotesViewModel @Inject constructor(
     fun removeTag(tag: String) {
         tagList?.remove(tag)
     }
+    fun clearImages(){
+        imagesList?.clear()
+    }
+
+    fun clearTags(){
+        tagList?.clear()
+    }
 
 }
 
@@ -96,6 +89,7 @@ sealed interface CreateNotesState {
     data object SaveNote : CreateNotesState
     data class ImagePicked(val imageUri: Uri?) : CreateNotesState
     data class AddTag(val tag: String?) : CreateNotesState
+    data object TagAction : CreateNotesState
     data object DiscardNote : CreateNotesState
     data object BackAction : CreateNotesState
     data class ShowMessage(val msg: String) : CreateNotesState

@@ -12,6 +12,7 @@ import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.Rect
+import android.graphics.Typeface
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.graphics.drawable.RippleDrawable
@@ -21,6 +22,10 @@ import android.os.Build.VERSION.SDK_INT
 import android.os.Bundle
 import android.os.Parcelable
 import android.provider.Settings
+import android.text.Spannable
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
+import android.text.style.StyleSpan
 import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
@@ -57,6 +62,7 @@ import java.text.DateFormatSymbols
 import java.text.SimpleDateFormat
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Calendar
@@ -636,4 +642,45 @@ fun AppCompatImageView.setCustomDayEmojiBackground(
     background = drawable
 }
 
+fun setStyledDateTime(tvDate: MaterialTextView, colorId: Int) {
+    val formatter = SimpleDateFormat("dd-MM-yy | h:mm a", Locale.getDefault())
+    val formatted = formatter.format(Date()).uppercase(Locale.getDefault())
+    // Split into parts
+    val parts = formatted.split("|")
+    val datePart = parts.getOrNull(0)?.trim() ?: ""
+    val timePart = parts.getOrNull(1)?.trim() ?: ""
 
+    val separator = " | "
+
+    val spannable = SpannableStringBuilder().apply {
+        append(datePart)
+        setSpan(
+            StyleSpan(Typeface.BOLD),
+            0, datePart.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        val startSeparator = length
+        append(separator)
+        setSpan(
+            ForegroundColorSpan(
+                ContextCompat.getColor(
+                    tvDate.context ?: return,
+                    R.color.app_primary_color
+                )
+            ),
+            startSeparator,
+            startSeparator + separator.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        val startTime = length
+        append(timePart)
+        setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(tvDate.context, colorId)),
+            startTime,
+            startTime + timePart.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+    }
+    tvDate.text = spannable
+}

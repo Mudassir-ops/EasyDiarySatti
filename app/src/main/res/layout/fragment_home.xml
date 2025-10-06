@@ -26,7 +26,7 @@
         android:shadowColor="@color/black"
         android:text="@string/_9_sep_2025"
         android:textColor="@color/track_color"
-        android:textSize="@dimen/_16ssp"
+        android:textSize="@dimen/_14ssp"
         app:layout_constraintBottom_toBottomOf="@+id/iv_sorting"
         app:layout_constraintStart_toEndOf="@id/iv_sorting"
         app:layout_constraintTop_toTopOf="@+id/iv_sorting" />

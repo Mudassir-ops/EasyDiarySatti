@@ -72,7 +72,7 @@ class EasyDiaryLocalDataSourceImpl(
         return dao.getOldImages(id = id)
     }
 
-    override fun observeAllImages(): Flow<List<String>?> {
+    override fun observeAllImages(): Flow<List<CreateNoteEntity>?> {
         return dao.observeAllImages().distinctUntilChanged()
     }
 
@@ -81,6 +81,10 @@ class EasyDiaryLocalDataSourceImpl(
         endOfDay: Long
     ): Flow<List<CreateNoteEntity>?> {
         return dao.observeNotesForDay(startOfDay = startOfDay, endOfDay = endOfDay)
+    }
+
+    override suspend fun updateSortOrder(isAscending: Boolean) {
+       return dao.updateSortOrder(isAscending)
     }
 
 }

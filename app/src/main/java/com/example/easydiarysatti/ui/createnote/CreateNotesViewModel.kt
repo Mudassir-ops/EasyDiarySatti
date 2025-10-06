@@ -83,6 +83,7 @@ class CreateNotesViewModel @Inject constructor(
     fun clearTags() {
         tagList?.clear()
     }
+
 }
 
 sealed interface CreateNotesState {

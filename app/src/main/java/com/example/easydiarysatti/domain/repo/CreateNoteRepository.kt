@@ -7,13 +7,15 @@ interface CreateNoteRepository {
     suspend fun createEmptyNote(): Long
     suspend fun mergeAndSave(note: CreateNoteEntity)
     suspend fun getNoteById(id: Long): CreateNoteEntity?
-    fun observeNoteById(id: Long): kotlinx.coroutines.flow.Flow<CreateNoteEntity?>
-    fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
-    fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
+    fun observeNoteById(id: Long): Flow<CreateNoteEntity?>
+    fun observeAllNotes(): Flow<List<CreateNoteEntity>?>
+    fun observeAllImages(): Flow<List<CreateNoteEntity>?>
 
     suspend fun getOldImages(noteId: Long): List<String>?
     fun observeNotesForDay(
         startOfDay: Long,
         endOfDay: Long
     ): Flow<List<CreateNoteEntity>?>
+
+    suspend fun updateSortOrder(isAscending: Boolean)
 }

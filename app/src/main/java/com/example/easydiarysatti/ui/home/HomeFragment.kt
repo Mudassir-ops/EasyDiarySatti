@@ -25,6 +25,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val binding by viewBinding(FragmentHomeBinding::bind)
     private val viewModel by viewModels<HomeViewModel>()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
+    private var sortingOrder = false
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(onNoteItemClick = { note ->
             createNotesViewModel.setupNoteEntity(createNoteEntity = note)
@@ -43,6 +44,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun clickListener() {
         binding?.apply {
+            ivSorting.setOnClickListener {
+                sortingOrder = !sortingOrder
+                ivSorting.rotation = if (sortingOrder) 180f else 0f
+                viewModel.updateSortOrder(isAscending = sortingOrder)
+            }
         }
     }
 
@@ -67,6 +73,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 .collect { state ->
                     when (state) {
                         is HomeNotesState.Success -> {
+                            sortingOrder = state.notes.firstOrNull()?.isAscending == false
+                            binding?.ivSorting?.rotation = if (sortingOrder) 180f else 0f
                             binding?.visible(hasNotes = true)
                             notesItemAdapter.submitList(state.notes)
                         }

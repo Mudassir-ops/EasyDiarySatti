@@ -22,13 +22,14 @@ interface EasyDiaryLocalDataSource {
     suspend fun updateTextAlignment(noteId: Long, alignment: String)
     suspend fun updateText(noteId: Long, text: String)
 
-    fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
+    fun observeAllNotes(): Flow<List<CreateNoteEntity>?>
     suspend fun getOldImages(id: Long): List<String>?
-    fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
+    fun observeAllImages(): Flow<List<CreateNoteEntity>?>
 
     fun observeNotesForDay(
         startOfDay: Long,
         endOfDay: Long
     ): Flow<List<CreateNoteEntity>?>
 
+    suspend fun updateSortOrder(isAscending: Boolean)
 }

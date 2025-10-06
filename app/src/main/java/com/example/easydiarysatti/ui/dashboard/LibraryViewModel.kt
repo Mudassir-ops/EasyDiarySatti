@@ -33,7 +33,7 @@ class LibraryViewModel @Inject constructor(
     }
 
     fun observeAllImages() {
-        createNoteRepository.observeAllNotes()
+        createNoteRepository.observeAllImages()
             .onStart {
                 _allImagesState.value = LibraryImagesState.Loading
             }

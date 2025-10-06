@@ -49,6 +49,11 @@ class HomeViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    fun updateSortOrder(isAscending: Boolean) {
+        viewModelScope.launch {
+            createNoteRepository.updateSortOrder(isAscending = isAscending)
+        }
+    }
 }
 
 sealed interface HomeNotesState {

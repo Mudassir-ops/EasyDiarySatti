@@ -65,16 +65,23 @@ interface CreateNoteDao {
     @Query("UPDATE create_note_entity_table SET images = :images WHERE noteId = :noteId")
     suspend fun updateImages(noteId: Long, images: List<String>)
 
-    @Query("SELECT * FROM create_note_entity_table")
-    fun observeAllNotes(): kotlinx.coroutines.flow.Flow<List<CreateNoteEntity>?>
+    @Query(
+        """
+    SELECT * FROM create_note_entity_table
+    ORDER BY 
+        CASE WHEN (SELECT isAscending FROM create_note_entity_table LIMIT 1) = 1 THEN creationTime END ASC,
+        CASE WHEN (SELECT isAscending FROM create_note_entity_table LIMIT 1) = 0 THEN creationTime END DESC
+"""
+    )
+    fun observeAllNotes(): Flow<List<CreateNoteEntity>>
 
 
     @Query("SELECT images FROM create_note_entity_table WHERE noteId = :id")
     suspend fun getOldImages(id: Long): List<String>?
 
 
-    @Query("SELECT images FROM create_note_entity_table")
-    fun observeAllImages(): kotlinx.coroutines.flow.Flow<List<String>?>
+    @Query("SELECT * FROM create_note_entity_table")
+    fun observeAllImages(): Flow<List<CreateNoteEntity>?>
 
 
     @Query("SELECT * FROM create_note_entity_table WHERE creationTime BETWEEN :startOfDay AND :endOfDay ORDER BY creationTime DESC")
@@ -82,5 +89,8 @@ interface CreateNoteDao {
         startOfDay: Long,
         endOfDay: Long
     ): Flow<List<CreateNoteEntity>?>
+
+    @Query("UPDATE create_note_entity_table SET isAscending = :isAscending")
+    suspend fun updateSortOrder(isAscending: Boolean)
 
 }

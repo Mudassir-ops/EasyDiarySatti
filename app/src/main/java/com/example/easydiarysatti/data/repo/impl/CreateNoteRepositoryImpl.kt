@@ -56,7 +56,7 @@ class CreateNoteRepositoryImpl(
         return localDataSource.observeAllNotes()
     }
 
-    override fun observeAllImages(): Flow<List<String>?> {
+    override fun observeAllImages(): Flow<List<CreateNoteEntity>?> {
         return localDataSource.observeAllImages()
     }
 
@@ -71,4 +71,7 @@ class CreateNoteRepositoryImpl(
         return localDataSource.observeNotesForDay(startOfDay = startOfDay, endOfDay = endOfDay)
     }
 
+    override suspend fun updateSortOrder(isAscending: Boolean) {
+        return localDataSource.updateSortOrder(isAscending)
+    }
 }

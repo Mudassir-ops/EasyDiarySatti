@@ -19,6 +19,7 @@ import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.MultiImageAdapter
 import com.example.easydiarysatti.utills.showBackgroundDialog
+import com.example.easydiarysatti.utills.showEditTexDialog
 import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -149,7 +150,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             imagePicker.showPickerDialog()
                         }
 
-                        R.id.btn_text -> Unit
+                        R.id.btn_text -> {
+                            showEditTexDialog(
+                                selectedEmotion = {
+
+                                },
+                                closeDialog = {
+                                    binding?.bottomNavCreateNote?.clearChecked()
+                                }
+                            )
+                        }
                     }
                 }
             }

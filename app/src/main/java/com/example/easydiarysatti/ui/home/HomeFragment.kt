@@ -75,9 +75,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                             notesItemAdapter.submitList(state.notes)
                             if (state.notes.isEmpty()) return@collect
                             if (viewModel.currentSortOrder) {
-                                binding?.rvNotes?.scrollToPosition(state.notes.size - 1)
+                                binding?.rvNotes?.smoothScrollToPosition(state.notes.size - 1)
                             } else {
-                                binding?.rvNotes?.scrollToPosition(0)
+                                binding?.rvNotes?.smoothScrollToPosition(0)
                             }
                         }
 

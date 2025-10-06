@@ -1,7 +1,6 @@
 package com.example.easydiarysatti.ui.home
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -9,7 +8,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.monthlyFormatDate
@@ -20,7 +18,6 @@ import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
 import com.example.easydiarysatti.viewBinding
 import com.example.easydiarysatti.visible
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint

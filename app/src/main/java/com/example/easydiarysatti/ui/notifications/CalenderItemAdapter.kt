@@ -7,7 +7,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.CalenderNoteItemLayoutBinding
-import com.example.easydiarysatti.databinding.NoteItemLayoutBinding
 
 class CalenderItemAdapter(
     private val onNoteItemClick: (CreateNoteEntity) -> Unit

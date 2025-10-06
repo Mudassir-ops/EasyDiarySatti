@@ -11,7 +11,7 @@
             <solid android:color="#FFFFFF" />
             <size
                 android:width="24dp"
-                android:height="24dp"/>
+                android:height="24dp" />
         </shape>
     </item>
 

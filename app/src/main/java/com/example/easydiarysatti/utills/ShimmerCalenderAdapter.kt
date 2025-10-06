@@ -12,7 +12,8 @@ class ShimmerCalenderAdapter(private val itemCount: Int) :
     class ShimmerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ShimmerViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.shimmer_calender_loading, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.shimmer_calender_loading, parent, false)
         return ShimmerViewHolder(view)
     }
 

@@ -88,7 +88,7 @@ class EasyDiaryLocalDataSourceImpl(
     }
 
     override fun observeSortOrder(): Flow<Boolean?> {
-       return dao.observeSortOrder()
+        return dao.observeSortOrder()
     }
 
 }

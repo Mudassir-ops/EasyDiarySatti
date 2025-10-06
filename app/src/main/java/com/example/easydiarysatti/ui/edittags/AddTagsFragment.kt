@@ -5,18 +5,13 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.easydiarysatti.NOTE_ENTITY
-import com.example.easydiarysatti.ON_GOING_DATA_MODEL
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentAddTagsBinding
-import com.example.easydiarysatti.databinding.FragmentPermissionBinding
-import com.example.easydiarysatti.parcelable
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.getValue
 
 @AndroidEntryPoint
 class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {

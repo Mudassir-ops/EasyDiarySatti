@@ -2,11 +2,8 @@ package com.example.easydiarysatti.ui.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import com.example.easydiarysatti.toDateString
-import com.example.easydiarysatti.ui.home.HomeNotesState
-
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

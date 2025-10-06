@@ -1,20 +1,14 @@
 package com.example.easydiarysatti.ui.theme
 
-import androidx.fragment.app.viewModels
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
-import com.example.easydiarysatti.databinding.FragmentNameBinding
-import com.example.easydiarysatti.databinding.FragmentNameBinding.bind
 import com.example.easydiarysatti.databinding.FragmentThemesBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.safeNav
-import com.example.easydiarysatti.ui.name.NameViewModel
-import com.example.easydiarysatti.ui.uimodels.OnGoingScreenUiModel
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

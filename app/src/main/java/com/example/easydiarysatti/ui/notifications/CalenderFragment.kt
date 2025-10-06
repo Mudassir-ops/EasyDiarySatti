@@ -1,6 +1,5 @@
 package com.example.easydiarysatti.ui.notifications
 
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -10,9 +9,6 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import java.time.YearMonth
-import java.time.DayOfWeek
-
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCalenderBinding
@@ -26,7 +22,6 @@ import com.example.easydiarysatti.utills.ShimmerCalenderAdapter
 import com.example.easydiarysatti.viewBinding
 import com.kizitonwose.calendar.core.CalendarDay
 import com.kizitonwose.calendar.core.CalendarMonth
-import com.kizitonwose.calendar.core.WeekDay
 import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.view.MonthDayBinder
 import com.kizitonwose.calendar.view.MonthHeaderFooterBinder
@@ -34,11 +29,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.MonthDay
-import java.time.format.DateTimeFormatter
+import java.time.YearMonth
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
-import java.util.Calendar
 import java.util.Locale
 
 @AndroidEntryPoint

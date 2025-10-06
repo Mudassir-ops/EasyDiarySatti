@@ -11,11 +11,8 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
-import com.example.easydiarysatti.databinding.FragmentLanguageBinding
-import com.example.easydiarysatti.databinding.FragmentLanguageBinding.bind
 import com.example.easydiarysatti.databinding.FragmentPermissionBinding
 import com.example.easydiarysatti.safeNav
-import com.example.easydiarysatti.setSelectedBg
 import com.example.easydiarysatti.showPermissionDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint

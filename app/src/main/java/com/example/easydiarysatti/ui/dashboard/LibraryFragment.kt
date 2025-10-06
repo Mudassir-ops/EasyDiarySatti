@@ -53,6 +53,11 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
                 .collect { state ->
                     when (state) {
                         is LibraryImagesState.Success -> {
+                            if (state.libraryItems.isEmpty()) {
+                                binding?.libraryRecyclerView?.visibility = View.GONE
+                                binding?.tvNoData?.visibility = View.VISIBLE
+                                return@collect
+                            }
                             binding?.libraryRecyclerView?.visibility = View.VISIBLE
                             binding?.tvNoData?.visibility = View.GONE
                             adapter?.submitList(state.libraryItems)

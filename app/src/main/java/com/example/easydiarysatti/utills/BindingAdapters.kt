@@ -1,7 +1,6 @@
 package com.example.easydiarysatti.utills
 
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
@@ -15,18 +14,18 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.DrawableCompat
+import androidx.core.graphics.toColorInt
 import androidx.databinding.BindingAdapter
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
+import com.canhub.cropper.CropImageView
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.lightenColor
 import com.google.android.material.textview.MaterialTextView
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
-import androidx.core.graphics.toColorInt
-import com.canhub.cropper.CropImageView
-import com.example.easydiarysatti.lightenColor
-import java.io.File
 
 @BindingAdapter("android:text")
 fun setText(view: MaterialTextView, text: CharSequence?) {

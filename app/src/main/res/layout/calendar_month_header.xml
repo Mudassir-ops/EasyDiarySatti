@@ -14,7 +14,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Mon"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="0dp"
@@ -22,7 +22,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Tue"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="0dp"
@@ -30,7 +30,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Wed"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="0dp"
@@ -38,7 +38,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Thu"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="0dp"
@@ -46,7 +46,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Fri"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="0dp"
@@ -54,7 +54,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Sat"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 
     <TextView
         android:layout_width="0dp"
@@ -62,5 +62,5 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="Sun"
-        android:textStyle="bold"/>
+        android:textStyle="bold" />
 </LinearLayout>

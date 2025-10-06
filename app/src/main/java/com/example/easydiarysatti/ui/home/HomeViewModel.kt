@@ -1,14 +1,10 @@
 package com.example.easydiarysatti.ui.home
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.example.easydiarysatti.data.local.CreateNoteEntity
-import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
-import com.example.easydiarysatti.data.repo.impl.EasyDiaryLocalDataSourceImpl
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch

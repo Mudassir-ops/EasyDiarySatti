@@ -169,6 +169,9 @@ inline fun Fragment.showEditTexDialog(
             imageDialog.dismiss()
             closeDialog.invoke()
         }
+        imageDialog.setOnDismissListener {
+            closeDialog.invoke()
+        }
     }
 }
 

@@ -355,7 +355,7 @@ fun View.loadBackground(
     placeholder: Int? = null
 ) {
     val request = Glide.with(context)
-        .load(resourceId ?: placeholder)
+        .load(resourceId)
     placeholder?.let { request.placeholder(it) }
     request.into(object : com.bumptech.glide.request.target.CustomTarget<Drawable>() {
         override fun onResourceReady(

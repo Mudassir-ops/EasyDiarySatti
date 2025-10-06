@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.ui.home
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -76,13 +77,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                             binding?.visible(hasNotes = true)
                             notesItemAdapter.submitList(state.notes)
                             if (state.notes.isEmpty()) return@collect
-                            val layoutManager =
-                                binding?.rvNotes?.layoutManager as? LinearLayoutManager
-                                    ?: return@collect
                             if (viewModel.currentSortOrder) {
-                                layoutManager.scrollToPositionWithOffset(state.notes.size - 1, 0)
+                                binding?.rvNotes?.scrollToPosition(state.notes.size - 1)
                             } else {
-                                layoutManager.scrollToPositionWithOffset(0, 0)
+                                binding?.rvNotes?.scrollToPosition(0)
                             }
                         }
 

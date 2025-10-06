@@ -156,41 +156,43 @@ inline fun Fragment.showBackgroundDialog(
     adapterMultiImageAdapter: MultiImageAdapter,
     crossinline closeDialog: () -> Unit
 ) {
-    val binding = DialogBackgroundBinding.inflate(LayoutInflater.from(this.context ?: return))
-    val imageDialog = Dialog(this.context ?: return)
-    imageDialog.run {
+    val context = this.context ?: return
+    val binding = DialogBackgroundBinding.inflate(LayoutInflater.from(context))
+    val imageDialog = Dialog(context)
+
+    imageDialog.apply {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(binding.root)
-        this.window?.setLayout(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT
-        )
-        val params = WindowManager.LayoutParams()
-        params.copyFrom(window?.attributes)
-        val displayMetrics = context.resources.displayMetrics
-        val marginWidthPx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            50f,
-            displayMetrics
-        ).toInt()
-        params.width = displayMetrics.widthPixels - marginWidthPx
-        val marginHeightPx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            300f,
-            displayMetrics
-        ).toInt()
-        params.height = displayMetrics.heightPixels - marginHeightPx
-        window?.attributes = params
-        window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        window?.apply {
+            val displayMetrics = context.resources.displayMetrics
+            val marginWidthPx = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 50f, displayMetrics
+            ).toInt()
+            val marginHeightPx = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP, 300f, displayMetrics
+            ).toInt()
+            setLayout(
+                displayMetrics.widthPixels - marginWidthPx,
+                displayMetrics.heightPixels - marginHeightPx
+            )
+            setBackgroundDrawableResource(android.R.color.transparent)
+        }
+
         setCancelable(false)
         setCanceledOnTouchOutside(false)
         show()
     }
 
+    adapterMultiImageAdapter.onItemClick = {
+        imageDialog.dismiss()
+        closeDialog.invoke()
+    }
+
     binding.apply {
-        rvBackground.run {
+        rvBackground.apply {
             adapter = adapterMultiImageAdapter
-            hasFixedSize()
+            setHasFixedSize(true)
         }
         ivClose.setOnClickListener {
             imageDialog.dismiss()
@@ -198,3 +200,4 @@ inline fun Fragment.showBackgroundDialog(
         }
     }
 }
+

@@ -15,6 +15,8 @@ class MultiImageAdapter(
     private val onImageClick: (Int?) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    var onItemClick: ((Int) -> Unit)? = null
+
     companion object {
         private const val TYPE_UPLOAD = 0
         private const val TYPE_IMAGE = 1
@@ -66,7 +68,10 @@ class MultiImageAdapter(
                 .load(item)
                 .transform(RoundedCorners(24))
                 .into(imageView)
-            imageView.setOnClickListener { onImageClick(item) }
+            imageView.setOnClickListener {
+                onImageClick(item)
+                onItemClick?.invoke(bindingAdapterPosition)
+            }
         }
     }
 }

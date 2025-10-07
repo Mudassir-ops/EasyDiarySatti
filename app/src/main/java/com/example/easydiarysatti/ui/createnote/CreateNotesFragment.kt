@@ -15,11 +15,14 @@ import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
+import com.example.easydiarysatti.getHeadingSize
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setFont
+import com.example.easydiarysatti.setHeadingSize
 import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
 import com.example.easydiarysatti.setStyledDateTime
+import com.example.easydiarysatti.setTextAlignmentByName
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -199,6 +202,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         is CreateNotesState.FontAction -> onFontSelected(note.font)
+                        is CreateNotesState.TextAlignment -> setAlignment(alignment = note)
+                        is CreateNotesState.HeadingSize -> setFontSize(headingSize = note)
+                        is CreateNotesState.TextColor -> setTextColor(headingSize = note)
                     }
                 }
         }
@@ -246,6 +252,35 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.apply {
             etHeader.setFont(fontName, context ?: return)
             etDescription.setFont(fontName, context ?: return)
+        }
+    }
+
+    private fun setAlignment(alignment: CreateNotesState.TextAlignment) {
+        binding?.apply {
+            setTextAlignmentByName(etHeader, alignment.alignment)
+            setTextAlignmentByName(etDescription, alignment.alignment)
+        }
+    }
+
+    private fun setFontSize(headingSize: CreateNotesState.HeadingSize) {
+        val fontSizePair = Pair(
+            (getHeadingSize(headingSize.headingSize) + 0F),
+            (getHeadingSize(headingSize.headingSize) + 3F)
+        )
+        binding?.apply {
+            etHeader.setHeadingSize(
+                textSizeInSp = fontSizePair.first
+            )
+            etDescription.setHeadingSize(
+                textSizeInSp = fontSizePair.second
+            )
+        }
+    }
+
+    private fun setTextColor(textColor: CreateNotesState.TextColor) {
+        binding?.apply {
+            etHeader.setTextColor(textColor.textColor)
+            etDescription.setTextColor(textColor.textColor)
         }
     }
 

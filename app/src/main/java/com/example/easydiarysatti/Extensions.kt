@@ -724,3 +724,79 @@ fun AppCompatEditText.setFont(fontName: String, context: Context?) {
 }
 
 
+fun setExclusiveSelection(
+    vararg views: AppCompatImageView,
+    onSelected: (AppCompatImageView) -> Unit = {}
+) {
+    views.forEach { view ->
+        view.setOnClickListener {
+            views.forEach { it.isSelected = false; it.alpha = 0.5f }
+            view.isSelected = true
+            view.alpha = 1f
+            onSelected(view)
+        }
+    }
+}
+
+fun setExclusiveSelectionHeadingSize(
+    vararg views: MaterialTextView,
+    onSelected: (MaterialTextView) -> Unit = {}
+) {
+    views.forEach { view ->
+        view.setOnClickListener {
+            views.forEach { it.isSelected = false; it.alpha = 0.5f }
+            view.isSelected = true
+            view.alpha = 1f
+            onSelected(view)
+        }
+    }
+}
+
+fun setTextAlignmentByName(textView: AppCompatEditText, alignment: String) {
+    when (alignment.lowercase()) {
+        "left" -> textView.gravity = Gravity.START
+        "center" -> textView.gravity = Gravity.CENTER
+        "right" -> textView.gravity = Gravity.END
+    }
+}
+
+
+fun AppCompatEditText?.setHeadingSize(textSizeInSp: Float) {
+    this?.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeInSp)
+}
+
+fun getHeadingSize(index: Int): Float {
+    return when (index) {
+        0 -> 19f
+        1 -> 20f
+        2 -> 23f
+        else -> 19F
+    }
+}
+
+fun setExclusiveSelectionColor(
+    vararg views: AppCompatImageView,
+    selectedTint: Int,
+    unselectedTint: Int,
+    onSelected: (AppCompatImageView, Int) -> Unit = { _, _ -> }
+) {
+    views.forEach { view ->
+        view.setOnClickListener {
+            views.forEach {
+                it.isSelected = false
+                it.alpha = 0.6f
+                it.imageTintList = ColorStateList.valueOf(unselectedTint)
+            }
+
+            view.isSelected = true
+            view.alpha = 1f
+            view.imageTintList = ColorStateList.valueOf(selectedTint)
+            val color = (view.backgroundTintList?.defaultColor ?: selectedTint)
+            onSelected(view, color)
+        }
+    }
+}
+
+
+
+

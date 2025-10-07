@@ -152,13 +152,23 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
                         R.id.btn_text -> {
                             showEditTexDialog(
-                                selectedEmotion = {
-
-                                },
                                 closeDialog = {
                                     binding?.bottomNavCreateNote?.clearChecked()
                                 }, fontSelectionListener = {
                                     createNotesViewModel.sendAction(CreateNotesState.FontAction(it))
+                                },
+                                textAlignmentListener = {
+                                    createNotesViewModel.sendAction(
+                                        CreateNotesState.TextAlignment(
+                                            it
+                                        )
+                                    )
+                                },
+                                textBoldListener = {
+                                    createNotesViewModel.sendAction(CreateNotesState.HeadingSize(it))
+                                },
+                                textColorListener = {
+                                    createNotesViewModel.sendAction(CreateNotesState.TextColor(it))
                                 }
                             )
                         }

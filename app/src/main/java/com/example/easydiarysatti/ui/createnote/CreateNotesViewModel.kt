@@ -90,6 +90,9 @@ sealed interface CreateNotesState {
     data object DiscardNote : CreateNotesState
     data object BackAction : CreateNotesState
     data class FontAction(val font: String) : CreateNotesState
+    data class TextAlignment(val alignment: String) : CreateNotesState
+    data class HeadingSize(val headingSize: Int) : CreateNotesState
+    data class TextColor(val textColor: Int) : CreateNotesState
     data class ChangeBg(val bgImageRes: Int) : CreateNotesState
     data class ShowMessage(val msg: String) : CreateNotesState
 }

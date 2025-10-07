@@ -1,12 +1,14 @@
 package com.example.easydiarysatti.utills
 
 import android.app.Dialog
+import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Window
 import android.view.WindowManager
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.DialogBackgroundBinding
@@ -16,6 +18,8 @@ import com.example.easydiarysatti.databinding.EditTextDialogBinding
 import com.example.easydiarysatti.domain.model.EmojiInfo
 import com.example.easydiarysatti.saveBitmapToUri
 import com.example.easydiarysatti.setExclusiveSelection
+import com.example.easydiarysatti.setExclusiveSelectionColor
+import com.example.easydiarysatti.setExclusiveSelectionHeadingSize
 
 inline fun Fragment.showEditFeelingsDialog(
     crossinline selectedEmotion: (EmojiInfo) -> Unit
@@ -50,32 +54,27 @@ inline fun Fragment.showEditFeelingsDialog(
                 colorHex = "#42ABD0",
                 name = "Happy",
                 tagColor = "#9870E2"
-            ),
-            ivEmojiCalm to EmojiInfo(
+            ), ivEmojiCalm to EmojiInfo(
                 drawableRes = R.drawable.emooji_calm,
                 colorHex = "#5EE3A9",
                 name = "Calm",
                 tagColor = "#981B9C"
-            ),
-            ivEmojiSad to EmojiInfo(
+            ), ivEmojiSad to EmojiInfo(
                 drawableRes = R.drawable.emoji_sad,
                 colorHex = "#FFDE8B",
                 name = "Sad",
                 tagColor = "#848D9B"
-            ),
-            ivEmojiExcited to EmojiInfo(
+            ), ivEmojiExcited to EmojiInfo(
                 drawableRes = R.drawable.emooji_excited,
                 colorHex = "#FF8D95",
                 name = "Excited",
                 tagColor = "#F8B903"
-            ),
-            ivEmojiAngry to EmojiInfo(
+            ), ivEmojiAngry to EmojiInfo(
                 drawableRes = R.drawable.emooji_angry,
                 colorHex = "#FFAC81",
                 name = "Angry",
                 tagColor = "#475569"
-            ),
-            ivEmojiPlayful to EmojiInfo(
+            ), ivEmojiPlayful to EmojiInfo(
                 drawableRes = R.drawable.emooji_playful,
                 colorHex = "#A29DFB",
                 name = "Playful",
@@ -95,9 +94,7 @@ inline fun Fragment.showEditFeelingsDialog(
 }
 
 inline fun Fragment.showImageCropDialog(
-    imagePath: String,
-    crossinline btnDone: (Uri?) -> Unit,
-    crossinline closeDialog: () -> Unit
+    imagePath: String, crossinline btnDone: (Uri?) -> Unit, crossinline closeDialog: () -> Unit
 ) {
     val binding = DialogImageviewBinding.inflate(LayoutInflater.from(this.context ?: return))
     val imageDialog = Dialog(this.context ?: return)
@@ -107,22 +104,17 @@ inline fun Fragment.showImageCropDialog(
 
 
         this.window?.setLayout(
-            WindowManager.LayoutParams.WRAP_CONTENT,
-            WindowManager.LayoutParams.WRAP_CONTENT
+            WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT
         )
         val params = WindowManager.LayoutParams()
         params.copyFrom(window?.attributes)
         val displayMetrics = context.resources.displayMetrics
         val marginWidthPx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            50f,
-            displayMetrics
+            TypedValue.COMPLEX_UNIT_DIP, 50f, displayMetrics
         ).toInt()
         params.width = displayMetrics.widthPixels - marginWidthPx
         val marginHeightPx = TypedValue.applyDimension(
-            TypedValue.COMPLEX_UNIT_DIP,
-            300f,
-            displayMetrics
+            TypedValue.COMPLEX_UNIT_DIP, 300f, displayMetrics
         ).toInt()
         params.height = displayMetrics.heightPixels - marginHeightPx
         window?.attributes = params
@@ -139,11 +131,10 @@ inline fun Fragment.showImageCropDialog(
         binding.imagePath = imagePath
         btnSave.setOnClickListener {
             val bitmap = cropImageView.getCroppedImage()
-            val cropUri =
-                saveBitmapToUri(
-                    bitmap = bitmap ?: return@setOnClickListener,
-                    context = context ?: return@setOnClickListener
-                )
+            val cropUri = saveBitmapToUri(
+                bitmap = bitmap ?: return@setOnClickListener,
+                context = context ?: return@setOnClickListener
+            )
             imageDialog.dismiss()
             btnDone.invoke(cropUri)
         }
@@ -155,8 +146,7 @@ inline fun Fragment.showImageCropDialog(
 }
 
 inline fun Fragment.showBackgroundDialog(
-    adapterMultiImageAdapter: MultiImageAdapter,
-    crossinline closeDialog: () -> Unit
+    adapterMultiImageAdapter: MultiImageAdapter, crossinline closeDialog: () -> Unit
 ) {
     val context = this.context ?: return
     val binding = DialogBackgroundBinding.inflate(LayoutInflater.from(context))
@@ -204,14 +194,14 @@ inline fun Fragment.showBackgroundDialog(
 }
 
 inline fun Fragment.showEditTexDialog(
-    crossinline selectedEmotion: (EmojiInfo) -> Unit,
     crossinline closeDialog: () -> Unit,
-    crossinline fontSelectionListener: (fontName: String) -> Unit
+    crossinline fontSelectionListener: (fontName: String) -> Unit,
+    crossinline textAlignmentListener: (alignment: String) -> Unit,
+    crossinline textBoldListener: (fontSize: Int) -> Unit,
+    crossinline textColorListener: (color: Int) -> Unit,
 ) {
     val binding = EditTextDialogBinding.inflate(LayoutInflater.from(context ?: return))
     val imageDialog = Dialog(context ?: return)
-
-
 
     imageDialog.run {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -244,6 +234,38 @@ inline fun Fragment.showEditTexDialog(
             fontSelectionListener.invoke(fontName.orEmpty())
             Log.d("FontSelected", "Selected font: $fontName")
         }
+
+        setExclusiveSelection(
+            binding.icStartLine, binding.icCenterLine, binding.icEndLine
+        ) { selectedView ->
+            when (selectedView.id) {
+                R.id.icStartLine -> textAlignmentListener.invoke("left")
+                R.id.icCenterLine -> textAlignmentListener.invoke("center")
+                R.id.icEndLine -> textAlignmentListener.invoke("right")
+            }
+        }
+
+        setExclusiveSelectionHeadingSize(
+            binding.icHeadingOne, binding.icHeadingTwo, binding.icHeadingThree
+        ) { selectedView ->
+            when (selectedView.id) {
+                R.id.icStartLine -> textBoldListener.invoke(0)
+                R.id.icCenterLine -> textBoldListener.invoke(1)
+                R.id.icEndLine -> textBoldListener.invoke(2)
+            }
+        }
+
+        setExclusiveSelectionColor(
+            binding.icBlackColor,
+            binding.icDarkGrayColor,
+            binding.icLightGrayColor,
+            binding.icBlueColor,
+            selectedTint = ContextCompat.getColor(requireContext(), R.color.app_primary_color),
+            unselectedTint = ContextCompat.getColor(requireContext(), R.color.track_color)
+        ) { selectedView, color ->
+            val color = selectedView.backgroundTintList?.defaultColor ?: Color.BLACK
+            textColorListener(color)
+        }
         ivClose.setOnClickListener {
             imageDialog.dismiss()
             closeDialog.invoke()
@@ -252,5 +274,4 @@ inline fun Fragment.showEditTexDialog(
             closeDialog.invoke()
         }
     }
-
 }

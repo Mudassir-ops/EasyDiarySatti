@@ -157,6 +157,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                 },
                                 closeDialog = {
                                     binding?.bottomNavCreateNote?.clearChecked()
+                                }, fontSelectionListener = {
+                                    createNotesViewModel.sendAction(CreateNotesState.FontAction(it))
                                 }
                             )
                         }

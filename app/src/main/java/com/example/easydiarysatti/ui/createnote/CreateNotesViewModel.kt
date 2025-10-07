@@ -89,6 +89,7 @@ sealed interface CreateNotesState {
     data object TagAction : CreateNotesState
     data object DiscardNote : CreateNotesState
     data object BackAction : CreateNotesState
+    data class FontAction(val font: String) : CreateNotesState
     data class ChangeBg(val bgImageRes: Int) : CreateNotesState
     data class ShowMessage(val msg: String) : CreateNotesState
 }

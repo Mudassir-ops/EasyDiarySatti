@@ -18,12 +18,11 @@
         android:id="@+id/tv_onGoing_item_label_1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_10sdp"
         android:fontFamily="@font/outfit_medium"
         android:text="@string/text"
         android:textAlignment="center"
         android:textColor="@color/app_primary_color"
-        android:textSize="@dimen/_14ssp"
+        android:textSize="@dimen/_16ssp"
         app:layout_constraintBottom_toBottomOf="@+id/ivClose"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -33,79 +32,283 @@
         android:id="@+id/view_horizontal_line"
         android:layout_width="0dp"
         android:layout_height="1dp"
-        android:layout_marginVertical="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
         android:background="@color/app_primary_color"
         app:layout_constraintEnd_toEndOf="@+id/tv_onGoing_item_label_1"
         app:layout_constraintStart_toStartOf="@+id/tv_onGoing_item_label_1"
         app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1"
-        app:layout_constraintWidth_percent="0.8" />
+        app:layout_constraintWidth_percent="0.85" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_emoji_happy"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginTop="@dimen/_25sdp"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toStartOf="@+id/view_horizontal_line"
-        app:layout_constraintTop_toBottomOf="@+id/view_horizontal_line"
-        app:srcCompat="@drawable/emoji_happy" />
+        android:id="@+id/icStartLine"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:layout_marginVertical="@dimen/_10sdp"
+        app:layout_constraintBottom_toTopOf="@id/icBlueColor"
+        app:layout_constraintStart_toStartOf="@+id/icBlueColor"
+        app:layout_constraintTop_toBottomOf="@id/view_horizontal_line"
+        app:layout_constraintVertical_chainStyle="spread"
+        app:srcCompat="@drawable/ic_left"
+        app:tint="@color/app_primary_color" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_emoji_calm"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_emoji_happy"
-        app:layout_constraintEnd_toStartOf="@+id/iv_emoji_sad"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toEndOf="@+id/iv_emoji_happy"
-        app:layout_constraintTop_toTopOf="@+id/iv_emoji_happy"
-        app:srcCompat="@drawable/emooji_calm" />
+        android:id="@+id/icCenterLine"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:alpha="0.5"
+        app:layout_constraintBottom_toBottomOf="@id/icStartLine"
+        app:layout_constraintEnd_toStartOf="@id/icEndLine"
+        app:layout_constraintStart_toEndOf="@id/icStartLine"
+        app:layout_constraintTop_toTopOf="@id/icStartLine"
+        app:layout_constraintVertical_chainStyle="spread"
+        app:srcCompat="@drawable/ic_center"
+        app:tint="@color/app_primary_color" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_emoji_sad"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_emoji_calm"
-        app:layout_constraintEnd_toStartOf="@+id/iv_emoji_excited"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toEndOf="@+id/iv_emoji_calm"
-        app:layout_constraintTop_toTopOf="@+id/iv_emoji_calm"
-        app:srcCompat="@drawable/emoji_sad" />
+        android:id="@+id/icEndLine"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:layout_marginEnd="@dimen/_8sdp"
+        android:alpha="0.5"
+        app:layout_constraintBottom_toBottomOf="@id/icStartLine"
+        app:layout_constraintEnd_toStartOf="@id/verticalLine"
+        app:layout_constraintStart_toEndOf="@id/icCenterLine"
+        app:layout_constraintTop_toTopOf="@id/icStartLine"
+        app:layout_constraintVertical_chainStyle="spread"
+        app:srcCompat="@drawable/ic_right"
+        app:tint="@color/app_primary_color" />
 
-    <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_emoji_excited"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        app:layout_constraintBottom_toBottomOf="@+id/iv_emoji_sad"
+    <View
+        android:id="@+id/verticalLine"
+        android:layout_width="2dp"
+        android:layout_height="@dimen/_20sdp"
+        android:background="#2F7994"
+        app:layout_constraintBottom_toBottomOf="@id/icStartLine"
         app:layout_constraintEnd_toEndOf="@+id/view_horizontal_line"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintTop_toTopOf="@+id/iv_emoji_sad"
-        app:srcCompat="@drawable/emooji_excited" />
+        app:layout_constraintStart_toStartOf="@id/view_horizontal_line"
+        app:layout_constraintTop_toTopOf="@id/icStartLine" />
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/icHeadingOne"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/outfit_semibold"
+        android:text="@string/h1"
+        android:textColor="@color/app_primary_color"
+        android:textSize="@dimen/_15ssp"
+        app:layout_constraintBottom_toBottomOf="@id/icStartLine"
+        app:layout_constraintEnd_toStartOf="@id/icHeadingTwo"
+        app:layout_constraintStart_toEndOf="@id/verticalLine"
+        app:layout_constraintTop_toTopOf="@id/icStartLine" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/icHeadingTwo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.5"
+        android:fontFamily="@font/outfit_bold"
+        android:text="@string/h2"
+        android:textColor="@color/app_primary_color"
+        android:textSize="@dimen/_15ssp"
+        app:layout_constraintBottom_toBottomOf="@id/icStartLine"
+        app:layout_constraintEnd_toStartOf="@id/icHeadingThree"
+        app:layout_constraintStart_toEndOf="@id/icHeadingOne"
+        app:layout_constraintTop_toTopOf="@id/icStartLine" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/icHeadingThree"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:alpha="0.5"
+        android:fontFamily="@font/outfit_bold"
+        android:text="@string/h3"
+        android:textColor="@color/app_primary_color"
+        android:textSize="@dimen/_15ssp"
+        app:layout_constraintBottom_toBottomOf="@id/icStartLine"
+        app:layout_constraintEnd_toEndOf="@id/view_horizontal_line"
+        app:layout_constraintTop_toTopOf="@id/icStartLine" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_emoji_angry"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginVertical="@dimen/_30sdp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/iv_emoji_happy"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toStartOf="@+id/iv_emoji_happy"
-        app:layout_constraintTop_toBottomOf="@+id/iv_emoji_happy"
-        app:srcCompat="@drawable/emooji_angry" />
+        android:id="@+id/icBlueColor"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:layout_marginTop="@dimen/_5sdp"
+        android:background="@drawable/color_gradient"
+        app:layout_constraintBottom_toTopOf="@id/fontIntaliana"
+        app:layout_constraintStart_toStartOf="@+id/view_horizontal_line"
+        app:layout_constraintTop_toBottomOf="@id/icStartLine" />
 
     <androidx.appcompat.widget.AppCompatImageView
-        android:id="@+id/iv_emoji_playful"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        android:layout_marginVertical="@dimen/_30sdp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@+id/iv_emoji_calm"
-        app:layout_constraintHorizontal_chainStyle="spread"
-        app:layout_constraintStart_toStartOf="@+id/iv_emoji_calm"
-        app:layout_constraintTop_toBottomOf="@+id/iv_emoji_calm"
-        app:srcCompat="@drawable/emooji_playful" />
+        android:id="@+id/icBlackColor"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:background="@drawable/bg_color"
+        android:backgroundTint="#334155"
+        app:layout_constraintBottom_toBottomOf="@id/icBlueColor"
+        app:layout_constraintEnd_toStartOf="@id/icDarkGrayColor"
+        app:layout_constraintStart_toEndOf="@id/icBlueColor"
+        app:layout_constraintTop_toTopOf="@id/icBlueColor" />
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icDarkGrayColor"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:background="@drawable/bg_color"
+        android:backgroundTint="#64748B"
+        app:layout_constraintBottom_toBottomOf="@id/icBlueColor"
+        app:layout_constraintEnd_toStartOf="@id/icLightGrayColor"
+        app:layout_constraintStart_toEndOf="@id/icBlackColor"
+        app:layout_constraintTop_toTopOf="@id/icBlueColor" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icLightGrayColor"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:background="@drawable/bg_color"
+        android:backgroundTint="#8478BF"
+        app:layout_constraintBottom_toBottomOf="@id/icBlueColor"
+        app:layout_constraintEnd_toStartOf="@id/icPinkColor"
+        app:layout_constraintStart_toEndOf="@id/icDarkGrayColor"
+        app:layout_constraintTop_toTopOf="@id/icBlueColor" />
+
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icPinkColor"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:background="@drawable/bg_color"
+        android:backgroundTint="#0F2A45"
+        app:layout_constraintBottom_toBottomOf="@id/icBlueColor"
+        app:layout_constraintEnd_toStartOf="@id/icGreenishColor"
+        app:layout_constraintStart_toEndOf="@id/icLightGrayColor"
+        app:layout_constraintTop_toTopOf="@id/icBlueColor" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icGreenishColor"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:background="@drawable/bg_color"
+        android:backgroundTint="#0F172A"
+        app:layout_constraintBottom_toBottomOf="@id/icBlueColor"
+        app:layout_constraintEnd_toStartOf="@id/icPurpleColor"
+        app:layout_constraintStart_toEndOf="@id/icPinkColor"
+        app:layout_constraintTop_toTopOf="@id/icBlueColor" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icPurpleColor"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:background="@drawable/bg_color"
+        android:backgroundTint="#4C0821"
+        app:layout_constraintBottom_toBottomOf="@id/icBlueColor"
+        app:layout_constraintEnd_toEndOf="@+id/icHeadingThree"
+        app:layout_constraintTop_toTopOf="@id/icBlueColor" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/fontIntaliana"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:background="@drawable/bg_font_family_selector"
+        android:backgroundTint="@null"
+        android:fontFamily="@font/italiana_regular"
+        android:gravity="center"
+        android:paddingVertical="@dimen/_12sdp"
+        android:tag="Intaliana"
+        android:text="Italiana"
+        android:textColor="@color/track_color"
+        app:layout_constraintBottom_toTopOf="@id/fontMargarine"
+        app:layout_constraintEnd_toStartOf="@id/fontLeckerli"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="@id/icBlueColor"
+        app:layout_constraintTop_toBottomOf="@id/icBlueColor" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/fontLeckerli"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_font_family_selector"
+        android:backgroundTint="@null"
+        android:fontFamily="@font/leckerlione_regular"
+        android:gravity="center"
+        android:tag="Leckerli"
+        android:text="Leckerili One"
+        android:textColor="@color/track_color"
+        app:layout_constraintBottom_toBottomOf="@id/fontIntaliana"
+        app:layout_constraintEnd_toEndOf="@id/view_horizontal_line"
+        app:layout_constraintStart_toEndOf="@id/fontIntaliana"
+        app:layout_constraintTop_toTopOf="@id/fontIntaliana" />
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/fontMargarine"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:background="@drawable/bg_font_family_selector"
+        android:fontFamily="@font/margarine_regular"
+        android:gravity="center"
+        android:tag="Margarine"
+        android:paddingVertical="@dimen/_12sdp"
+        android:text="Margarine"
+        android:textColor="@color/track_color"
+        app:layout_constraintBottom_toTopOf="@id/fontPacifico"
+        app:layout_constraintEnd_toStartOf="@id/fontRethink"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="@id/icBlueColor"
+        app:layout_constraintTop_toBottomOf="@id/fontIntaliana" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/fontRethink"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_font_family_selector"
+        android:fontFamily="@font/rethinksans_regular"
+        android:gravity="center"
+        android:tag="Rethink"
+        android:text="Rethink Sans"
+        android:textColor="@color/track_color"
+        app:layout_constraintBottom_toBottomOf="@id/fontMargarine"
+        app:layout_constraintEnd_toEndOf="@id/view_horizontal_line"
+        app:layout_constraintStart_toEndOf="@id/fontMargarine"
+        app:layout_constraintTop_toTopOf="@id/fontMargarine" />
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/fontPacifico"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_25sdp"
+        android:background="@drawable/bg_font_family_selector"
+        android:fontFamily="@font/pacifico"
+        android:gravity="center"
+        android:tag="Pacifico"
+        android:paddingVertical="@dimen/_12sdp"
+        android:text="Pacifico"
+        android:textColor="@color/track_color"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/fontLobster"
+        app:layout_constraintHorizontal_chainStyle="spread_inside"
+        app:layout_constraintStart_toStartOf="@id/icBlueColor"
+        app:layout_constraintTop_toBottomOf="@id/fontMargarine" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/fontLobster"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_font_family_selector"
+        android:fontFamily="@font/lobster_regular"
+        android:gravity="center"
+        android:tag="Lobster"
+        android:text="lobster"
+        android:textColor="@color/track_color"
+        app:layout_constraintBottom_toBottomOf="@id/fontPacifico"
+        app:layout_constraintEnd_toEndOf="@id/view_horizontal_line"
+        app:layout_constraintStart_toEndOf="@id/fontPacifico"
+        app:layout_constraintTop_toTopOf="@id/fontPacifico" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -42,8 +42,10 @@ import androidx.annotation.ColorRes
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -682,3 +684,38 @@ fun setStyledDateTime(tvDate: MaterialTextView, colorId: Int) {
     }
     tvDate.text = spannable
 }
+
+fun setExclusiveSelection(
+    vararg textViews: MaterialTextView,
+    onSelected: (selectedView: MaterialTextView) -> Unit
+) {
+    textViews.forEach { textView ->
+        textView.setOnClickListener {
+            textViews.forEach {
+                it.isSelected = false
+                it.setTextColor(ContextCompat.getColor(it.context, R.color.track_color))
+            }
+            textView.isSelected = true
+            textView.setTextColor(ContextCompat.getColor(textView.context, R.color.app_color))
+            onSelected.invoke(textView)
+        }
+    }
+}
+
+
+fun AppCompatEditText.setFont(fontName: String, context: Context?) {
+    val typeface = when (fontName) {
+        "Intaliana" -> ResourcesCompat.getFont(context ?: return, R.font.italiana_regular)
+        "Leckerli" -> ResourcesCompat.getFont(context ?: return, R.font.leckerlione_regular)
+        "Margarine" -> ResourcesCompat.getFont(context ?: return, R.font.margarine_regular)
+        "Rethink" -> ResourcesCompat.getFont(context ?: return, R.font.rethinksans_regular)
+        "Pacifico" -> ResourcesCompat.getFont(context ?: return, R.font.pacifico)
+        "Lobster" -> ResourcesCompat.getFont(context ?: return, R.font.lobster_regular)
+        else -> null
+    }
+    typeface?.let {
+        this.typeface = it
+    }
+}
+
+

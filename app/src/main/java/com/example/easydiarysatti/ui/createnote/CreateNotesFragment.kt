@@ -17,6 +17,7 @@ import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.safeNav
+import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
 import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
@@ -196,6 +197,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                                 resourceId = createNoteEntity?.backgroundRes
                             )
                         }
+
+                        is CreateNotesState.FontAction -> onFontSelected(note.font)
                     }
                 }
         }
@@ -236,6 +239,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     enableResize(false)
                 }
             }
+        }
+    }
+
+    private fun onFontSelected(fontName: String) {
+        binding?.apply {
+            etHeader.setFont(fontName, context ?: return)
+            etDescription.setFont(fontName, context ?: return)
         }
     }
 

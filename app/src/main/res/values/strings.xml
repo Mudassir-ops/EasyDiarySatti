@@ -59,5 +59,8 @@
     <string name="tags">Tags</string>
     <string name="no_notes_for_current_day">No Notes For Selected Day</string>
     <string name="change_background">Change Background</string>
+    <string name="h1">H1</string>
+    <string name="h2">H2</string>
+    <string name="h3">H3</string>
 
 </resources>

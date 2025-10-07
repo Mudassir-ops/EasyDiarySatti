@@ -204,7 +204,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         is CreateNotesState.FontAction -> onFontSelected(note.font)
                         is CreateNotesState.TextAlignment -> setAlignment(alignment = note)
                         is CreateNotesState.HeadingSize -> setFontSize(headingSize = note)
-                        is CreateNotesState.TextColor -> setTextColor(headingSize = note)
+                        is CreateNotesState.TextColor -> setTextColor(textColor = note)
                     }
                 }
         }

@@ -696,7 +696,12 @@ fun setExclusiveSelection(
                 it.setTextColor(ContextCompat.getColor(it.context, R.color.track_color))
             }
             textView.isSelected = true
-            textView.setTextColor(ContextCompat.getColor(textView.context, R.color.app_color))
+            textView.setTextColor(
+                ContextCompat.getColor(
+                    textView.context,
+                    R.color.app_primary_color
+                )
+            )
             onSelected.invoke(textView)
         }
     }

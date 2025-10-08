@@ -17,6 +17,7 @@ import com.example.easydiarysatti.databinding.DialogDateTimePickerBinding
 import com.example.easydiarysatti.databinding.DialogImageviewBinding
 import com.example.easydiarysatti.databinding.EditFeelingsDialogBinding
 import com.example.easydiarysatti.databinding.EditTextDialogBinding
+import com.example.easydiarysatti.databinding.FeedbackLayoutBinding
 import com.example.easydiarysatti.domain.model.EmojiInfo
 import com.example.easydiarysatti.saveBitmapToUri
 import com.example.easydiarysatti.setExclusiveSelection
@@ -332,5 +333,36 @@ inline fun Fragment.showDatePicker(
             )
             timePickerDialog.show()
         }
+    }
+}
+
+
+inline fun Fragment.showFeedBackDialog(
+    crossinline selectedEmotion: (EmojiInfo) -> Unit
+) {
+    val binding = FeedbackLayoutBinding.inflate(LayoutInflater.from(context ?: return))
+    val imageDialog = Dialog(context ?: return)
+
+    imageDialog.run {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(binding.root)
+        window?.apply {
+            val params = WindowManager.LayoutParams()
+            params.copyFrom(attributes)
+            val displayMetrics = context.resources.displayMetrics
+            val horizontalMargin = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._32sdp)
+            params.width = displayMetrics.widthPixels - 2 * horizontalMargin
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT
+            attributes = params
+            setBackgroundDrawableResource(android.R.color.transparent)
+        }
+        setCancelable(true)
+        setCanceledOnTouchOutside(true)
+        show()
+    }
+
+    binding.apply {
+
+        ivClose.setOnClickListener { imageDialog.dismiss() }
     }
 }

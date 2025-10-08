@@ -79,6 +79,9 @@
         <action
             android:id="@+id/action_mainFragment_to_languageFragment"
             app:destination="@id/languageFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
     </fragment>
     <fragment
         android:id="@+id/editProfileFragment"
@@ -90,5 +93,10 @@
         android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
         android:label="fragment_add_tags"
         tools:layout="@layout/fragment_add_tags" />
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.example.easydiarysatti.ui.changepasswordkey.ChangePasswordFragment"
+        android:label="ChangePasswordFragment"
+        tools:layout="@layout/fragment_change_password" />
 
 </navigation>

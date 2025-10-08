@@ -8,10 +8,13 @@ import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentAddTagsBinding
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
+import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
@@ -19,6 +22,8 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
     private val binding by viewBinding(FragmentAddTagsBinding::bind)
     private val viewModel: CreateNotesViewModel by activityViewModels()
 
+    @Inject
+    lateinit var sessionManagerRepo: SessionManagerRepo
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding?.apply {
@@ -30,7 +35,17 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
                 viewModel.sendAction(action = CreateNotesState.AddTag(tag = etTags.text.toString()))
                 findNavController().navigateUp()
             }
+            ivMenu.setOnClickListener {
+                findNavController().navigateUp()
+            }
         }
+        setupBgTheme()
     }
 
+    private fun setupBgTheme() {
+        binding?.parentView?.loadBackground(
+            resourceId = sessionManagerRepo.getBgTheme(),
+            placeholder = R.drawable.theme_1
+        )
+    }
 }

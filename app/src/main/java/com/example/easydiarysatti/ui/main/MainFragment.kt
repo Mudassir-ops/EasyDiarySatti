@@ -1,8 +1,10 @@
 package com.example.easydiarysatti.ui.main
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
@@ -27,6 +29,7 @@ import com.example.easydiarysatti.utills.MultiImageAdapter
 import com.example.easydiarysatti.utills.setImage
 import com.example.easydiarysatti.utills.showBackgroundDialog
 import com.example.easydiarysatti.utills.showEditTexDialog
+import com.example.easydiarysatti.utills.showFeedBackDialog
 import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -76,7 +79,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 )
 
                 2 -> Unit
-                3 -> Unit
+                3 -> findNavController().safeNav(
+                    currentDestId = R.id.mainFragment,
+                    actionId = R.id.action_mainFragment_to_changePasswordFragment
+                )
+
                 4 -> findNavController().safeNav(
                     currentDestId = R.id.mainFragment,
                     actionId = R.id.action_mainFragment_to_languageFragment
@@ -180,9 +187,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     }
 
                     R.id.addTagsFragment2 -> {
-                        createNoteBottomBar.visibility = View.INVISIBLE
-                        binding?.icAddNotes?.visibility = View.INVISIBLE
-                        bottomNav.visibility = View.INVISIBLE
+                        createNoteBottomBar.visibility = View.GONE
+                        bottomNav.visibility = View.GONE
+                        binding?.icAddNotes?.visibility = View.GONE
+
                         setTagsHeader()
 
                     }
@@ -285,10 +293,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun setTagsHeader() {
         binding?.apply {
-            ivMenu.setImageResource(R.drawable.back_icon)
-            headerTitle.text = ContextCompat.getString(context ?: return, R.string.tags)
-            ivRemainder.visibility = View.GONE
-            headerSave.visibility = View.GONE
+            headerLayout.visibility = View.GONE
+            mainBackground.background = null
         }
     }
 
@@ -302,4 +308,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                showFeedBackDialog {
+
+                }
+            }
+        }
+        activity?.onBackPressedDispatcher?.addCallback(this, callback)
+    }
 }

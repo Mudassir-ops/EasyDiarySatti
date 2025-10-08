@@ -102,5 +102,11 @@
         <item name="android:textColor">@drawable/calender_date_selector</item>
     </style>
 
+    <style name="CustomRatingBar" parent="Widget.AppCompat.RatingBar">
+        <item name="android:progressDrawable">@drawable/custom_rating</item>
+        <item name="android:minHeight">24dp</item>
+        <item name="android:maxHeight">24dp</item>
+    </style>
+
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
 </resources>

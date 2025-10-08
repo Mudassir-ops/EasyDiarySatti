@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -63,6 +64,7 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         clickListener()
+        checkAllPermissions()
     }
 
     private fun checkAllPermissions() {
@@ -90,8 +92,16 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
             read && write
         }
         val allGranted = cameraGranted && galleryGranted
-        binding?.btnNext?.isEnabled = allGranted
-        binding?.btnNext?.alpha = if (allGranted) 1f else 0.5f
+        Log.e(
+            "PermissionFragment",
+            "checkAllPermissions: $allGranted--$cameraGranted---$galleryGranted",
+        )
+        binding?.apply {
+            btnNext.isEnabled = allGranted
+            btnNext.alpha = if (allGranted) 1f else 0.5f
+            icSwitchGallery.isChecked = allGranted
+            icSwitchCamera.isChecked = allGranted
+        }
     }
 
     private fun clickListener() {
@@ -121,4 +131,5 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
             actionId = R.id.action_permissionFragment_to_nameFragment
         )
     }
+
 }

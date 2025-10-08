@@ -151,7 +151,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     )
                 }
                 val profilePic = sessionManagerRepo.getprofilePic().orEmpty()
-                if (profilePic.isEmpty()) {
+                if (!profilePic.isEmpty()) {
                     ivPlacHolder.visibility = View.INVISIBLE
                     ivProfile.visibility = View.VISIBLE
                     ivProfile.setImage(drawable = profilePic.toUri())

@@ -21,7 +21,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     private var profilePic = ""
 
     @Inject
-    private lateinit var sessionManagerRepo: SessionManagerRepo
+    lateinit var sessionManagerRepo: SessionManagerRepo
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

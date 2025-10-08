@@ -356,13 +356,20 @@ inline fun Fragment.showFeedBackDialog(
             attributes = params
             setBackgroundDrawableResource(android.R.color.transparent)
         }
-        setCancelable(true)
-        setCanceledOnTouchOutside(true)
+        setCancelable(false)
+        setCanceledOnTouchOutside(false)
         show()
     }
 
     binding.apply {
 
-        ivClose.setOnClickListener { imageDialog.dismiss() }
+        btnCancel.setOnClickListener {
+            imageDialog.dismiss()
+        }
+
+        btnDone.setOnClickListener {
+            imageDialog.dismiss()
+            activity?.finishAffinity()
+        }
     }
 }

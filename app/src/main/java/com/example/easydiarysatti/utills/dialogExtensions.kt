@@ -350,7 +350,7 @@ inline fun Fragment.showFeedBackDialog(
             val params = WindowManager.LayoutParams()
             params.copyFrom(attributes)
             val displayMetrics = context.resources.displayMetrics
-            val horizontalMargin = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._32sdp)
+            val horizontalMargin = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._15sdp)
             params.width = displayMetrics.widthPixels - 2 * horizontalMargin
             params.height = WindowManager.LayoutParams.WRAP_CONTENT
             attributes = params

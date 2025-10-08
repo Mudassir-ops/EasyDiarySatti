@@ -75,6 +75,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         binding?.apply {
             val profilePic = sessionManagerRepo.getprofilePic().orEmpty()
             if (!profilePic.isEmpty()) {
+                this@EditProfileFragment.profilePic = profilePic
                 ivProfile.setImage(drawable = profilePic.toUri())
             }
             val savedName = viewModel.getName()

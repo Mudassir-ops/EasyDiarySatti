@@ -18,8 +18,20 @@ class NameViewModel @Inject constructor(
         }
     }
 
+    fun saveEmail(mail: String) {
+        viewModelScope.launch {
+            sessionManagerRepo.setProfileEmail(email = mail)
+        }
+    }
+
+
     fun getName(): String? {
         return sessionManagerRepo.getprofileName()
+    }
+
+
+    fun getEmail(): String? {
+        return sessionManagerRepo.getprofileEmail()
     }
 
 }

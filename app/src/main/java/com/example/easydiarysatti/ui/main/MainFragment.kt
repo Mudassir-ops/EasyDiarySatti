@@ -21,6 +21,7 @@ import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
+import com.example.easydiarysatti.ui.name.NameViewModel
 import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.MultiImageAdapter
 import com.example.easydiarysatti.utills.setImage
@@ -37,6 +38,7 @@ import javax.inject.Inject
 class MainFragment : Fragment(R.layout.fragment_main) {
     private var innerNavController: NavController? = null
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
+    private val viewModel by activityViewModels<NameViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
     private val drawerItemList: List<DrawerItem> by lazy {
@@ -158,6 +160,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 } else {
                     ivPlacHolder.visibility = View.VISIBLE
                     ivProfile.visibility = View.INVISIBLE
+                }
+
+                val savedName = viewModel.getName()
+                if (savedName?.isNotEmpty() == true) {
+                    tvName.text = savedName
                 }
             }
         }

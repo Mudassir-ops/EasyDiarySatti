@@ -13,6 +13,7 @@ import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.loadImage
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setKeyboardVisibilityListener
+import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -28,6 +29,10 @@ class NameFragment : Fragment(R.layout.fragment_name) {
             adjustScreenKeyboard()
             clickListener()
             imgIntroOne.loadImage(resourceId = R.drawable.name_pic)
+            val savedName = viewModel.getName()
+            if (savedName?.isNotEmpty() == true) {
+                edTextName.setText(savedName)
+            }
         }
     }
 
@@ -53,14 +58,23 @@ class NameFragment : Fragment(R.layout.fragment_name) {
 
     private fun clickListener() {
         binding?.apply {
-            btnNext.setOnClickListener { moveToNextScreen() }
+            btnNext.setOnClickListener {
+                if (edTextName.text?.isEmpty() == true) {
+                    binding?.nestedScrollView?.showSnackbar(
+                        message = getString(R.string.enterName)
+                    )
+                    edTextName.error = getString(R.string.enterName)
+                } else {
+                    viewModel.saveName(name = edTextName.text.toString())
+                    moveToNextScreen()
+                }
+            }
         }
     }
 
     fun moveToNextScreen() {
         findNavController().safeNav(
-            currentDestId = R.id.nameFragment,
-            actionId = R.id.action_nameFragment_to_signUpFragment
+            currentDestId = R.id.nameFragment, actionId = R.id.action_nameFragment_to_signUpFragment
         )
     }
 

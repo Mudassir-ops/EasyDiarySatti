@@ -12,4 +12,8 @@ interface SessionManagerRepo {
     fun setProfilePic(profilePic: String)
     fun getprofilePic(): String?
 
+
+    fun setProfileName(profilePic: String)
+    fun getprofileName(): String?
+
 }

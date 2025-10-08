@@ -27,6 +27,7 @@
     <string name="setup_pin">Setup PIN</string>
     <string name="access_your_diary">Access Your Diary</string>
     <string name="pins_do_not_match_try_again">PINs do not match, try again</string>
+    <string name="enterName">Name Field Empty</string>
     <string name="start_writing">Start Writing</string>
     <string name="enter_your_name">Enter your Name</string>
     <string name="name">Name</string>

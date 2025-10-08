@@ -71,5 +71,8 @@
     <string name="dairy_lock">Dairy Lock</string>
     <string name="langauge">Language</string>
     <string name="share_app">Share App</string>
+    <string name="enter_name">Enter Name</string>
+    <string name="enter_email">Enter Email</string>
+    <string name="dreame488_yahoo_com">dreame488@yahoo.com</string>
 
 </resources>

@@ -46,6 +46,12 @@
         <item name="cornerSize">@dimen/_6sdp</item>
     </style>
 
+    <style name="FullCircleShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+
     <!-- Shape for individual calendar days -->
     <style name="ShapeAppearance.CalendarDay" parent="">
         <item name="cornerFamily">rounded</item>

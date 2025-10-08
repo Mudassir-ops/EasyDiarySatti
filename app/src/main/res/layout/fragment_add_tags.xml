@@ -55,7 +55,6 @@
         android:id="@+id/btnNext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_40sdp"
         android:background="@drawable/btn_bg"
         android:fontFamily="@font/outfit_medium"
         android:text="@string/save"

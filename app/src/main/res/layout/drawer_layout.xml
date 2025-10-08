@@ -44,6 +44,21 @@
         app:layout_constraintTop_toTopOf="@id/profile_layout"
         app:srcCompat="@drawable/edit_profile" />
 
+    <com.google.android.material.imageview.ShapeableImageView
+        android:id="@+id/ivProfile"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:elevation="0dp"
+        android:scaleType="fitXY"
+        android:visibility="invisible"
+        app:layout_constraintBottom_toBottomOf="@+id/profile_layout"
+        app:layout_constraintEnd_toEndOf="@+id/profile_layout"
+        app:layout_constraintStart_toStartOf="@+id/profile_layout"
+        app:layout_constraintTop_toTopOf="@+id/profile_layout"
+        app:shapeAppearanceOverlay="@style/FullCircleShape"
+        app:srcCompat="@drawable/theme_1"
+        app:strokeColor="@color/app_primary_color" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/profile_layout"
         android:layout_width="@dimen/_100sdp"
@@ -55,11 +70,12 @@
         app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1">
 
         <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/ivProfile"
+            android:id="@+id/ivPlacHolder"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="@dimen/_15sdp"
             android:elevation="@dimen/_5sdp"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

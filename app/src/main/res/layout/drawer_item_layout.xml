@@ -7,11 +7,11 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_edit_profile"
-        android:layout_width="@dimen/_35sdp"
-        android:layout_height="@dimen/_35sdp"
+        android:layout_width="@dimen/_30sdp"
+        android:layout_height="@dimen/_32sdp"
         android:layout_marginVertical="@dimen/_5sdp"
         android:background="@drawable/bg_drawer"
-        android:padding="@dimen/_5sdp"
+        android:padding="@dimen/_6sdp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,7 +24,7 @@
         android:fontFamily="@font/outfit_semibold"
         android:text="@string/edit_tags"
         android:textAlignment="viewStart"
-        android:textColor="@color/drawer_color"
+        android:textColor="@color/tag_txt_color"
         android:textSize="@dimen/_11ssp"
         app:layout_constraintBottom_toBottomOf="@+id/iv_edit_profile"
         app:layout_constraintEnd_toEndOf="parent"

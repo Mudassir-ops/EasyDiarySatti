@@ -5,11 +5,13 @@ import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.example.easydiarysatti.domain.model.DrawerItem
@@ -100,7 +102,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private val drawerItemAdapter: DrawerItemAdapter by lazy {
         DrawerItemAdapter(onNoteItemClick = {
-
         })
     }
 
@@ -124,11 +125,32 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun setupDrawer() {
-        binding?.drawerLayout?.drawerItems?.run {
-            adapter = drawerItemAdapter
-            hasFixedSize()
+        binding?.apply {
+            binding?.parentLayout?.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED)
+            drawerLayout.drawerItems.run {
+                adapter = drawerItemAdapter
+                hasFixedSize()
+            }
+            drawerItemAdapter.submitList(drawerItemList)
+            drawerLayout.apply {
+                ivBack.setOnClickListener {
+                    parentLayout.closeDrawer(GravityCompat.START)
+                }
+                ivEditProfile.setOnClickListener {
+                    findNavController().safeNav(
+                        currentDestId = R.id.mainFragment,
+                        actionId = R.id.action_mainFragment_to_editProfileFragment
+                    )
+                }
+                profileLayout.setOnClickListener {
+                    findNavController().safeNav(
+                        currentDestId = R.id.mainFragment,
+                        actionId = R.id.action_mainFragment_to_editProfileFragment
+                    )
+                }
+
+            }
         }
-        drawerItemAdapter.submitList(drawerItemList)
     }
 
     private fun setupBottomNavBar() {

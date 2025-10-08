@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.easydiarysatti.BG_THEME_ID
 import com.example.easydiarysatti.LANGUAGE_SETTLED_IN
+import com.example.easydiarysatti.PROFILE_PIC
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 
@@ -34,6 +35,19 @@ class SessionManagerRepoImpl(
         return preferences.getInt(
             BG_THEME_ID,
             R.drawable.theme_1
+        )
+    }
+
+    override fun setProfilePic(profilePic: String) {
+        preferences.edit {
+            this.putString(PROFILE_PIC, profilePic)
+        }
+    }
+
+    override fun getprofilePic(): String? {
+        return preferences.getString(
+            PROFILE_PIC,
+            ""
         )
     }
 

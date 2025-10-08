@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.canhub.cropper.CropImageView
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.lightenColor
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.textview.MaterialTextView
 import java.io.File
 import java.text.SimpleDateFormat
@@ -243,7 +244,12 @@ fun CropImageView.setImagePath(path: String?) {
     }
 }
 
-fun AppCompatImageView.setImage(drawable: Int) {
+fun AppCompatImageView.setImage(drawable: Int?) {
+    Glide.with(context).load(drawable)
+        .into(this)
+}
+
+fun ShapeableImageView.setImage(drawable: Uri?) {
     Glide.with(context).load(drawable)
         .into(this)
 }

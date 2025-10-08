@@ -39,6 +39,7 @@
         android:id="@+id/tvLabelName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_5sdp"
         android:elevation="@dimen/_5sdp"
         android:fontFamily="@font/outfit_semibold"
         android:text="@string/enter_name"
@@ -54,14 +55,15 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/_20sdp"
         android:layout_marginTop="@dimen/_60sdp"
-        android:background="#F5F5F5"
-        app:boxBackgroundMode="outline"
+        android:background="@drawable/et_bg"
+        app:boxBackgroundMode="none"
         app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
         app:boxCornerRadiusBottomStart="@dimen/_8sdp"
         app:boxCornerRadiusTopEnd="@dimen/_8sdp"
         app:boxCornerRadiusTopStart="@dimen/_8sdp"
         app:boxStrokeColor="@color/tag_bg_color"
         app:boxStrokeWidth="@dimen/_1sdp"
+        app:boxStrokeWidthFocused="@dimen/_2sdp"
         app:hintEnabled="false"
         app:hintTextAppearance="@style/HintTextStyle"
         app:layout_constraintEnd_toEndOf="parent"
@@ -69,7 +71,7 @@
         app:layout_constraintTop_toBottomOf="@+id/ivProfile">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/et_tags"
+            android:id="@+id/et_Pname"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:drawableStart="@drawable/ic_person_svg"
@@ -79,7 +81,7 @@
             android:maxLength="15"
             android:textColor="@color/tag_txt_color"
             android:textColorHint="#AAB1BA"
-            android:textSize="@dimen/_14ssp"
+            android:textSize="@dimen/_13ssp"
             app:hintTextAppearance="@style/HintTextStyle" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -88,6 +90,7 @@
         android:id="@+id/tvLabelEmail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_5sdp"
         android:elevation="@dimen/_5sdp"
         android:fontFamily="@font/outfit_semibold"
         android:text="@string/enter_email"
@@ -102,9 +105,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/_20sdp"
-        android:layout_marginTop="@dimen/_50sdp"
-        android:background="#F5F5F5"
-        app:boxBackgroundMode="outline"
+        android:layout_marginTop="@dimen/_40sdp"
+        android:background="@drawable/et_bg"
+        app:boxBackgroundMode="none"
         app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
         app:boxCornerRadiusBottomStart="@dimen/_8sdp"
         app:boxCornerRadiusTopEnd="@dimen/_8sdp"
@@ -118,17 +121,17 @@
         app:layout_constraintTop_toBottomOf="@+id/etName">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/et_email"
+            android:id="@+id/et_Pmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:drawableStart="@drawable/ic_person_svg"
+            android:drawableStart="@drawable/mail"
             android:drawablePadding="@dimen/_5sdp"
             android:fontFamily="@font/outfit"
             android:hint="@string/dreame488_yahoo_com"
             android:maxLength="15"
             android:textColor="@color/tag_txt_color"
             android:textColorHint="#AAB1BA"
-            android:textSize="@dimen/_14ssp"
+            android:textSize="@dimen/_13ssp"
             app:hintTextAppearance="@style/HintTextStyle" />
 
     </com.google.android.material.textfield.TextInputLayout>

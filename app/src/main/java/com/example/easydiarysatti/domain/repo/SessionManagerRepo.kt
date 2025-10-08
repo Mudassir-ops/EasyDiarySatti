@@ -8,4 +8,8 @@ interface SessionManagerRepo {
     fun setBgTheme(themeResId: Int)
     fun getBgTheme(): Int?
 
+
+    fun setProfilePic(profilePic: String)
+    fun getprofilePic(): String?
+
 }

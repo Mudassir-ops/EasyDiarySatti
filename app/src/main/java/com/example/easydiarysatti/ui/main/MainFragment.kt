@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
@@ -22,6 +23,7 @@ import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.MultiImageAdapter
+import com.example.easydiarysatti.utills.setImage
 import com.example.easydiarysatti.utills.showBackgroundDialog
 import com.example.easydiarysatti.utills.showEditTexDialog
 import com.example.easydiarysatti.utills.showImageCropDialog
@@ -148,7 +150,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         actionId = R.id.action_mainFragment_to_editProfileFragment
                     )
                 }
-
+                val profilePic = sessionManagerRepo.getprofilePic().orEmpty()
+                if (profilePic.isEmpty()) {
+                    ivPlacHolder.visibility = View.INVISIBLE
+                    ivProfile.visibility = View.VISIBLE
+                    ivProfile.setImage(drawable = profilePic.toUri())
+                } else {
+                    ivPlacHolder.visibility = View.VISIBLE
+                    ivProfile.visibility = View.INVISIBLE
+                }
             }
         }
     }

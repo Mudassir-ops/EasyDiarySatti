@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
@@ -11,6 +12,7 @@ import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentMainBinding
+import com.example.easydiarysatti.domain.model.DrawerItem
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.safeNav
@@ -33,6 +35,40 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
+    private val drawerItemList: List<DrawerItem> by lazy {
+        listOf(
+            DrawerItem(
+                bgTint = "#FFAC81",
+                imgRes = R.drawable.pencil_icon,
+                title = getString(R.string.edit_tags)
+            ),
+            DrawerItem(
+                bgTint = "#5EE3A9",
+                imgRes = R.drawable.paint_icon,
+                title = getString(R.string.color_theme)
+            ),
+            DrawerItem(
+                bgTint = "#FFDE8B",
+                imgRes = R.drawable.bell_drawer,
+                title = getString(R.string.remainders)
+            ),
+            DrawerItem(
+                bgTint = "#FF8D95",
+                imgRes = R.drawable.lock,
+                title = getString(R.string.dairy_lock)
+            ),
+            DrawerItem(
+                bgTint = "#A29DFB",
+                imgRes = R.drawable.language_icon,
+                title = getString(R.string.langauge)
+            ),
+            DrawerItem(
+                bgTint = "#FFAC81",
+                imgRes = R.drawable.share_icon,
+                title = getString(R.string.share_app)
+            )
+        )
+    }
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
@@ -62,6 +98,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         })
     }
 
+    private val drawerItemAdapter: DrawerItemAdapter by lazy {
+        DrawerItemAdapter(onNoteItemClick = {
+
+        })
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         imagePicker = ImagePickerDelegate(this) { uri, file ->
@@ -78,6 +120,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         setupBottomNavBar()
         setupBgTheme()
         setClickListeners()
+        setupDrawer()
+    }
+
+    private fun setupDrawer() {
+        binding?.drawerLayout?.drawerItems?.run {
+            adapter = drawerItemAdapter
+            hasFixedSize()
+        }
+        drawerItemAdapter.submitList(drawerItemList)
     }
 
     private fun setupBottomNavBar() {
@@ -180,7 +231,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun setClickListeners() {
         binding?.apply {
-            ivMenu.setOnClickListener { createNotesViewModel.sendAction(action = CreateNotesState.BackAction) }
+            ivMenu.setOnClickListener {
+                binding?.parentLayout?.openDrawer(GravityCompat.START)
+                createNotesViewModel.sendAction(action = CreateNotesState.BackAction)
+            }
             headerSave.setOnClickListener {
                 Log.e("headerSave", "setClickListeners: ")
                 createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
@@ -192,6 +246,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     actionId = R.id.action_homeFragment_to_createNotesFragment
                 )
             }
+
         }
     }
 

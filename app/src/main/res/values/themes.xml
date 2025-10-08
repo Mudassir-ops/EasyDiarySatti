@@ -4,6 +4,11 @@
         <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">
             @mipmap/ic_launcher
         </item>
+
+        <item name="colorControlActivated">@color/app_primary_color</item>
+        <item name="android:selectableItemBackground">@drawable/calendar_selected_day_background
+        </item>
+        z
     </style>
 
     <style name="Widget.App.NavButton" parent="Widget.MaterialComponents.Button">
@@ -75,6 +80,20 @@
     <style name="OnlyTopRoundedImageShape" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerRadius">@dimen/_60sdp</item>
+    </style>
+
+
+    <style name="CalenderViewWeekCustomText" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/app_primary_color</item>
+    </style>
+
+    <style name="CalenderViewCustom" parent="Theme.AppCompat">
+        <item name="colorControlActivated">@color/tag_txt_color</item>
+        <item name="android:textColorPrimary">@color/app_primary_color</item>
+    </style>
+
+    <style name="CalenderViewDateCustomText" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@drawable/calender_date_selector</item>
     </style>
 
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />

@@ -10,6 +10,7 @@ appcompat = "1.7.1"
 material = "1.13.0"
 activity = "1.11.0"
 constraintlayout = "2.2.1"
+materialCalendarview = "2.0.1"
 room_version = "2.8.1"
 lottie = "6.6.9"
 glide = "5.0.5"
@@ -46,6 +47,7 @@ androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navi
 glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide" }
 ksp = { module = "com.github.bumptech.glide:ksp", version.ref = "glide" }
 androidx-fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
+material-calendarview = { module = "com.prolificinteractive:material-calendarview", version.ref = "materialCalendarview" }
 room_runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room_version" }
 room_compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room_version" }
 lottie = { module = "com.airbnb.android:lottie", version.ref = "lottie" }

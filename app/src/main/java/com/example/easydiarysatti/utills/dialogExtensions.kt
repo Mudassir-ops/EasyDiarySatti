@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.utills
 
 import android.app.Dialog
+import android.app.TimePickerDialog
 import android.graphics.Color
 import android.net.Uri
 import android.util.Log
@@ -12,6 +13,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.DialogBackgroundBinding
+import com.example.easydiarysatti.databinding.DialogDateTimePickerBinding
 import com.example.easydiarysatti.databinding.DialogImageviewBinding
 import com.example.easydiarysatti.databinding.EditFeelingsDialogBinding
 import com.example.easydiarysatti.databinding.EditTextDialogBinding
@@ -20,6 +22,9 @@ import com.example.easydiarysatti.saveBitmapToUri
 import com.example.easydiarysatti.setExclusiveSelection
 import com.example.easydiarysatti.setExclusiveSelectionColor
 import com.example.easydiarysatti.setExclusiveSelectionHeadingSize
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 inline fun Fragment.showEditFeelingsDialog(
     crossinline selectedEmotion: (EmojiInfo) -> Unit
@@ -272,6 +277,60 @@ inline fun Fragment.showEditTexDialog(
         }
         imageDialog.setOnDismissListener {
             closeDialog.invoke()
+        }
+    }
+}
+
+
+inline fun Fragment.showDatePicker(
+    crossinline selectedDateTime: (String) -> Unit
+) {
+    val binding = DialogDateTimePickerBinding.inflate(LayoutInflater.from(context ?: return))
+    val imageDialog = Dialog(context ?: return)
+
+    imageDialog.run {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(binding.root)
+        window?.apply {
+            val params = WindowManager.LayoutParams()
+            params.copyFrom(attributes)
+            val displayMetrics = context.resources.displayMetrics
+            val horizontalMargin = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._20sdp)
+            params.width = displayMetrics.widthPixels - 2 * horizontalMargin
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT
+            attributes = params
+            setBackgroundDrawableResource(android.R.color.transparent)
+        }
+        setCancelable(true)
+        setCanceledOnTouchOutside(true)
+        show()
+    }
+
+    val calendar = Calendar.getInstance()
+
+    binding.apply {
+        ivClose.setOnClickListener { imageDialog.dismiss() }
+        calendarView.setOnDateChangeListener { _, year, month, dayOfMonth ->
+            calendar.set(Calendar.YEAR, year)
+            calendar.set(Calendar.MONTH, month)
+            calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            val timePickerDialog = TimePickerDialog(
+                context,
+                { _, hourOfDay, minute ->
+                    calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+                    calendar.set(Calendar.MINUTE, minute)
+
+                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
+                    val formattedDateTime = formatter.format(calendar.time)
+
+                    selectedDateTime(formattedDateTime)
+                    imageDialog.dismiss()
+                },
+                calendar.get(Calendar.HOUR_OF_DAY),
+                calendar.get(Calendar.MINUTE),
+                false
+            )
+            timePickerDialog.show()
         }
     }
 }

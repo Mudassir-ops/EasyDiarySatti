@@ -23,6 +23,7 @@ import com.example.easydiarysatti.setHeadingSize
 import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
 import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.setTextAlignmentByName
+import com.example.easydiarysatti.utills.showDatePicker
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -98,6 +99,16 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         feelingTitle = emojiInfo.name,
                         tagColor = emojiInfo.tagColor
                     )
+                })
+            }
+            tvDate.setOnClickListener {
+                showDatePicker(selectedDateTime = {
+
+                })
+            }
+            ivBottomArrow.setOnClickListener {
+                showDatePicker(selectedDateTime = {
+
                 })
             }
         }

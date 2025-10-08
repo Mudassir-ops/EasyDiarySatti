@@ -4,7 +4,7 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-10-06T16:03:55.060232Z">
+        <DropdownSelection timestamp="2025-10-07T17:44:53.307973Z">
           <Target type="DEFAULT_BOOT">
             <handle>
               <DeviceId pluginId="LocalEmulator" identifier="path=/Users/mudassirsatti/.android/avd/Satti_Mobile.avd" />

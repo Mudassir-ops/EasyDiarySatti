@@ -62,5 +62,14 @@
     <string name="h1">H1</string>
     <string name="h2">H2</string>
     <string name="h3">H3</string>
+    <string name="profile_settings">Profile Settings</string>
+    <string name="satti">Satti</string>
+    <string name="account_settings">Account Settings</string>
+    <string name="edit_tags">Edit Tags</string>
+    <string name="color_theme">Color Theme</string>
+    <string name="remainders">Remainders</string>
+    <string name="dairy_lock">Dairy Lock</string>
+    <string name="langauge">Language</string>
+    <string name="share_app">Share App</string>
 
 </resources>

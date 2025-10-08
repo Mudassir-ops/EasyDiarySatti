@@ -242,3 +242,8 @@ fun CropImageView.setImagePath(path: String?) {
         this.clearImage()
     }
 }
+
+fun AppCompatImageView.setImage(drawable: Int) {
+    Glide.with(context).load(drawable)
+        .into(this)
+}

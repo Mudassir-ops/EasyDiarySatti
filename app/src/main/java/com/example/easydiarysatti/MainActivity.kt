@@ -5,10 +5,59 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.easydiarysatti.domain.model.DrawerItem
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private val noteBgList: List<Int?> by lazy {
+        listOf(
+            null,
+            R.drawable.note_bg_1,
+            R.drawable.note_bg_2,
+            R.drawable.note_bg_3,
+            R.drawable.note_bg_4,
+            R.drawable.note_bg_3,
+        )
+    }
+
+
+    private val mainDrawerItemList: List<DrawerItem> by lazy {
+        listOf(
+            DrawerItem(
+                bgTint = "#FFAC81",
+                imgRes = R.drawable.pencil_icon,
+                title = getString(R.string.edit_tags)
+            ),
+            DrawerItem(
+                bgTint = "#5EE3A9",
+                imgRes = R.drawable.paint_icon,
+                title = getString(R.string.color_theme)
+            ),
+            DrawerItem(
+                bgTint = "#FFDE8B",
+                imgRes = R.drawable.bell_drawer,
+                title = getString(R.string.remainders)
+            ),
+            DrawerItem(
+                bgTint = "#FF8D95",
+                imgRes = R.drawable.lock,
+                title = getString(R.string.dairy_lock)
+            ),
+            DrawerItem(
+                bgTint = "#A29DFB",
+                imgRes = R.drawable.language_icon,
+                title = getString(R.string.langauge)
+            ),
+            DrawerItem(
+                bgTint = "#FFAC81",
+                imgRes = R.drawable.share_icon,
+                title = getString(R.string.share_app)
+            )
+        )
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -19,4 +68,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
+
+    fun getBgThemes(): List<Int?> = noteBgList
+    fun getDrawerItemList(): List<DrawerItem> = mainDrawerItemList
+
 }

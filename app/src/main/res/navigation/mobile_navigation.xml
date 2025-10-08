@@ -70,11 +70,25 @@
         <action
             android:id="@+id/action_mainFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_addTagsFragment"
+            app:destination="@id/addTagsFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_themesFragment"
+            app:destination="@id/themesFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_languageFragment"
+            app:destination="@id/languageFragment" />
     </fragment>
     <fragment
         android:id="@+id/editProfileFragment"
         android:name="com.example.easydiarysatti.ui.editprofile.EditProfileFragment"
         android:label="fragment_edit_profile"
         tools:layout="@layout/fragment_edit_profile" />
+    <fragment
+        android:id="@+id/addTagsFragment"
+        android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
+        android:label="fragment_add_tags"
+        tools:layout="@layout/fragment_add_tags" />
 
 </navigation>

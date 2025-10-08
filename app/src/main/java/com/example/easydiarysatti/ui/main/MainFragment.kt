@@ -106,6 +106,26 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private val drawerItemAdapter: DrawerItemAdapter by lazy {
         DrawerItemAdapter(onNoteItemClick = {
+            when (it) {
+                0 -> findNavController().safeNav(
+                    currentDestId = R.id.mainFragment,
+                    actionId = R.id.action_mainFragment_to_addTagsFragment
+                )
+
+                1 -> findNavController().safeNav(
+                    currentDestId = R.id.mainFragment,
+                    actionId = R.id.action_mainFragment_to_themesFragment
+                )
+
+                2 -> Unit
+                3 -> Unit
+                4 -> findNavController().safeNav(
+                    currentDestId = R.id.mainFragment,
+                    actionId = R.id.action_mainFragment_to_languageFragment
+                )
+
+                5 -> Unit
+            }
         })
     }
 

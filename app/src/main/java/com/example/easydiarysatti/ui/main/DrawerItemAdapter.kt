@@ -12,7 +12,7 @@ import com.example.easydiarysatti.domain.model.DrawerItem
 import com.example.easydiarysatti.utills.setImage
 
 class DrawerItemAdapter(
-    private val onNoteItemClick: (DrawerItem) -> Unit
+    private val onNoteItemClick: (Int) -> Unit
 ) : ListAdapter<DrawerItem, DrawerItemAdapter.NoteItemViewHolder>(DiffCallback) {
 
     inner class NoteItemViewHolder(private val binding: DrawerItemLayoutBinding) :
@@ -24,7 +24,7 @@ class DrawerItemAdapter(
                 ivEditProfile.backgroundTintList =
                     ColorStateList.valueOf(drawerModel.bgTint.toColorInt())
                 itemView.setOnClickListener {
-                    onNoteItemClick.invoke(drawerModel)
+                    onNoteItemClick.invoke(bindingAdapterPosition)
                 }
             }
         }

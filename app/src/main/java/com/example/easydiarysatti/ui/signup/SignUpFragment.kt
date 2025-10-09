@@ -118,6 +118,7 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         binding?.apply {
             btnNext.setOnClickListener {
                 if (isPinConfirmed) {
+                    viewModel.savePin(enteredPin = firstPin.orEmpty())
                     moveToNextScreen()
                 }
             }

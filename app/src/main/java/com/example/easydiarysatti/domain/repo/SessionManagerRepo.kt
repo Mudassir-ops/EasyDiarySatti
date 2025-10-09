@@ -18,4 +18,8 @@ interface SessionManagerRepo {
     fun setProfileEmail(email: String)
     fun getprofileEmail(): String?
 
+
+    fun setPin(pin: String)
+    fun getPin(): String?
+
 }

@@ -82,5 +82,9 @@
     <string name="love_easy_diary">Love Easy Diary?</string>
     <string name="your_feedback_helps_us">Your feedback helps us grow and keeps our diary experience amazing. If you’re enjoying the app, take a moment to rate us!</string>
     <string name="cancel">Cancel</string>
+    <string name="please_enter_all_4_digits_in_each_field">Please enter all 4 digits in each field</string>
+    <string name="old_pin_is_incorrect">Old PIN is incorrect</string>
+    <string name="new_pins_do_not_match">New PINs do not match</string>
+    <string name="pin_changed_successfully">PIN changed successfully</string>
 
 </resources>

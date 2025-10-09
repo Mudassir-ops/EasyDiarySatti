@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.easydiarysatti.BG_THEME_ID
 import com.example.easydiarysatti.LANGUAGE_SETTLED_IN
+import com.example.easydiarysatti.PIN
 import com.example.easydiarysatti.PROFILE_EMAIL
 import com.example.easydiarysatti.PROFILE_NAME
 import com.example.easydiarysatti.PROFILE_PIC
@@ -75,6 +76,19 @@ class SessionManagerRepoImpl(
     override fun getprofileEmail(): String? {
         return preferences.getString(
             PROFILE_EMAIL,
+            ""
+        )
+    }
+
+    override fun setPin(pin: String) {
+        preferences.edit {
+            this.putString(PIN, pin)
+        }
+    }
+
+    override fun getPin(): String? {
+        return preferences.getString(
+            PIN,
             ""
         )
     }

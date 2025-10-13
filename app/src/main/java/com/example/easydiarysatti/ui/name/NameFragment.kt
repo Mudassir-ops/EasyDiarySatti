@@ -2,6 +2,7 @@ package com.example.easydiarysatti.ui.name
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -35,7 +36,6 @@ class NameFragment : Fragment(R.layout.fragment_name) {
             }
         }
     }
-
     private fun adjustScreenKeyboard() {
         setKeyboardVisibilityListener { isVisible ->
             viewLifecycleOwner.lifecycleScope.launch {
@@ -69,6 +69,15 @@ class NameFragment : Fragment(R.layout.fragment_name) {
                     moveToNextScreen()
                 }
             }
+
+            edTextName.doOnTextChanged { text, _, _, _ ->
+                val isValid = !text.isNullOrEmpty()
+                binding.apply {
+                    btnNext.isEnabled = isValid
+                    btnNext.alpha = if (isValid) 1f else 0.6f
+                }
+            }
+
         }
     }
 

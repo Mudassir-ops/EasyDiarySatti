@@ -87,6 +87,8 @@
             android:background="@drawable/btn_bg"
             android:fontFamily="@font/outfit_medium"
             android:text="@string/next"
+            android:enabled="false"
+            android:alpha="0.6"
             android:textSize="@dimen/_14ssp"
             app:backgroundTint="@color/app_primary_color"
             app:layout_constraintBottom_toBottomOf="parent"

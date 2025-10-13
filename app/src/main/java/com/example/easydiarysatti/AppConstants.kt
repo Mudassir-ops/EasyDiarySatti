@@ -11,5 +11,6 @@ const val PROFILE_NAME = "profile_name"
 const val PROFILE_EMAIL = "profile_email"
 const val PIN = "pin"
 const val NOTE_ENTITY = "note_entity"
+const val FROM_SCREEN = "from_screen"
 const val BASE_URL_BG_REMOVER = "http://54.173.238.199:8000"
 

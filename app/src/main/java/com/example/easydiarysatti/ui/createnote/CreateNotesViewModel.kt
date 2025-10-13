@@ -80,15 +80,20 @@ class CreateNotesViewModel @Inject constructor(
         tagList?.clear()
     }
 
+    fun resetState() {
+        viewModelScope.launch {
+            _notesActionState.send(CreateNotesState.Init)
+        }
+    }
 }
 
 sealed interface CreateNotesState {
+    data object Init : CreateNotesState
     data object SaveNote : CreateNotesState
     data class ImagePicked(val imageUri: Uri?) : CreateNotesState
-    data class AddTag(val tag: String?) : CreateNotesState
+    data class AddTag(val tag: String?,val createNoteEntity: CreateNoteEntity?) : CreateNotesState
     data object TagAction : CreateNotesState
     data object DiscardNote : CreateNotesState
-    data object BackAction : CreateNotesState
     data class FontAction(val font: String) : CreateNotesState
     data class TextAlignment(val alignment: String) : CreateNotesState
     data class HeadingSize(val headingSize: Int) : CreateNotesState

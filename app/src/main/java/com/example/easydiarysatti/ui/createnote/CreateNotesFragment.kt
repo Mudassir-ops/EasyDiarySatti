@@ -10,6 +10,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.FROM_SCREEN
+import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
@@ -28,7 +30,7 @@ import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
@@ -54,7 +56,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         viewLifecycleOwner.lifecycleScope.launch {
-            delay(100)
             observeNote()
             observeNoteAction()
             clickListeners()
@@ -114,47 +115,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     fun observeNote() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { note ->
-                note?.let {
-                    createNoteEntity = null
-                    createNoteEntity = it
-                    viewModel.clearTags()
-                    viewModel.clearImages()
-                    viewModel.addImages(imagePath = createNoteEntity?.images ?: listOf())
-                    viewModel.addTags(tags = createNoteEntity?.tags ?: listOf())
-                    binding?.apply {
-                        etHeader.setText(createNoteEntity?.title)
-                        etDescription.setText(createNoteEntity?.description)
-                        imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
-                        if (createNoteEntity?.tags?.isEmpty() == false) {
-                            createNoteEntity?.tags?.setupFlexBox()
-                        } else {
-                            listOf("Personal").setupFlexBox()
-                        }
-                        ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
-                        nestedScrollView.loadBackground(
-                            resourceId = createNoteEntity?.backgroundRes,
-                            placeholder = R.drawable.theme_1
-                        )
-                    }
-                } ?: run {
-                    createNoteEntity = CreateNoteEntity(
-                        feelingEmojiRes = R.drawable.emooji_excited,
-                        textColor = "#FF8D95",
-                        feelingTitle = "Excited",
-                        tagColor = "#F8B903",
-                        tags = listOf(),
-                        images = listOf(),
-                    )
-                    listOf("Personal").setupFlexBox()
-                    binding?.apply {
-                        etHeader.setText(createNoteEntity?.title)
-                        etDescription.setText(createNoteEntity?.description)
-                        imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
-                    }
-                    Log.e("observeNote", "observeNote:Null Note ")
+            viewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).filterNotNull()
+                .collect { note ->
+                    note.setupDefaultValues()
+                    Log.e("observeNote", "observeNote:Null Note$note ")
                 }
-            }
         }
     }
 
@@ -176,7 +141,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
                         }
 
-                        CreateNotesState.BackAction -> findNavController().navigateUp()
                         is CreateNotesState.ImagePicked -> {
                             val lastSavedNotesImages =
                                 viewModel.addImage(imagePath = note.imageUri.toString())
@@ -186,19 +150,29 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
                         is CreateNotesState.AddTag -> {
                             val lastSavedNotesTags = viewModel.addTag(tag = note.tag.toString())
+                            if (!lastSavedNotesTags.contains("Personal")) {
+                                lastSavedNotesTags.toMutableSet().add("Personal")
+                            }
                             createNoteEntity = createNoteEntity?.copy(tags = lastSavedNotesTags)
                             Log.e(
                                 "MudassirSattiTag-->",
                                 "observeNoteAction: ${createNoteEntity?.tags}",
                             )
-                            createNoteEntity?.tags?.setupFlexBox()
+                            createNoteEntity?.setupDefaultValues()
                         }
 
                         CreateNotesState.TagAction -> {
-                            viewModel.setupNoteEntity(createNoteEntity = createNoteEntity)
+                            createNoteEntity = createNoteEntity?.copy(
+                                title = binding?.etHeader?.text?.toString().orEmpty(),
+                                description = binding?.etDescription?.text?.toString().orEmpty()
+                            )
                             findNavController().safeNav(
                                 currentDestId = R.id.createNotesFragment,
                                 actionId = R.id.action_createNotesFragment_to_addTagsFragment2,
+                                Bundle().apply {
+                                    putParcelable(NOTE_ENTITY, createNoteEntity)
+                                    putBoolean(FROM_SCREEN, false)
+                                }
                             )
                         }
 
@@ -214,6 +188,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         is CreateNotesState.TextAlignment -> setAlignment(alignment = note)
                         is CreateNotesState.HeadingSize -> setFontSize(headingSize = note)
                         is CreateNotesState.TextColor -> setTextColor(textColor = note)
+                        else -> Unit
                     }
                 }
         }
@@ -290,6 +265,33 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.apply {
             etHeader.setTextColor(textColor.textColor)
             etDescription.setTextColor(textColor.textColor)
+        }
+    }
+
+    fun CreateNoteEntity.setupDefaultValues() {
+        createNoteEntity = null
+        createNoteEntity = this
+        viewModel.clearTags()
+        viewModel.clearImages()
+        viewModel.addImages(imagePath = createNoteEntity?.images ?: listOf())
+        viewModel.addTags(tags = createNoteEntity?.tags ?: listOf())
+        binding?.apply {
+            etHeader.setText(createNoteEntity?.title)
+            etDescription.setText(createNoteEntity?.description)
+            imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
+            if (createNoteEntity?.tags?.isEmpty() == false) {
+                if (createNoteEntity?.tags?.contains("Personal") == false) {
+                    createNoteEntity?.tags?.toMutableSet()?.add("Personal")
+                }
+                createNoteEntity?.tags?.setupFlexBox()
+            } else {
+                listOf("Personal").setupFlexBox()
+            }
+            ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
+            nestedScrollView.loadBackground(
+                resourceId = createNoteEntity?.backgroundRes,
+                placeholder = R.drawable.theme_1
+            )
         }
     }
 

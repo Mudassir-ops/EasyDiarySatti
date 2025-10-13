@@ -10,7 +10,6 @@ import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentEditBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
-import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.viewBinding
 import javax.inject.Inject
@@ -30,7 +29,12 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
                     findNavController().navigateUp()
                     return@setOnClickListener
                 }
-                viewModel.sendAction(action = CreateNotesState.AddTag(tag = etTags.text.toString()))
+//                viewModel.sendAction(
+//                    action = CreateNotesState.AddTag(
+//                        tag = etTags.text.toString(),
+//                        createNoteEntity = viewModel.noteState.value
+//                    )
+//                )
                 findNavController().navigateUp()
             }
             ivMenu.setOnClickListener {

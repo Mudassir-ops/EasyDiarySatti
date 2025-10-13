@@ -15,6 +15,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentMainBinding
@@ -225,12 +226,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
 
                         R.id.btn_hash_tag -> {
-                            innerNavController?.safeNav(
-                                currentDestId = R.id.createNotesFragment,
-                                actionId = R.id.action_createNotesFragment_to_addTagsFragment2,
-                            )
+                            createNotesViewModel.sendAction(CreateNotesState.TagAction)
                             viewLifecycleOwner.lifecycleScope.launch {
-                                delay(200)
+                                delay(100)
                                 group.clearChecked()
                             }
                         }
@@ -273,17 +271,22 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 binding?.parentLayout?.openDrawer(GravityCompat.START)
             }
             ivBack.setOnClickListener {
-                createNotesViewModel.sendAction(action = CreateNotesState.BackAction)
+                findNavController().navigateUp()
             }
             headerSave.setOnClickListener {
                 Log.e("headerSave", "setClickListeners: ")
                 createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
             }
             icAddNotes.setOnClickListener {
+                createNotesViewModel.clearTags()
+                createNotesViewModel.clearImages()
                 createNotesViewModel.setupNoteEntity(createNoteEntity = null)
                 innerNavController?.safeNav(
                     currentDestId = R.id.homeFragment,
-                    actionId = R.id.action_homeFragment_to_createNotesFragment
+                    actionId = R.id.action_homeFragment_to_createNotesFragment,
+                    Bundle().apply {
+                        putBoolean(FROM_SCREEN, true)
+                    }
                 )
             }
 

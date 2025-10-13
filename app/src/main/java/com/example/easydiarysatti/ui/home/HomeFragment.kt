@@ -27,6 +27,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(onNoteItemClick = { note ->
+            createNotesViewModel.clearTags()
+            createNotesViewModel.clearImages()
+            createNotesViewModel.setupNoteEntity(createNoteEntity = null)
             createNotesViewModel.setupNoteEntity(createNoteEntity = note)
             moveToNextScreen()
         })

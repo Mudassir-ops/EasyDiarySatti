@@ -71,8 +71,8 @@
             android:id="@+id/action_mainFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
         <action
-            android:id="@+id/action_mainFragment_to_addTagsFragment"
-            app:destination="@id/addTagsFragment" />
+            android:id="@+id/action_mainFragment_to_editTagsFragment"
+            app:destination="@id/editTagsFragment" />
         <action
             android:id="@+id/action_mainFragment_to_themesFragment"
             app:destination="@id/themesFragment" />
@@ -89,10 +89,10 @@
         android:label="fragment_edit_profile"
         tools:layout="@layout/fragment_edit_profile" />
     <fragment
-        android:id="@+id/addTagsFragment"
-        android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
-        android:label="fragment_add_tags"
-        tools:layout="@layout/fragment_add_tags" />
+        android:id="@+id/editTagsFragment"
+        android:name="com.example.easydiarysatti.ui.edittags.EditFragment"
+        android:label="Edit Tags"
+        tools:layout="@layout/fragment_edit" />
     <fragment
         android:id="@+id/changePasswordFragment"
         android:name="com.example.easydiarysatti.ui.changepasswordkey.ChangePasswordFragment"

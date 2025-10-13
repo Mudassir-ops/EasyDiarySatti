@@ -61,10 +61,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             adjustScreenKeyboard()
             setupImagesRecyclerview()
             activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-                val navController = childFragmentManager.findFragmentById(R.id.nav_host_main_inner)
-                    ?.findNavController()
-                if (navController?.popBackStack() == true) {
-                    navController.navigateUp()
+                if (findNavController().popBackStack()) {
+                    findNavController().navigateUp()
                 } else {
                     isEnabled = false
                     activity?.onBackPressedDispatcher?.onBackPressed()

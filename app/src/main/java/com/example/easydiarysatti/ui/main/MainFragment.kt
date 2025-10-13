@@ -45,7 +45,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
 
-
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
@@ -70,7 +69,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             when (it) {
                 0 -> findNavController().safeNav(
                     currentDestId = R.id.mainFragment,
-                    actionId = R.id.action_mainFragment_to_addTagsFragment
+                    actionId = R.id.action_mainFragment_to_editTagsFragment
                 )
 
                 1 -> findNavController().safeNav(
@@ -163,10 +162,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             bottomNav.check(R.id.btnHome)
             bottomNav.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
-                    when (checkedId) {
-                        R.id.btnHome -> innerNavController?.navigate(R.id.homeFragment)
-                        R.id.btn_library -> innerNavController?.navigate(R.id.libraryFragment)
-                        R.id.btn_calendar -> innerNavController?.navigate(R.id.calenderFragment)
+                    val currentId = innerNavController?.currentDestination?.id
+                    val targetId = when (checkedId) {
+                        R.id.btnHome -> R.id.homeFragment
+                        R.id.btn_library -> R.id.libraryFragment
+                        R.id.btn_calendar -> R.id.calenderFragment
+                        else -> null
+                    }
+                    if (targetId != null && currentId != targetId) {
+                        innerNavController?.navigate(targetId)
                     }
                 }
             }
@@ -176,6 +180,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         createNoteBottomBar.visibility = View.VISIBLE
                         bottomNav.visibility = View.INVISIBLE
                         binding?.icAddNotes?.visibility = View.INVISIBLE
+                        ivMenu.visibility = View.INVISIBLE
+                        ivBack.visibility = View.VISIBLE
                         setNoteHeader()
                     }
 
@@ -183,6 +189,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         createNoteBottomBar.visibility = View.INVISIBLE
                         binding?.icAddNotes?.visibility = View.VISIBLE
                         bottomNav.visibility = View.VISIBLE
+                        ivMenu.visibility = View.VISIBLE
+                        ivBack.visibility = View.INVISIBLE
                         destination.label?.toString()?.setDefaultNavHeader()
                     }
 
@@ -190,15 +198,17 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         createNoteBottomBar.visibility = View.GONE
                         bottomNav.visibility = View.GONE
                         binding?.icAddNotes?.visibility = View.GONE
-
+                        ivMenu.visibility = View.INVISIBLE
+                        ivBack.visibility = View.VISIBLE
                         setTagsHeader()
-
                     }
 
                     else -> {
                         createNoteBottomBar.visibility = View.INVISIBLE
                         binding?.icAddNotes?.visibility = View.INVISIBLE
                         bottomNav.visibility = View.VISIBLE
+                        ivMenu.visibility = View.INVISIBLE
+                        ivBack.visibility = View.VISIBLE
                         destination.label?.toString()?.setDefaultNavHeader()
                     }
                 }
@@ -215,7 +225,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
 
                         R.id.btn_hash_tag -> {
-                            createNotesViewModel.sendAction(CreateNotesState.TagAction)
+                            innerNavController?.safeNav(
+                                currentDestId = R.id.createNotesFragment,
+                                actionId = R.id.action_createNotesFragment_to_addTagsFragment2,
+                            )
                             viewLifecycleOwner.lifecycleScope.launch {
                                 delay(200)
                                 group.clearChecked()
@@ -258,6 +271,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         binding?.apply {
             ivMenu.setOnClickListener {
                 binding?.parentLayout?.openDrawer(GravityCompat.START)
+            }
+            ivBack.setOnClickListener {
                 createNotesViewModel.sendAction(action = CreateNotesState.BackAction)
             }
             headerSave.setOnClickListener {
@@ -284,7 +299,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun setNoteHeader() {
         binding?.apply {
-            ivMenu.setImageResource(R.drawable.back_icon)
             headerTitle.text = ContextCompat.getString(context ?: return, R.string.add_note)
             ivRemainder.visibility = View.GONE
             headerSave.visibility = View.VISIBLE
@@ -293,8 +307,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun setTagsHeader() {
         binding?.apply {
-            headerLayout.visibility = View.GONE
-            mainBackground.background = null
+            headerTitle.text = ContextCompat.getString(context ?: return, R.string.tags)
+            ivRemainder.visibility = View.GONE
+            headerSave.visibility = View.GONE
         }
     }
 

@@ -210,6 +210,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     }
                 }
             }
+            binding?.bottomNavCreateNote?.clearChecked()
             innerNavController?.addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
                     R.id.createNotesFragment -> {

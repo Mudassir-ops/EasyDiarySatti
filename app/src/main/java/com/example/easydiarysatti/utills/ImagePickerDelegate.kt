@@ -6,6 +6,7 @@ import android.icu.text.SimpleDateFormat
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
@@ -56,6 +57,7 @@ class ImagePickerDelegate(
             } else {
                 onPickerClosed?.invoke()
             }
+            Log.e("MediaLauncher", "$uri:")
         }
 
     fun showPickerDialog() {

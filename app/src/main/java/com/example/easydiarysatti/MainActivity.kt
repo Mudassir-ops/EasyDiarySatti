@@ -2,14 +2,19 @@ package com.example.easydiarysatti
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.navigation.fragment.NavHostFragment
 import com.example.easydiarysatti.domain.model.DrawerItem
+import com.example.easydiarysatti.ui.onboarding.OnBoardingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
+
+    private val viewModel by viewModels<OnBoardingViewModel>()
 
     private val noteBgList: List<Int?> by lazy {
         listOf(
@@ -29,28 +34,21 @@ class MainActivity : AppCompatActivity() {
                 bgTint = "#FFAC81",
                 imgRes = R.drawable.pencil_icon,
                 title = getString(R.string.edit_tags)
-            ),
-            DrawerItem(
+            ), DrawerItem(
                 bgTint = "#5EE3A9",
                 imgRes = R.drawable.paint_icon,
                 title = getString(R.string.color_theme)
-            ),
-            DrawerItem(
+            ), DrawerItem(
                 bgTint = "#FFDE8B",
                 imgRes = R.drawable.bell_drawer,
                 title = getString(R.string.remainders)
-            ),
-            DrawerItem(
-                bgTint = "#FF8D95",
-                imgRes = R.drawable.lock,
-                title = getString(R.string.dairy_lock)
-            ),
-            DrawerItem(
+            ), DrawerItem(
+                bgTint = "#FF8D95", imgRes = R.drawable.lock, title = getString(R.string.dairy_lock)
+            ), DrawerItem(
                 bgTint = "#A29DFB",
                 imgRes = R.drawable.language_icon,
                 title = getString(R.string.langauge)
-            ),
-            DrawerItem(
+            ), DrawerItem(
                 bgTint = "#FFAC81",
                 imgRes = R.drawable.share_icon,
                 title = getString(R.string.share_app)
@@ -67,9 +65,26 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        setupStartGraph()
     }
 
     fun getBgThemes(): List<Int?> = noteBgList
     fun getDrawerItemList(): List<DrawerItem> = mainDrawerItemList
+    private fun setupStartGraph() {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+            ?: return
+
+        val navController = navHostFragment.navController
+        val inflater = navController.navInflater
+        val navGraph = inflater.inflate(R.navigation.mobile_navigation)
+        if (viewModel.isOnBoardingCompleted()) {
+            navGraph.setStartDestination(R.id.mainFragment)
+        } else {
+            navGraph.setStartDestination(R.id.onBoardingFragment)
+        }
+        navController.graph = navGraph
+
+    }
 
 }

@@ -76,33 +76,29 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
             ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.READ_MEDIA_IMAGES
-            ) ==
-                    PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED
         } else {
             val read = ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.READ_EXTERNAL_STORAGE
-            ) ==
-                    PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED
             val write = ContextCompat.checkSelfPermission(
                 requireContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) ==
-                    PackageManager.PERMISSION_GRANTED
+            ) == PackageManager.PERMISSION_GRANTED
             read && write
         }
-        val allGranted = cameraGranted && galleryGranted
-        Log.e(
-            "PermissionFragment",
-            "checkAllPermissions: $allGranted--$cameraGranted---$galleryGranted",
-        )
+
         binding?.apply {
+            icSwitchCamera.isChecked = cameraGranted
+            icSwitchGallery.isChecked = galleryGranted
+
+            val allGranted = cameraGranted && galleryGranted
             btnNext.isEnabled = allGranted
             btnNext.alpha = if (allGranted) 1f else 0.5f
-            icSwitchGallery.isChecked = allGranted
-            icSwitchCamera.isChecked = allGranted
         }
     }
+
 
     private fun clickListener() {
         binding?.apply {

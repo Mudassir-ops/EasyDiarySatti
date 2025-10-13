@@ -5,6 +5,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentThemesBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
@@ -62,6 +63,9 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
     }
 
     fun moveToNextScreen() {
+        if (arguments?.getBoolean(FROM_ONBOARDING) == true) {
+            sessionManagerRepo.setOnBoardingDoneOnce(isOnBoardingDoneOnce = true)
+        }
         findNavController().safeNav(
             currentDestId = R.id.themesFragment,
             actionId = R.id.action_themesFragment_to_mainFragment

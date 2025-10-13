@@ -5,6 +5,7 @@ import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentLanguageBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
@@ -48,9 +49,13 @@ class LanguageFragment : Fragment(R.layout.fragment_language) {
     }
 
     fun moveToNextScreen() {
+        val bundle = Bundle().apply {
+            putBoolean(FROM_ONBOARDING, true)
+        }
         findNavController().safeNav(
             currentDestId = R.id.languageFragment,
-            actionId = R.id.action_languageFragment_to_themesFragment
+            actionId = R.id.action_languageFragment_to_themesFragment,
+            bundle = bundle
         )
     }
 }

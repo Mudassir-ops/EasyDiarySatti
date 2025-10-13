@@ -71,6 +71,7 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
                 }
             }
             tvSkip.setOnClickListener {
+
                 findNavController().safeNav(
                     currentDestId = R.id.onBoardingFragment,
                     actionId = R.id.action_onBoardingFragment_to_permissionFragment
@@ -78,7 +79,6 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
             }
         }
     }
-
 
     override fun onAttach(context: Context) {
         super.onAttach(context)

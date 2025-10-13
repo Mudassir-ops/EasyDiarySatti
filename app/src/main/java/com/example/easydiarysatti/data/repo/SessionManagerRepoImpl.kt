@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.easydiarysatti.BG_THEME_ID
 import com.example.easydiarysatti.LANGUAGE_SETTLED_IN
+import com.example.easydiarysatti.ON_BOARDING_DONE
 import com.example.easydiarysatti.PIN
 import com.example.easydiarysatti.PROFILE_EMAIL
 import com.example.easydiarysatti.PROFILE_NAME
@@ -93,4 +94,16 @@ class SessionManagerRepoImpl(
         )
     }
 
+    override fun setOnBoardingDoneOnce(isOnBoardingDoneOnce: Boolean) {
+        preferences.edit {
+            this.putBoolean(ON_BOARDING_DONE, isOnBoardingDoneOnce)
+        }
+    }
+
+    override fun isOnBoardingDoneOnce(): Boolean? {
+        return preferences.getBoolean(
+            ON_BOARDING_DONE,
+            false
+        )
+    }
 }

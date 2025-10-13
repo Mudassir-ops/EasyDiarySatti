@@ -2,7 +2,6 @@ package com.example.easydiarysatti.utills
 
 import android.app.Dialog
 import android.app.TimePickerDialog
-import android.graphics.Color
 import android.net.Uri
 import android.util.Log
 import android.util.TypedValue
@@ -200,6 +199,7 @@ inline fun Fragment.showBackgroundDialog(
 }
 
 inline fun Fragment.showEditTexDialog(
+    colorPalette: List<Int>,
     crossinline closeDialog: () -> Unit,
     crossinline fontSelectionListener: (fontName: String) -> Unit,
     crossinline textAlignmentListener: (alignment: String) -> Unit,
@@ -252,25 +252,31 @@ inline fun Fragment.showEditTexDialog(
         }
 
         setExclusiveSelectionHeadingSize(
-            binding.icHeadingOne, binding.icHeadingTwo, binding.icHeadingThree
+            binding.icHeadingOne,
+            binding.icHeadingTwo,
+            binding.icHeadingThree
         ) { selectedView ->
             when (selectedView.id) {
-                R.id.icStartLine -> textBoldListener.invoke(0)
-                R.id.icCenterLine -> textBoldListener.invoke(1)
-                R.id.icEndLine -> textBoldListener.invoke(2)
+                R.id.icHeadingOne -> textBoldListener.invoke(0)
+                R.id.icHeadingTwo -> textBoldListener.invoke(1)
+                R.id.icHeadingThree -> textBoldListener.invoke(2)
             }
         }
 
         setExclusiveSelectionColor(
-            binding.icBlackColor,
-            binding.icDarkGrayColor,
-            binding.icLightGrayColor,
-            binding.icBlueColor,
             selectedTint = ContextCompat.getColor(requireContext(), R.color.app_primary_color),
-            unselectedTint = ContextCompat.getColor(requireContext(), R.color.track_color)
-        ) { selectedView, color ->
-            val color = selectedView.backgroundTintList?.defaultColor ?: Color.BLACK
-            textColorListener(color)
+            unselectedTint = ContextCompat.getColor(requireContext(), R.color.track_color),
+            views = arrayOf(
+                binding.icBlackColor,
+                binding.icDarkGrayColor,
+                binding.icLightGrayColor,
+                binding.icPinkColor,
+                binding.icGreenishColor,
+                binding.icPurpleColor
+            ),
+            colors = colorPalette
+        ) { selectedView, selectedColor ->
+            textColorListener(selectedColor)
         }
         ivClose.setOnClickListener {
             imageDialog.dismiss()

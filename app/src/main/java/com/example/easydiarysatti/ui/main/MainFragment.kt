@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -45,6 +46,18 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private val viewModel by activityViewModels<NameViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
+
+    private val colorPalette by lazy {
+        listOf(
+            "#334155".toColorInt(), // black-ish
+            "#64748B".toColorInt(), // dark gray
+            "#8478BF".toColorInt(), // light gray
+            "#0F2A45".toColorInt(), // pink-ish
+            "#0F172A".toColorInt(), // greenish
+            "#4C0821".toColorInt()  // purple
+        )
+    }
+
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
@@ -255,8 +268,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                     createNotesViewModel.sendAction(CreateNotesState.HeadingSize(it))
                                 },
                                 textColorListener = {
+                                    Log.e("SelecetdColor", "setTextColor: SelecetdColor$it")
                                     createNotesViewModel.sendAction(CreateNotesState.TextColor(it))
-                                }
+                                }, colorPalette = colorPalette
                             )
                         }
                     }

@@ -767,35 +767,41 @@ fun AppCompatEditText?.setHeadingSize(textSizeInSp: Float) {
 
 fun getHeadingSize(index: Int): Float {
     return when (index) {
-        0 -> 19f
-        1 -> 20f
-        2 -> 23f
-        else -> 19F
+        0 -> 22f
+        1 -> 26f
+        2 -> 32f
+        else -> 22F
     }
 }
 
 fun setExclusiveSelectionColor(
-    vararg views: AppCompatImageView,
     selectedTint: Int,
     unselectedTint: Int,
+    views: Array<AppCompatImageView>,
+    colors: List<Int>,
     onSelected: (AppCompatImageView, Int) -> Unit = { _, _ -> }
 ) {
-    views.forEach { view ->
+    views.forEachIndexed { index, view ->
         view.setOnClickListener {
+            // Reset all
             views.forEach {
                 it.isSelected = false
                 it.alpha = 0.6f
                 it.imageTintList = ColorStateList.valueOf(unselectedTint)
             }
 
+            // Highlight selected
             view.isSelected = true
             view.alpha = 1f
             view.imageTintList = ColorStateList.valueOf(selectedTint)
-            val color = (view.backgroundTintList?.defaultColor ?: selectedTint)
+
+            // Always get actual color from the color list
+            val color = colors.getOrNull(index) ?: Color.BLACK
             onSelected(view, color)
         }
     }
 }
+
 
 
 

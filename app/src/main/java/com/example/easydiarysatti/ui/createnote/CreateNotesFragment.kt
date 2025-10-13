@@ -55,23 +55,21 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewLifecycleOwner.lifecycleScope.launch {
-            observeNote()
-            observeNoteAction()
-            clickListeners()
-            adjustScreenKeyboard()
-            setupImagesRecyclerview()
-            listOf("Personal").setupFlexBox()
-            activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-                if (findNavController().popBackStack()) {
-                    findNavController().navigateUp()
-                } else {
-                    isEnabled = false
-                    activity?.onBackPressedDispatcher?.onBackPressed()
-                }
+        observeNote()
+        observeNoteAction()
+        clickListeners()
+        adjustScreenKeyboard()
+        setupImagesRecyclerview()
+        listOf("Personal").setupFlexBox()
+        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
+            if (findNavController().popBackStack()) {
+                findNavController().navigateUp()
+            } else {
+                isEnabled = false
+                activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            setStyledDateTime(binding?.tvDate ?: return@launch, R.color.black)
         }
+        setStyledDateTime(binding?.tvDate ?: return, R.color.black)
     }
 
     fun List<String>.setupFlexBox() {

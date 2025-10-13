@@ -291,6 +291,7 @@ inline fun Fragment.showEditTexDialog(
                     getString(R.string.confirm),
                     ColorEnvelopeListener { envelope, fromUser ->
                         textColorListener.invoke(envelope.color)
+                        imageDialog.dismiss()
                     })
                 .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                     dialog.dismiss()

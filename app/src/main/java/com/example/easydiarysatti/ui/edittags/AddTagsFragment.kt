@@ -7,7 +7,6 @@ import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
-import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.data.local.CreateNoteEntity

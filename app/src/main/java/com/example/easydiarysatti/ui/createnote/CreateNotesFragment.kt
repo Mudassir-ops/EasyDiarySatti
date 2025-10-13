@@ -61,6 +61,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             clickListeners()
             adjustScreenKeyboard()
             setupImagesRecyclerview()
+            listOf("Personal").setupFlexBox()
             activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
                 if (findNavController().popBackStack()) {
                     findNavController().navigateUp()
@@ -150,13 +151,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
                         is CreateNotesState.AddTag -> {
                             val lastSavedNotesTags = viewModel.addTag(tag = note.tag.toString())
-                            if (!lastSavedNotesTags.contains("Personal")) {
-                                lastSavedNotesTags.toMutableSet().add("Personal")
-                            }
-                            createNoteEntity = createNoteEntity?.copy(tags = lastSavedNotesTags)
+                                .toMutableList()
+                                .apply { if (!contains("Personal")) add("Personal") }
+                            createNoteEntity =
+                                createNoteEntity?.copy(tags = lastSavedNotesTags.reversed())
                             Log.e(
                                 "MudassirSattiTag-->",
-                                "observeNoteAction: ${createNoteEntity?.tags}",
+                                "observeNoteAction: ${createNoteEntity?.tags}"
                             )
                             createNoteEntity?.setupDefaultValues()
                         }
@@ -294,5 +295,4 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             )
         }
     }
-
 }

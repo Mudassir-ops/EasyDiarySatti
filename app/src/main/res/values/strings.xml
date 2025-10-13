@@ -86,5 +86,8 @@
     <string name="old_pin_is_incorrect">Old PIN is incorrect</string>
     <string name="new_pins_do_not_match">New PINs do not match</string>
     <string name="pin_changed_successfully">PIN changed successfully</string>
+    <string name="confirm">Confirm</string>
+    <string name="colorpicker">ColorPicker</string>
+    <string name="mycolorpickerdialog">MyColorPickerDialog</string>
 
 </resources>

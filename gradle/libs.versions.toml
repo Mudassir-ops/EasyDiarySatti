@@ -1,5 +1,8 @@
 [versions]
 agp = "8.12.3"
+ambilwarna = "2.0.1"
+colorpicker = "0.0.13"
+colorpickerview = "2.3.0"
 gsonVersion = "2.11.0"
 kotlin = "2.2.20"
 coreKtx = "1.17.0"
@@ -32,7 +35,10 @@ viewbinding = "8.13.0"
 databindingCommon = "8.13.0"
 legacySupportV4 = "1.0.0"
 [libraries]
+ambilwarna = { module = "yukuku:ambilwarna", version.ref = "ambilwarna" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+
+colorpickerview = { module = "com.github.skydoves:colorpickerview", version.ref = "colorpickerview" }
 gson-v2110 = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

@@ -22,6 +22,8 @@ import com.example.easydiarysatti.saveBitmapToUri
 import com.example.easydiarysatti.setExclusiveSelection
 import com.example.easydiarysatti.setExclusiveSelectionColor
 import com.example.easydiarysatti.setExclusiveSelectionHeadingSize
+import com.skydoves.colorpickerview.ColorPickerDialog
+import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -241,7 +243,6 @@ inline fun Fragment.showEditTexDialog(
             fontSelectionListener.invoke(fontName.orEmpty())
             Log.d("FontSelected", "Selected font: $fontName")
         }
-
         setExclusiveSelection(
             binding.icStartLine, binding.icCenterLine, binding.icEndLine
         ) { selectedView ->
@@ -251,11 +252,8 @@ inline fun Fragment.showEditTexDialog(
                 R.id.icEndLine -> textAlignmentListener.invoke("right")
             }
         }
-
         setExclusiveSelectionHeadingSize(
-            binding.icHeadingOne,
-            binding.icHeadingTwo,
-            binding.icHeadingThree
+            binding.icHeadingOne, binding.icHeadingTwo, binding.icHeadingThree
         ) { selectedView ->
             when (selectedView.id) {
                 R.id.icHeadingOne -> textBoldListener.invoke(0)
@@ -263,7 +261,6 @@ inline fun Fragment.showEditTexDialog(
                 R.id.icHeadingThree -> textBoldListener.invoke(2)
             }
         }
-
         setExclusiveSelectionColor(
             selectedTint = ContextCompat.getColor(requireContext(), R.color.app_primary_color),
             unselectedTint = ContextCompat.getColor(requireContext(), R.color.track_color),
@@ -286,6 +283,25 @@ inline fun Fragment.showEditTexDialog(
         imageDialog.setOnDismissListener {
             closeDialog.invoke()
         }
+        binding.icBlueColor.setOnClickListener {
+            ColorPickerDialog.Builder(requireContext())
+                .setTitle(getString(R.string.colorpicker))
+                .setPreferenceName(getString(R.string.mycolorpickerdialog))
+                .setPositiveButton(
+                    getString(R.string.confirm),
+                    ColorEnvelopeListener { envelope, fromUser ->
+                        textColorListener.invoke(envelope.color)
+                    })
+                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .attachAlphaSlideBar(true)
+                .attachBrightnessSlideBar(true)
+                .setBottomSpace(12)
+                .show()
+        }
+
+
     }
 }
 
@@ -323,18 +339,14 @@ inline fun Fragment.showDatePicker(
             calendar.set(Calendar.MONTH, month)
             calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
             val timePickerDialog = TimePickerDialog(
-                context,
-                { _, hourOfDay, minute ->
+                context, { _, hourOfDay, minute ->
                     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
                     calendar.set(Calendar.MINUTE, minute)
                     val formatter = SimpleDateFormat("dd-MM-yy | h:mm a", Locale.getDefault())
                     val formatted = formatter.format(Date()).uppercase(Locale.getDefault())
                     selectedDateTime(formatted)
                     imageDialog.dismiss()
-                },
-                calendar.get(Calendar.HOUR_OF_DAY),
-                calendar.get(Calendar.MINUTE),
-                false
+                }, calendar.get(Calendar.HOUR_OF_DAY), calendar.get(Calendar.MINUTE), false
             )
             timePickerDialog.show()
         }
@@ -378,3 +390,4 @@ inline fun Fragment.showFeedBackDialog(
         }
     }
 }
+

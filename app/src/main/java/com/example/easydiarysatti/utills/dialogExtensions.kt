@@ -24,6 +24,7 @@ import com.example.easydiarysatti.setExclusiveSelectionColor
 import com.example.easydiarysatti.setExclusiveSelectionHeadingSize
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.Locale
 
 inline fun Fragment.showEditFeelingsDialog(
@@ -326,11 +327,9 @@ inline fun Fragment.showDatePicker(
                 { _, hourOfDay, minute ->
                     calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
                     calendar.set(Calendar.MINUTE, minute)
-
-                    val formatter = SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault())
-                    val formattedDateTime = formatter.format(calendar.time)
-
-                    selectedDateTime(formattedDateTime)
+                    val formatter = SimpleDateFormat("dd-MM-yy | h:mm a", Locale.getDefault())
+                    val formatted = formatter.format(Date()).uppercase(Locale.getDefault())
+                    selectedDateTime(formatted)
                     imageDialog.dismiss()
                 },
                 calendar.get(Calendar.HOUR_OF_DAY),

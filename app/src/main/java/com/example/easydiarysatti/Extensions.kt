@@ -685,6 +685,45 @@ fun setStyledDateTime(tvDate: MaterialTextView, colorId: Int) {
     tvDate.text = spannable
 }
 
+
+fun setStyledDateAlreadyTime(tvDate: MaterialTextView, colorId: Int,formatted: String) {
+    val parts = formatted.split("|")
+    val datePart = parts.getOrNull(0)?.trim() ?: ""
+    val timePart = parts.getOrNull(1)?.trim() ?: ""
+    val separator = " | "
+    val spannable = SpannableStringBuilder().apply {
+        append(datePart)
+        setSpan(
+            StyleSpan(Typeface.BOLD),
+            0, datePart.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+
+        val startSeparator = length
+        append(separator)
+        setSpan(
+            ForegroundColorSpan(
+                ContextCompat.getColor(
+                    tvDate.context ?: return,
+                    R.color.app_primary_color
+                )
+            ),
+            startSeparator,
+            startSeparator + separator.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        val startTime = length
+        append(timePart)
+        setSpan(
+            ForegroundColorSpan(ContextCompat.getColor(tvDate.context, colorId)),
+            startTime,
+            startTime + timePart.length,
+            Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+    }
+    tvDate.text = spannable
+}
+
 fun setExclusiveSelection(
     vararg textViews: MaterialTextView,
     onSelected: (selectedView: MaterialTextView) -> Unit
@@ -767,10 +806,10 @@ fun AppCompatEditText?.setHeadingSize(textSizeInSp: Float) {
 
 fun getHeadingSize(index: Int): Float {
     return when (index) {
-        0 -> 22f
-        1 -> 26f
-        2 -> 32f
-        else -> 22F
+        0 -> 19f
+        1 -> 20f
+        2 -> 23f
+        else -> 19F
     }
 }
 

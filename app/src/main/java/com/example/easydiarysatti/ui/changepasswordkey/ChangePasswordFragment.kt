@@ -6,6 +6,7 @@ import android.view.View
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentChangePasswordBinding
 import com.example.easydiarysatti.databinding.PwdItemLayoutBinding
@@ -27,6 +28,15 @@ class ChangePasswordFragment : Fragment(R.layout.fragment_change_password) {
         setupScreenUi()
         setupBgTheme()
         setupPinAutoMove()
+        setupClickListener()
+    }
+
+    private fun setupClickListener() {
+        binding?.apply {
+            ivMenu.setOnClickListener {
+                findNavController().navigateUp()
+            }
+        }
     }
 
     private fun setupBgTheme() {
@@ -91,7 +101,7 @@ class ChangePasswordFragment : Fragment(R.layout.fragment_change_password) {
     private fun saveNewPin(newPin: String) {
         signUpViewModel.savePin(enteredPin = newPin)
         showToast(getString(R.string.pin_changed_successfully))
-
+        findNavController().navigateUp()
     }
 
     private fun showToast(message: String) {

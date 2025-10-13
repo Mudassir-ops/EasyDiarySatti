@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.ui.main
 
 import android.content.Context
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,8 +13,10 @@ import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_SCREEN
@@ -37,6 +40,7 @@ import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -44,6 +48,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private var innerNavController: NavController? = null
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val viewModel by activityViewModels<NameViewModel>()
+    private val mainViewModel by activityViewModels<MainViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
 
@@ -65,10 +70,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private val multiImageAdapter: MultiImageAdapter by lazy {
         MultiImageAdapter(items = (activity as MainActivity).getBgThemes(), onUploadClick = {
-            val imagePicker = ImagePickerDelegate(this) { uri, file ->
-
-            }
-            imagePicker.showPickerDialog()
         }, onImageClick = {
             createNotesViewModel.sendAction(
                 CreateNotesState.ChangeBg(
@@ -109,13 +110,26 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        imagePicker = ImagePickerDelegate(this) { uri, file ->
-            showImageCropDialog(imagePath = file?.path ?: return@ImagePickerDelegate, btnDone = {
-                createNotesViewModel.sendAction(action = CreateNotesState.ImagePicked(imageUri = it))
-            }, closeDialog = {
+        imagePicker = ImagePickerDelegate(
+            this,
+            onPickerClosed = {
                 binding?.bottomNavCreateNote?.clearChecked()
+            },
+            onImagePicked = { uri: Uri?, file: File? ->
+                showImageCropDialog(
+                    imagePath = file?.path ?: return@ImagePickerDelegate,
+                    btnDone = {
+                        createNotesViewModel.sendAction(
+                            action = CreateNotesState.ImagePicked(
+                                imageUri = it
+                            )
+                        )
+                    },
+                    closeDialog = {
+                        binding?.bottomNavCreateNote?.clearChecked()
+                    })
+
             })
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -124,6 +138,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         setupBgTheme()
         setClickListeners()
         setupDrawer()
+        observeMainState()
     }
 
     private fun setupDrawer() {
@@ -138,6 +153,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 ivBack.setOnClickListener {
                     parentLayout.closeDrawer(GravityCompat.START)
                 }
+
                 ivEditProfile.setOnClickListener {
                     findNavController().safeNav(
                         currentDestId = R.id.mainFragment,
@@ -173,7 +189,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             val innerNavHost =
                 childFragmentManager.findFragmentById(R.id.nav_host_main_inner) as NavHostFragment
             innerNavController = innerNavHost.navController
-            bottomNav.check(R.id.btnHome)
             bottomNav.addOnButtonCheckedListener { _, checkedId, isChecked ->
                 if (isChecked) {
                     val currentId = innerNavController?.currentDestination?.id
@@ -184,7 +199,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         else -> null
                     }
                     if (targetId != null && currentId != targetId) {
-                        innerNavController?.navigate(targetId)
+                        val navOptions = NavOptions.Builder()
+                            .setLaunchSingleTop(true)
+                            .setPopUpTo(
+                                innerNavController?.graph?.startDestinationId
+                                    ?: return@addOnButtonCheckedListener, false
+                            )
+                            .build()
+                        innerNavController?.navigate(targetId, null, navOptions)
                     }
                 }
             }
@@ -206,6 +228,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         ivMenu.visibility = View.VISIBLE
                         ivBack.visibility = View.INVISIBLE
                         destination.label?.toString()?.setDefaultNavHeader()
+                        binding?.bottomNav?.check(R.id.btnHome)
                     }
 
                     R.id.addTagsFragment2 -> {
@@ -224,6 +247,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         ivMenu.visibility = View.INVISIBLE
                         ivBack.visibility = View.VISIBLE
                         destination.label?.toString()?.setDefaultNavHeader()
+                        val label = destination.label?.toString()
+                        Log.d("NavDebug", "Navigated to: $label")
+                        label?.setDefaultNavHeader()
                     }
                 }
             }
@@ -241,7 +267,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         R.id.btn_hash_tag -> {
                             createNotesViewModel.sendAction(CreateNotesState.TagAction)
                             viewLifecycleOwner.lifecycleScope.launch {
-                                delay(100)
+                                delay(50)
                                 group.clearChecked()
                             }
                         }
@@ -285,7 +311,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 binding?.parentLayout?.openDrawer(GravityCompat.START)
             }
             ivBack.setOnClickListener {
-                findNavController().navigateUp()
+                innerNavController?.navigateUp()
             }
             headerSave.setOnClickListener {
                 Log.e("headerSave", "setClickListeners: ")
@@ -303,7 +329,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     }
                 )
             }
-
         }
     }
 
@@ -340,13 +365,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
+    fun observeMainState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            mainViewModel.mainState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
+
+            }
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val callback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 showFeedBackDialog {
-
                 }
             }
         }

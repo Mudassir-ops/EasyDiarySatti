@@ -91,7 +91,7 @@ sealed interface CreateNotesState {
     data object Init : CreateNotesState
     data object SaveNote : CreateNotesState
     data class ImagePicked(val imageUri: Uri?) : CreateNotesState
-    data class AddTag(val tag: String?,val createNoteEntity: CreateNoteEntity?) : CreateNotesState
+    data class AddTag(val tag: String?, val createNoteEntity: CreateNoteEntity?) : CreateNotesState
     data object TagAction : CreateNotesState
     data object DiscardNote : CreateNotesState
     data class FontAction(val font: String) : CreateNotesState

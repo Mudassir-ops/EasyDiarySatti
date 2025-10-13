@@ -15,6 +15,8 @@ import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
+import com.example.easydiarysatti.ui.main.MainState
+import com.example.easydiarysatti.ui.main.MainViewModel
 import com.example.easydiarysatti.viewBinding
 import com.example.easydiarysatti.visible
 import dagger.hilt.android.AndroidEntryPoint
@@ -25,6 +27,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val binding by viewBinding(FragmentHomeBinding::bind)
     private val viewModel by viewModels<HomeViewModel>()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
+    private val mainViewModel by activityViewModels<MainViewModel>()
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(onNoteItemClick = { note ->
             createNotesViewModel.clearTags()
@@ -35,6 +38,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         })
     }
 
+    override fun onResume() {
+        super.onResume()
+        mainViewModel.setMainState(MainState.HomeScreen)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         clickListener()

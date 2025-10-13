@@ -3,7 +3,6 @@ package com.example.easydiarysatti.ui.createnote
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -23,6 +22,7 @@ import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setHeadingSize
 import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
+import com.example.easydiarysatti.setStyledDateAlreadyTime
 import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.setTextAlignmentByName
 import com.example.easydiarysatti.utills.showDatePicker
@@ -61,14 +61,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         adjustScreenKeyboard()
         setupImagesRecyclerview()
         listOf("Personal").setupFlexBox()
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-            if (findNavController().popBackStack()) {
-                findNavController().navigateUp()
-            } else {
-                isEnabled = false
-                activity?.onBackPressedDispatcher?.onBackPressed()
-            }
-        }
         setStyledDateTime(binding?.tvDate ?: return, R.color.black)
     }
 
@@ -101,7 +93,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             }
             tvDate.setOnClickListener {
                 showDatePicker(selectedDateTime = {
-
+                    setStyledDateAlreadyTime(
+                        tvDate = tvDate,
+                        colorId = R.color.black,
+                        formatted = it
+                    )
                 })
             }
             ivBottomArrow.setOnClickListener {
@@ -247,9 +243,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     private fun setFontSize(headingSize: CreateNotesState.HeadingSize) {
         val fontSizePair = Pair(
-            (getHeadingSize(headingSize.headingSize) + 0F),
-            (getHeadingSize(headingSize.headingSize) + 3F)
+            (getHeadingSize(headingSize.headingSize) + 3F),
+            (getHeadingSize(headingSize.headingSize) + 8F)
         )
+        Log.e("setFontSize", "setTextColor: SelecetdColor$headingSize")
+
         binding?.apply {
             etHeader.setHeadingSize(
                 textSizeInSp = fontSizePair.first

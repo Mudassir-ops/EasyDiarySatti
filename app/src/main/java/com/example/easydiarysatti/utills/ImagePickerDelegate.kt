@@ -15,7 +15,8 @@ import java.util.Locale
 
 class ImagePickerDelegate(
     private val fragment: Fragment,
-    private val onImagePicked: (uri: Uri?, file: File?) -> Unit
+    private val onPickerClosed: (() -> Unit)? = null,
+    private val onImagePicked: (uri: Uri?, file: File?) -> Unit,
 ) {
     private val context = fragment.context
     private var tempImageUri: Uri? = null
@@ -43,13 +44,17 @@ class ImagePickerDelegate(
                 tempImageUri?.let { uri ->
                     onImagePicked(uri, uriToFile(uri))
                 }
+            } else {
+                onPickerClosed?.invoke()
             }
         }
 
     private val galleryLauncher =
         fragment.registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            uri?.let {
+            if (uri != null) {
                 onImagePicked(uri, uriToFile(uri))
+            } else {
+                onPickerClosed?.invoke()
             }
         }
 

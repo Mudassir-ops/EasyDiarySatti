@@ -179,8 +179,8 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
             imageView?.visibility = View.VISIBLE
             imageView?.setImageResource(noteEntity.feelingEmojiRes)
             imageView?.setCustomDayEmojiBackground(
-                fillColor = noteEntity.textColor,
-                strokeColor = noteEntity.textColor,
+                fillColor = noteEntity.selectedEmojiColor,
+                strokeColor = noteEntity.selectedEmojiColor,
                 dayNow = isToday
             )
         } else {

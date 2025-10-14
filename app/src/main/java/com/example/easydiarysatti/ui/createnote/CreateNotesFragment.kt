@@ -47,7 +47,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         super.onCreate(savedInstanceState)
         createNoteEntity = CreateNoteEntity(
             feelingEmojiRes = R.drawable.emooji_excited,
-            textColor = "#FF8D95",
+            selectedEmojiColor = "#FF8D95",
             feelingTitle = "Excited",
             tagColor = "#F8B903"
         )
@@ -85,7 +85,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     ivEmoji.setImageResource(emojiInfo.drawableRes)
                     createNoteEntity = createNoteEntity?.copy(
                         feelingEmojiRes = emojiInfo.drawableRes,
-                        textColor = emojiInfo.colorHex,
+                        selectedEmojiColor = emojiInfo.colorHex,
                         feelingTitle = emojiInfo.name,
                         tagColor = emojiInfo.tagColor
                     )
@@ -231,6 +231,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.apply {
             etHeader.setFont(fontName, context ?: return)
             etDescription.setFont(fontName, context ?: return)
+            createNoteEntity = createNoteEntity?.copy(textFont = fontName)
         }
     }
 
@@ -238,6 +239,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.apply {
             setTextAlignmentByName(etHeader, alignment.alignment)
             setTextAlignmentByName(etDescription, alignment.alignment)
+            createNoteEntity = createNoteEntity?.copy(textAlignment = alignment.alignment)
         }
     }
 
@@ -246,8 +248,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             (getHeadingSize(headingSize.headingSize) + 3F),
             (getHeadingSize(headingSize.headingSize) + 8F)
         )
+        createNoteEntity = createNoteEntity?.copy(textFontSize = headingSize.headingSize.toString())
         Log.e("setFontSize", "setTextColor: SelecetdColor$headingSize")
-
         binding?.apply {
             etHeader.setHeadingSize(
                 textSizeInSp = fontSizePair.first
@@ -262,6 +264,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.apply {
             etHeader.setTextColor(textColor.textColor)
             etDescription.setTextColor(textColor.textColor)
+            createNoteEntity = createNoteEntity?.copy(textColor = textColor.textColor)
         }
     }
 
@@ -289,6 +292,30 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 resourceId = createNoteEntity?.backgroundRes,
                 placeholder = R.drawable.theme_1
             )
+            createNoteEntity?.textColor?.let { etHeader.setTextColor(it) }
+            createNoteEntity?.textColor?.let { etDescription.setTextColor(it) }
+            val fontSizePair = createNoteEntity?.textFontSize?.toInt()?.let {
+                createNoteEntity?.textFontSize?.toInt()?.let { index ->
+                    Pair(
+                        (getHeadingSize(it) + 3F),
+                        (getHeadingSize(index) + 8F)
+                    )
+                }
+            }
+            fontSizePair?.first?.let {
+                etHeader.setHeadingSize(
+                    textSizeInSp = it
+                )
+            }
+            fontSizePair?.second?.let {
+                etDescription.setHeadingSize(
+                    textSizeInSp = it
+                )
+            }
+            createNoteEntity?.textAlignment?.let { setTextAlignmentByName(etHeader, it) }
+            createNoteEntity?.textAlignment?.let { setTextAlignmentByName(etDescription, it) }
+            createNoteEntity?.textFont?.let { etHeader.setFont(it, context ?: return) }
+            createNoteEntity?.textFont?.let { etDescription.setFont(it, context ?: return) }
         }
     }
 }

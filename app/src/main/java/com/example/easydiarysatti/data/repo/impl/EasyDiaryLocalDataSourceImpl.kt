@@ -31,38 +31,6 @@ class EasyDiaryLocalDataSourceImpl(
         return dao.observeNoteById(id = id)
     }
 
-    override suspend fun updateTitle(noteId: Long, title: String) = dao.updateTitle(noteId, title)
-    override suspend fun updateDescription(noteId: Long, description: String) =
-        dao.updateDescription(noteId, description)
-
-    override suspend fun updateFeelingTitle(noteId: Long, feelingTitle: String) =
-        dao.updateFeelingTitle(noteId, feelingTitle)
-
-    override suspend fun updateFeelingEmoji(noteId: Long, emojiRes: Int) =
-        dao.updateFeelingEmoji(noteId, emojiRes)
-
-    override suspend fun updateBackground(noteId: Long, bgRes: Int) =
-        dao.updateBackground(noteId, bgRes)
-
-    override suspend fun updateTextColor(noteId: Long, color: String) =
-        dao.updateTextColor(noteId, color)
-
-    override suspend fun updateTextSizeH1(noteId: Long, size: Float) =
-        dao.updateTextSizeH1(noteId, size)
-
-    override suspend fun updateTextSizeH2(noteId: Long, size: Float) =
-        dao.updateTextSizeH2(noteId, size)
-
-    override suspend fun updateTextSizeH3(noteId: Long, size: Float) =
-        dao.updateTextSizeH3(noteId, size)
-
-    override suspend fun updateTextFont(noteId: Long, font: String) =
-        dao.updateTextFont(noteId, font)
-
-    override suspend fun updateTextAlignment(noteId: Long, alignment: String) =
-        dao.updateTextAlignment(noteId, alignment)
-
-    override suspend fun updateText(noteId: Long, text: String) = dao.updateText(noteId, text)
 
     override fun observeAllNotes(): Flow<List<CreateNoteEntity>?> {
         return dao.observeAllNotes().distinctUntilChanged()

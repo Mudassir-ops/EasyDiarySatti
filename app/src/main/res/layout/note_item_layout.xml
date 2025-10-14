@@ -29,7 +29,7 @@
             app:layout_constraintEnd_toStartOf="@+id/tv_not_time"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:textColorHex="@{noteEntity.textColor}" />
+            app:textColorHex="@{noteEntity.selectedEmojiColor}" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_note_description"
@@ -104,8 +104,8 @@
             app:layout_constraintBottom_toBottomOf="@+id/tv_tag"
             app:layout_constraintStart_toEndOf="@+id/tv_tag"
             app:layout_constraintTop_toTopOf="@+id/tv_tag"
-            app:noteBgFillColor="@{noteEntity.textColor}"
-            app:noteBgStrokeColor="@{noteEntity.textColor}" />
+            app:noteBgFillColor="@{noteEntity.selectedEmojiColor}"
+            app:noteBgStrokeColor="@{noteEntity.selectedEmojiColor}" />
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/iv_gallery"

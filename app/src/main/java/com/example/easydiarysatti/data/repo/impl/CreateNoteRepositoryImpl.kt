@@ -24,16 +24,16 @@ class CreateNoteRepositoryImpl(
             feelingEmojiRes = note.feelingEmojiRes ?: existing.feelingEmojiRes,
             backgroundRes = note.backgroundRes ?: existing.backgroundRes,
             tags = note.tags ?: existing.tags,
-            textColor = note.textColor ?: existing.textColor,
-            textSizeH1 = note.textSizeH1 ?: existing.textSizeH1,
-            textSizeH2 = note.textSizeH2 ?: existing.textSizeH2,
-            textSizeH3 = note.textSizeH3 ?: existing.textSizeH3,
+            selectedEmojiColor = note.selectedEmojiColor ?: existing.selectedEmojiColor,
             textFont = note.textFont ?: existing.textFont,
             textAlignment = note.textAlignment ?: existing.textAlignment,
             text = note.text ?: existing.text,
             images = note.images ?: existing.images,
             creationTime = existing.creationTime,
-            tagColor = note.tagColor ?: existing.tagColor
+            tagColor = note.tagColor ?: existing.tagColor,
+            textColor=note.textColor ?: existing.textColor,
+            textSizeHeader=note.textSizeHeader ?: existing.textSizeHeader,
+            textFontSize=note.textFontSize ?: existing.textFontSize
         ) ?: note
         if (existing == null) {
             Log.e("headerSaveSatti", "39->setClickListeners:$existing ")

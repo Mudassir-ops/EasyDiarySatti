@@ -793,12 +793,12 @@ fun setExclusiveSelectionHeadingSize(
 
 fun setTextAlignmentByName(textView: AppCompatEditText, alignment: String) {
     when (alignment.lowercase()) {
-        "left" -> textView.gravity = Gravity.START
-        "center" -> textView.gravity = Gravity.CENTER
-        "right" -> textView.gravity = Gravity.END
+        "left" -> textView.gravity = Gravity.START or Gravity.CENTER_VERTICAL
+        "center" -> textView.gravity = Gravity.CENTER_HORIZONTAL or Gravity.CENTER_VERTICAL
+        "right" -> textView.gravity = Gravity.END or Gravity.CENTER_VERTICAL
+        else -> textView.gravity = Gravity.START or Gravity.CENTER_VERTICAL
     }
 }
-
 
 fun AppCompatEditText?.setHeadingSize(textSizeInSp: Float) {
     this?.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeInSp)

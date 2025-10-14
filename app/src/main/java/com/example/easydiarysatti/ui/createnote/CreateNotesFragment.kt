@@ -28,8 +28,10 @@ import com.example.easydiarysatti.setTextAlignmentByName
 import com.example.easydiarysatti.utills.showDatePicker
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
+import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
@@ -42,6 +44,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
         ImagesItemAdapter(onNoteItemClick = { note -> })
     }
+    private var isNoteInitialized = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,10 +113,14 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     fun observeNote() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).filterNotNull()
+            viewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+                .distinctUntilChanged().filterNotNull()
                 .collect { note ->
-                    note.setupDefaultValues()
-                    Log.e("observeNote", "observeNote:Null Note$note ")
+                    if (!isNoteInitialized) {
+                        note.setupDefaultValues()
+                        isNoteInitialized = true
+                        Log.e("observeNote", "observeNote:Null Note$note ")
+                    }
                 }
         }
     }
@@ -149,9 +156,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                                 .apply { if (!contains("Personal")) add("Personal") }
                             createNoteEntity =
                                 createNoteEntity?.copy(tags = lastSavedNotesTags.reversed())
+
                             Log.e(
-                                "MudassirSattiTag-->",
-                                "observeNoteAction: ${createNoteEntity?.tags}"
+                                "observeNoteAction",
+                                "observeNoteAction:${Gson().toJson(createNoteEntity)} ",
                             )
                             createNoteEntity?.setupDefaultValues()
                         }
@@ -269,7 +277,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     }
 
     fun CreateNoteEntity.setupDefaultValues() {
-        createNoteEntity = null
         createNoteEntity = this
         viewModel.clearTags()
         viewModel.clearImages()

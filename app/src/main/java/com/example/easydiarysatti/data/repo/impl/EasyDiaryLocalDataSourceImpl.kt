@@ -31,7 +31,6 @@ class EasyDiaryLocalDataSourceImpl(
         return dao.observeNoteById(id = id)
     }
 
-
     override fun observeAllNotes(): Flow<List<CreateNoteEntity>?> {
         return dao.observeAllNotes().distinctUntilChanged()
     }

@@ -312,7 +312,21 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 binding?.parentLayout?.openDrawer(GravityCompat.START)
             }
             ivBack.setOnClickListener {
-                innerNavController?.navigateUp()
+                val currentDestId = innerNavController?.currentDestination?.id
+                Log.d("CurrentDest", "Current destination ID: $currentDestId")
+                when (currentDestId) {
+                    R.id.addTagsFragment2 -> {
+                        createNotesViewModel.sendAction(
+                            action = CreateNotesState.AddTag(
+                                tag = "Personal",
+                                createNoteEntity = createNotesViewModel.noteState.value
+                            )
+                        )
+                        innerNavController?.navigateUp()
+                    }
+
+                    else -> innerNavController?.navigateUp()
+                }
             }
             headerSave.setOnClickListener {
                 Log.e("headerSave", "setClickListeners: ")

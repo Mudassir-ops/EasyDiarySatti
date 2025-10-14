@@ -27,7 +27,7 @@ class CreateNotesViewModel @Inject constructor(
 
 
     private var imagesList: MutableList<String>? = mutableListOf()
-    private var tagList: MutableList<String>? = mutableListOf()
+    private var tagList = mutableListOf<String>()
 
     fun sendAction(action: CreateNotesState) {
         viewModelScope.launch {
@@ -59,17 +59,25 @@ class CreateNotesViewModel @Inject constructor(
     }
 
 
-    fun addTags(tags: List<String>) {
-        tagList?.addAll(tags)
+    fun addTags(tags: List<String>): List<String> {
+        val validTags = tags.mapNotNull { it.trim().takeIf { tag -> tag.isNotEmpty() } }
+        tagList.addAll(validTags)
+        tagList = tagList.distinct().toMutableList()
+        return tagList.toList()
     }
 
     fun addTag(tag: String): List<String> {
-        tagList?.add(tag)
-        return tagList?.toList() ?: listOf()
+        val cleanTag = tag.trim()
+        if (cleanTag.isNotEmpty()) {
+            tagList.add(cleanTag)
+        }
+        tagList = tagList.filter { it.isNotEmpty() }.distinct().toMutableList()
+        return tagList
     }
 
+
     fun removeTag(tag: String) {
-        tagList?.remove(tag)
+        tagList.remove(tag)
     }
 
     fun clearImages() {
@@ -77,14 +85,9 @@ class CreateNotesViewModel @Inject constructor(
     }
 
     fun clearTags() {
-        tagList?.clear()
+        tagList.clear()
     }
 
-    fun resetState() {
-        viewModelScope.launch {
-            _notesActionState.send(CreateNotesState.Init)
-        }
-    }
 }
 
 sealed interface CreateNotesState {

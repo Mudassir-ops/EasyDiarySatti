@@ -11,6 +11,7 @@ import android.view.WindowManager
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.DialogBackgroundBinding
 import com.example.easydiarysatti.databinding.DialogDateTimePickerBinding
 import com.example.easydiarysatti.databinding.DialogImageviewBinding
@@ -237,7 +238,7 @@ inline fun Fragment.showEditTexDialog(
             binding.fontMargarine,
             binding.fontLobster,
             binding.fontRethink,
-            binding.fontPacifico
+            binding.fontPacifico,
         ) { selectedView ->
             val fontName = selectedView.tag as? String
             fontSelectionListener.invoke(fontName.orEmpty())
@@ -353,7 +354,6 @@ inline fun Fragment.showDatePicker(
         }
     }
 }
-
 
 inline fun Fragment.showFeedBackDialog(
     crossinline selectedEmotion: (EmojiInfo) -> Unit

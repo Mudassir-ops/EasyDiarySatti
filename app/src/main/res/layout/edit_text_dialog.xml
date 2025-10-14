@@ -44,6 +44,7 @@
         android:layout_width="@dimen/_25sdp"
         android:layout_height="@dimen/_25sdp"
         android:layout_marginVertical="@dimen/_10sdp"
+        android:alpha="0.5"
         app:layout_constraintBottom_toTopOf="@id/icBlueColor"
         app:layout_constraintStart_toStartOf="@+id/icBlueColor"
         app:layout_constraintTop_toBottomOf="@id/view_horizontal_line"
@@ -88,11 +89,11 @@
         app:layout_constraintStart_toStartOf="@id/view_horizontal_line"
         app:layout_constraintTop_toTopOf="@id/icStartLine" />
 
-
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/icHeadingOne"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:alpha="0.5"
         android:fontFamily="@font/outfit_semibold"
         android:text="@string/h1"
         android:textColor="@color/app_primary_color"
@@ -251,8 +252,8 @@
         android:background="@drawable/bg_font_family_selector"
         android:fontFamily="@font/margarine_regular"
         android:gravity="center"
-        android:tag="Margarine"
         android:paddingVertical="@dimen/_12sdp"
+        android:tag="Margarine"
         android:text="Margarine"
         android:textColor="@color/track_color"
         app:layout_constraintBottom_toTopOf="@id/fontPacifico"
@@ -286,8 +287,8 @@
         android:background="@drawable/bg_font_family_selector"
         android:fontFamily="@font/pacifico"
         android:gravity="center"
-        android:tag="Pacifico"
         android:paddingVertical="@dimen/_12sdp"
+        android:tag="Pacifico"
         android:text="Pacifico"
         android:textColor="@color/track_color"
         app:layout_constraintBottom_toBottomOf="parent"

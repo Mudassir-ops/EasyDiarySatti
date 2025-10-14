@@ -686,7 +686,7 @@ fun setStyledDateTime(tvDate: MaterialTextView, colorId: Int) {
 }
 
 
-fun setStyledDateAlreadyTime(tvDate: MaterialTextView, colorId: Int,formatted: String) {
+fun setStyledDateAlreadyTime(tvDate: MaterialTextView, colorId: Int, formatted: String) {
     val parts = formatted.split("|")
     val datePart = parts.getOrNull(0)?.trim() ?: ""
     val timePart = parts.getOrNull(1)?.trim() ?: ""

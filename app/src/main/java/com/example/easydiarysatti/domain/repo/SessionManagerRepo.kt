@@ -22,7 +22,12 @@ interface SessionManagerRepo {
     fun setPin(pin: String)
     fun getPin(): String?
 
-
     fun setOnBoardingDoneOnce(isOnBoardingDoneOnce: Boolean)
     fun isOnBoardingDoneOnce(): Boolean?
+
+
+    fun setRequireLogin(value: Boolean)
+    fun shouldRequireLogin(): Boolean
+    fun clearRequireLogin()
+
 }

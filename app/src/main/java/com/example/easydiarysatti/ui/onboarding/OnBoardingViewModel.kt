@@ -13,5 +13,14 @@ class OnBoardingViewModel @Inject constructor(
     fun isOnBoardingCompleted(): Boolean {
         return sessionManagerRepo.isOnBoardingDoneOnce() == true
     }
+
+    fun shouldRequireLogin(): Boolean {
+        return sessionManagerRepo.shouldRequireLogin()
+    }
+
+    fun clearLogin() {
+        sessionManagerRepo.clearRequireLogin()
+    }
+
 }
 

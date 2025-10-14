@@ -99,4 +99,14 @@
         android:label="ChangePasswordFragment"
         tools:layout="@layout/fragment_change_password" />
 
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.easydiarysatti.ui.login.LoginFragment"
+        android:label="fragment_login"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
+    </fragment>
+
 </navigation>

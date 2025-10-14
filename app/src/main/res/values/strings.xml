@@ -89,5 +89,8 @@
     <string name="confirm">Confirm</string>
     <string name="colorpicker">ColorPicker</string>
     <string name="mycolorpickerdialog">MyColorPickerDialog</string>
+    <string name="enter_pin_to_access_your_diary">Enter Pin To Access Your Diary</string>
+    <string name="login">Login</string>
+    <string name="wrong_password">Wrong Password</string>
 
 </resources>

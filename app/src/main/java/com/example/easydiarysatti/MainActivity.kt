@@ -79,12 +79,27 @@ class MainActivity : AppCompatActivity() {
         val inflater = navController.navInflater
         val navGraph = inflater.inflate(R.navigation.mobile_navigation)
         if (viewModel.isOnBoardingCompleted()) {
-            navGraph.setStartDestination(R.id.mainFragment)
+            navGraph.setStartDestination(R.id.loginFragment)
         } else {
             navGraph.setStartDestination(R.id.onBoardingFragment)
         }
         navController.graph = navGraph
 
     }
+
+    override fun onResume() {
+        super.onResume()
+        if (viewModel.shouldRequireLogin()) {
+            viewModel.clearLogin()
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+                ?: return
+            val navController = navHostFragment.navController
+            if (navController.currentDestination?.id != R.id.loginFragment) {
+                navController.navigate(R.id.loginFragment)
+            }
+        }
+    }
+
 
 }

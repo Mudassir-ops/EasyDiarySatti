@@ -3,6 +3,7 @@ package com.example.easydiarysatti.data.repo
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.easydiarysatti.BG_THEME_ID
+import com.example.easydiarysatti.IS_LOGIN_REQUIRED
 import com.example.easydiarysatti.LANGUAGE_SETTLED_IN
 import com.example.easydiarysatti.ON_BOARDING_DONE
 import com.example.easydiarysatti.PIN
@@ -18,8 +19,7 @@ class SessionManagerRepoImpl(
 
     override fun isLanguageSettled(): Boolean? {
         return preferences.getBoolean(
-            LANGUAGE_SETTLED_IN,
-            false
+            LANGUAGE_SETTLED_IN, false
         )
     }
 
@@ -37,8 +37,7 @@ class SessionManagerRepoImpl(
 
     override fun getBgTheme(): Int? {
         return preferences.getInt(
-            BG_THEME_ID,
-            R.drawable.theme_1
+            BG_THEME_ID, R.drawable.theme_1
         )
     }
 
@@ -50,8 +49,7 @@ class SessionManagerRepoImpl(
 
     override fun getprofilePic(): String? {
         return preferences.getString(
-            PROFILE_PIC,
-            ""
+            PROFILE_PIC, ""
         )
     }
 
@@ -63,8 +61,7 @@ class SessionManagerRepoImpl(
 
     override fun getprofileName(): String? {
         return preferences.getString(
-            PROFILE_NAME,
-            ""
+            PROFILE_NAME, ""
         )
     }
 
@@ -76,8 +73,7 @@ class SessionManagerRepoImpl(
 
     override fun getprofileEmail(): String? {
         return preferences.getString(
-            PROFILE_EMAIL,
-            ""
+            PROFILE_EMAIL, ""
         )
     }
 
@@ -89,8 +85,7 @@ class SessionManagerRepoImpl(
 
     override fun getPin(): String? {
         return preferences.getString(
-            PIN,
-            ""
+            PIN, ""
         )
     }
 
@@ -102,8 +97,25 @@ class SessionManagerRepoImpl(
 
     override fun isOnBoardingDoneOnce(): Boolean? {
         return preferences.getBoolean(
-            ON_BOARDING_DONE,
-            false
+            ON_BOARDING_DONE, false
         )
+    }
+
+    override fun setRequireLogin(value: Boolean) {
+        preferences.edit {
+            this.putBoolean(IS_LOGIN_REQUIRED, value)
+        }
+    }
+
+    override fun shouldRequireLogin(): Boolean {
+        return preferences.getBoolean(
+            IS_LOGIN_REQUIRED, false
+        )
+    }
+
+    override fun clearRequireLogin() {
+        preferences.edit {
+            this.putBoolean(IS_LOGIN_REQUIRED, false)
+        }
     }
 }

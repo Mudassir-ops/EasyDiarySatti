@@ -23,19 +23,23 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private val viewModel by viewModels<LoginViewModel>()
     private val binding by viewBinding(FragmentLoginBinding::bind)
-    private var isVerifying = false
+    private var isVerified = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setupEditTextListeners()
         observeLoginState()
         clickListeners()
+        isVerified = false
+        enabledDisabledButton(enabled = false)
     }
 
     private fun clickListeners() {
         binding?.apply {
             btnNext.setOnClickListener {
-                moveToNextScreen()
+                if (isVerified) {
+                    moveToNextScreen()
+                }
             }
         }
     }
@@ -49,10 +53,9 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     if (text?.length == 1 && index < editTexts.lastIndex) {
                         editTexts[index + 1].requestFocus()
                     }
-                    if (index == editTexts.lastIndex && !isVerifying && text?.length == 1) {
+                    if (index == editTexts.lastIndex && text?.length == 1) {
                         val enteredPin = editTexts.joinToString("") { it.text.toString() }
                         if (enteredPin.length == 4) {
-                            isVerifying = true
                             hideKeyboard()
                             viewModel.verifyPin(enteredPin)
                         }
@@ -77,21 +80,19 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             viewModel.loginState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect { state ->
                 when (state) {
                     is LoginState.Init -> {
-                        enabledDisabledButton(enabled = false)
+
                     }
 
                     is LoginState.Success -> {
-                        isVerifying = false
+                        isVerified = true
                         enabledDisabledButton(enabled = true)
                     }
 
                     is LoginState.Error -> {
-                        isVerifying = false
+                        isVerified = false
                         binding?.parentView?.showSnackbar(state.message)
                         clearPinFields()
                     }
-
-                    else -> Unit
                 }
             }
         }

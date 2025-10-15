@@ -15,5 +15,7 @@ const val FROM_ONBOARDING = "from_onboarding"
 const val IS_LOGIN_REQUIRED = "is_login_required"
 const val NOTE_ENTITY = "note_entity"
 const val FROM_SCREEN = "from_screen"
+const val REMAINDER_INTENT = "reminder_intent"
+const val REMAINDER_UNIQUE_ID = "reminder_unique_id"
 const val BASE_URL_BG_REMOVER = "http://54.173.238.199:8000"
 

@@ -11,6 +11,7 @@ import com.example.easydiarysatti.domain.model.DrawerItem
 import com.example.easydiarysatti.ui.onboarding.OnBoardingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -89,6 +90,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        val isOnBoardingDone = viewModel.isOnBoardingCompleted()
+        if (!isOnBoardingDone) return
         if (viewModel.shouldRequireLogin()) {
             viewModel.clearLogin()
             val navHostFragment = supportFragmentManager
@@ -100,6 +103,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
 
 }

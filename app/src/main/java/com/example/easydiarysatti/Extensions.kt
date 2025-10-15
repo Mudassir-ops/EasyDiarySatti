@@ -4,6 +4,7 @@ package com.example.easydiarysatti
 import android.Manifest
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,6 +29,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import android.util.Log
 import android.util.TypedValue
+import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
 import android.view.ViewTreeObserver
@@ -44,6 +46,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatImageView
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.toColorInt
@@ -51,9 +54,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavController
+import androidx.navigation.NavOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
+import com.example.easydiarysatti.remainder.AlarmHandler
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
@@ -74,12 +79,24 @@ import java.util.Locale
 fun NavController.safeNav(
     @IdRes currentDestId: Int,
     @IdRes actionId: Int,
-    bundle: Bundle? = null
+    bundle: Bundle? = null,
+    enterAnim: Int = R.anim.slide_in_right,
+    exitAnim: Int = R.anim.slide_out_left,
+    popEnterAnim: Int = R.anim.slide_in_left,
+    popExitAnim: Int = R.anim.slide_out_right
 ) {
     if (currentDestination?.id == currentDestId) {
-        navigate(actionId, bundle)
+        val navOptions = NavOptions.Builder()
+            .setEnterAnim(enterAnim)
+            .setExitAnim(exitAnim)
+            .setPopEnterAnim(popEnterAnim)
+            .setPopExitAnim(popExitAnim)
+            .build()
+
+        navigate(actionId, bundle, navOptions)
     }
 }
+
 
 inline fun <reified T : Parcelable> Bundle.parcelable(key: String): T? = when {
     SDK_INT >= 33 -> getParcelable(key, T::class.java)
@@ -822,26 +839,83 @@ fun setExclusiveSelectionColor(
 ) {
     views.forEachIndexed { index, view ->
         view.setOnClickListener {
-            // Reset all
             views.forEach {
                 it.isSelected = false
                 it.alpha = 0.6f
                 it.imageTintList = ColorStateList.valueOf(unselectedTint)
             }
-
-            // Highlight selected
             view.isSelected = true
             view.alpha = 1f
             view.imageTintList = ColorStateList.valueOf(selectedTint)
-
-            // Always get actual color from the color list
             val color = colors.getOrNull(index) ?: Color.BLACK
             onSelected(view, color)
         }
     }
 }
 
+fun Activity?.isNotificationEnabled(): Boolean {
+    val notificationManagerCompat =
+        NotificationManagerCompat.from(this@isNotificationEnabled ?: return false)
+    return notificationManagerCompat.areNotificationsEnabled()
+}
+
+fun Activity?.notificationPermission() {
+    if (SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val notificationManagerCompat =
+            NotificationManagerCompat.from(this@notificationPermission ?: return)
+        if (!notificationManagerCompat.areNotificationsEnabled()) {
+            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 1000)
+        }
+    }
+}
+
+fun Activity?.setReminderEasyDiary(calendar: Calendar, text: String, uniqueId: Int) {
+    val alarmHandler = AlarmHandler(this@setReminderEasyDiary ?: return)
+    alarmHandler.createAlarm(calendar, text, uniqueId = uniqueId)
+}
 
 
+fun Fragment.showDatePickerWithTime(
+    calendar: Calendar = Calendar.getInstance(),
+    onDateTimeSelected: (Calendar) -> Unit
+) {
+    val contextThemeWrapper = ContextThemeWrapper(requireContext(), R.style.TimePickerDialogTheme)
+
+    DatePickerDialog(
+        contextThemeWrapper,
+        { _, year, monthOfYear, dayOfMonth ->
+            calendar.set(year, monthOfYear, dayOfMonth)
+            showTimePicker(calendar) {
+                onDateTimeSelected(calendar)
+            }
+        },
+        calendar.get(Calendar.YEAR),
+        calendar.get(Calendar.MONTH),
+        calendar.get(Calendar.DAY_OF_MONTH)
+    ).show()
+}
+
+fun Fragment.showTimePicker(calendar: Calendar, onTimeSelected: () -> Unit) {
+    val contextThemeWrapper = ContextThemeWrapper(requireContext(), R.style.TimePickerDialogTheme)
+
+    TimePickerDialog(
+        contextThemeWrapper,
+        { _, hourOfDay, minute ->
+            calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
+            calendar.set(Calendar.MINUTE, minute)
+            calendar.set(Calendar.SECOND, 0)
+            calendar.set(Calendar.MILLISECOND, 0)
+            onTimeSelected()
+        },
+        calendar.get(Calendar.HOUR_OF_DAY),
+        calendar.get(Calendar.MINUTE),
+        false
+    ).show()
+}
+
+fun Date.toFormattedString(pattern: String, locale: Locale = Locale.getDefault()): String {
+    val dateFormat = SimpleDateFormat(pattern, locale)
+    return dateFormat.format(this)
+}
 
 

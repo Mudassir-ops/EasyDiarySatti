@@ -92,5 +92,11 @@
     <string name="enter_pin_to_access_your_diary">Enter Pin To Access Your Diary</string>
     <string name="login">Login</string>
     <string name="wrong_password">Wrong Password</string>
+    <string name="you_should_enable_the_app_notifications">You should enable the app notifications!</string>
+    <string name="add_new">Add New</string>
+    <string name="reminder_text">Reminder Text</string>
+    <string name="auto">Auto</string>
+    <string name="reminders">Reminders</string>
+    <string name="reminder_intervals">Reminder Intervals</string>
 
 </resources>

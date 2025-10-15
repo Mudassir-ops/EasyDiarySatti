@@ -111,7 +111,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private fun moveToNextScreen() {
         findNavController().safeNav(
             currentDestId = R.id.loginFragment,
-            actionId = R.id.action_loginFragment_to_mainFragment
+            actionId = R.id.action_loginFragment_to_welcomeFragment
         )
     }
 

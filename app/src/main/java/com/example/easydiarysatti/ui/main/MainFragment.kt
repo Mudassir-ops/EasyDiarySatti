@@ -1,11 +1,16 @@
 package com.example.easydiarysatti.ui.main
 
+import android.app.AlarmManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
@@ -24,7 +29,9 @@ import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
+import com.example.easydiarysatti.isNotificationEnabled
 import com.example.easydiarysatti.loadBackground
+import com.example.easydiarysatti.notificationPermission
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
@@ -190,26 +197,34 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 childFragmentManager.findFragmentById(R.id.nav_host_main_inner) as NavHostFragment
             innerNavController = innerNavHost.navController
             bottomNav.addOnButtonCheckedListener { _, checkedId, isChecked ->
-                if (isChecked) {
-                    val currentId = innerNavController?.currentDestination?.id
-                    val targetId = when (checkedId) {
-                        R.id.btnHome -> R.id.homeFragment
-                        R.id.btn_library -> R.id.libraryFragment
-                        R.id.btn_calendar -> R.id.calenderFragment
-                        else -> null
-                    }
-                    if (targetId != null && currentId != targetId) {
-                        val navOptions = NavOptions.Builder()
-                            .setLaunchSingleTop(true)
-                            .setPopUpTo(
-                                innerNavController?.graph?.startDestinationId
-                                    ?: return@addOnButtonCheckedListener, false
-                            )
-                            .build()
-                        innerNavController?.navigate(targetId, null, navOptions)
-                    }
-                }
+                if (!isChecked) return@addOnButtonCheckedListener
+
+                val innerNavController = innerNavController ?: return@addOnButtonCheckedListener
+                val currentId = innerNavController.currentDestination?.id
+                val targetId = when (checkedId) {
+                    R.id.btnHome -> R.id.homeFragment
+                    R.id.btn_library -> R.id.libraryFragment
+                    R.id.btn_calendar -> R.id.calenderFragment
+                    else -> null
+                } ?: return@addOnButtonCheckedListener
+
+                if (currentId == targetId) return@addOnButtonCheckedListener // no re-navigation
+
+                val navOptions = NavOptions.Builder()
+                    .setLaunchSingleTop(true)
+                    .setPopUpTo(
+                        innerNavController.graph.startDestinationId,
+                        false
+                    )
+                    .setEnterAnim(R.anim.slide_in_right)
+                    .setExitAnim(R.anim.slide_out_left)
+                    .setPopEnterAnim(R.anim.slide_in_left)
+                    .setPopExitAnim(R.anim.slide_out_right)
+                    .build()
+
+                innerNavController.navigate(targetId, null, navOptions)
             }
+
             binding?.bottomNavCreateNote?.clearChecked()
             innerNavController?.addOnDestinationChangedListener { _, destination, _ ->
                 when (destination.id) {
@@ -343,6 +358,25 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         putBoolean(FROM_SCREEN, true)
                     }
                 )
+            }
+            ivRemainder.setOnClickListener {
+                val alarmManager =
+                    requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+                if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                        startActivity(intent)
+                    }
+                    return@setOnClickListener
+                }
+                if (activity?.isNotificationEnabled() == true) {
+                    innerNavController?.safeNav(
+                        currentDestId = R.id.homeFragment,
+                        actionId = R.id.action_homeFragment_to_remainderFragment
+                    )
+                } else {
+                    activity.notificationPermission()
+                }
             }
         }
     }

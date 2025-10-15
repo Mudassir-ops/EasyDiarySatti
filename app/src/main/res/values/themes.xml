@@ -5,10 +5,9 @@
             @mipmap/ic_launcher
         </item>
 
-        <item name="colorControlActivated">@color/app_primary_color</item>
-        <item name="android:selectableItemBackground">@drawable/calendar_selected_day_background
-        </item>
-        z
+<!--        <item name="colorControlActivated">@color/app_primary_color</item>-->
+<!--        <item name="android:selectableItemBackground">@drawable/calendar_selected_day_background</item>-->
+<!--        -->
     </style>
 
     <style name="Widget.App.NavButton" parent="Widget.MaterialComponents.Button">
@@ -109,4 +108,10 @@
     </style>
 
     <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
+
+    <style name="TimePickerDialogTheme" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="colorPrimary">@color/app_primary_color</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorAccent">@color/app_primary_color</item>
+    </style>
 </resources>

@@ -22,9 +22,13 @@ import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setHeadingSize
 import com.example.easydiarysatti.setKeyboardVisibilityListenerCreateNote
+import com.example.easydiarysatti.setReminderEasyDiary
 import com.example.easydiarysatti.setStyledDateAlreadyTime
 import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.setTextAlignmentByName
+import com.example.easydiarysatti.showDatePickerWithTime
+import com.example.easydiarysatti.showToast
+import com.example.easydiarysatti.toFormattedString
 import com.example.easydiarysatti.utills.showDatePicker
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
@@ -34,6 +38,8 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import java.util.Calendar
+import java.util.UUID
 
 @AndroidEntryPoint
 class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
@@ -95,13 +101,25 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 })
             }
             tvDate.setOnClickListener {
-                showDatePicker(selectedDateTime = {
+                showDatePickerWithTime { selectedCalendar ->
+                    val uniqueId = UUID.randomUUID().hashCode()
+                    if (selectedCalendar.timeInMillis <= System.currentTimeMillis()) {
+                        selectedCalendar.add(Calendar.DAY_OF_YEAR, 1)
+                    }
+                    activity.setReminderEasyDiary(
+                        calendar = selectedCalendar,
+                        text = "Mudassir Here",
+                        uniqueId = uniqueId
+                    )
+                    val formattedDate =
+                        selectedCalendar.time.toFormattedString("dd/MM/yyyy hh:mm a")
                     setStyledDateAlreadyTime(
                         tvDate = tvDate,
                         colorId = R.color.black,
-                        formatted = it
+                        formatted = formattedDate
                     )
-                })
+                    showToast(requireContext(), "Reminder set for $formattedDate")
+                }
             }
             ivBottomArrow.setOnClickListener {
                 showDatePicker(selectedDateTime = {

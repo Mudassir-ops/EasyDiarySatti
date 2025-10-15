@@ -44,6 +44,7 @@ class ImagePickerDelegate(
             if (success) {
                 tempImageUri?.let { uri ->
                     onImagePicked(uri, uriToFile(uri))
+                    onPickerClosed?.invoke()
                 }
             } else {
                 onPickerClosed?.invoke()
@@ -54,6 +55,7 @@ class ImagePickerDelegate(
         fragment.registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
                 onImagePicked(uri, uriToFile(uri))
+                onPickerClosed?.invoke()
             } else {
                 onPickerClosed?.invoke()
             }

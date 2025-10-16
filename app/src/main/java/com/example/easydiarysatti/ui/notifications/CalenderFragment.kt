@@ -26,7 +26,6 @@ import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.view.MonthDayBinder
 import com.kizitonwose.calendar.view.MonthHeaderFooterBinder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -48,9 +47,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewLifecycleOwner.lifecycleScope.launch {
-            initialCalenderPageSetup()
-        }
+        initialCalenderPageSetup()
         setupCurrentDate()
     }
 
@@ -87,11 +84,10 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         }
     }
 
-    private suspend fun initialCalenderPageSetup() {
+    private fun initialCalenderPageSetup() {
         shimmerAdapter = ShimmerCalenderAdapter(30)
         binding?.rvCalendarShimmer?.adapter = shimmerAdapter
         binding?.shimmerLayout?.startShimmer()
-        delay(100)
         setupCalender()
         val currentMonth = YearMonth.now()
         viewModel.loadMonth(currentMonth)

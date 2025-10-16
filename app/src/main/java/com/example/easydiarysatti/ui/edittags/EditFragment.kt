@@ -12,8 +12,10 @@ import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.viewBinding
+import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
+@AndroidEntryPoint
 class EditFragment : Fragment(R.layout.fragment_edit) {
     private var noteEntity: CreateNoteEntity? = null
     private val binding by viewBinding(FragmentEditBinding::bind)

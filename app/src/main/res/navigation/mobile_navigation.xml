@@ -82,6 +82,9 @@
         <action
             android:id="@+id/action_mainFragment_to_changePasswordFragment"
             app:destination="@id/changePasswordFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_addTagsFragment2"
+            app:destination="@id/addTagsFragment2" />
     </fragment>
     <fragment
         android:id="@+id/editProfileFragment"
@@ -117,5 +120,10 @@
             android:id="@+id/action_welcomeFragment_to_mainFragment"
             app:destination="@id/mainFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/addTagsFragment2"
+        android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
+        android:label="fragment_add_tags"
+        tools:layout="@layout/fragment_add_tags" />
 
 </navigation>

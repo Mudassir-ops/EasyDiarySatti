@@ -197,7 +197,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 ivBack.setOnClickListener {
                     parentLayout.closeDrawer(GravityCompat.START)
                 }
-
                 ivEditProfile.setOnClickListener {
                     findNavController().safeNav(
                         currentDestId = R.id.mainFragment,
@@ -219,7 +218,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     ivPlacHolder.visibility = View.VISIBLE
                     ivProfile.visibility = View.INVISIBLE
                 }
-
                 val savedName = viewModel.getName()
                 if (savedName?.isNotEmpty() == true) {
                     tvName.text = savedName

@@ -18,7 +18,6 @@ class TagsAdapter(
         val binding = ItemTagsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val dataModel = getItem(position)
         with(holder.binding) {

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -27,7 +28,7 @@ class CreateNotesViewModel @Inject constructor(
 
 
     private var imagesList: MutableList<String>? = mutableListOf()
-    private var tagList = mutableListOf<String>()
+    private var tagList = mutableListOf<CustomTagEntity>()
 
     fun sendAction(action: CreateNotesState) {
         viewModelScope.launch {
@@ -59,24 +60,36 @@ class CreateNotesViewModel @Inject constructor(
     }
 
 
-    fun addTags(tags: List<String>): List<String> {
-        val validTags = tags.mapNotNull { it.trim().takeIf { tag -> tag.isNotEmpty() } }
+    fun addTags(tags: List<CustomTagEntity>): List<CustomTagEntity> {
+        val validTags = tags.mapNotNull { tagEntity ->
+            val cleanedName = tagEntity.tagName.trim()
+            if (cleanedName.isNotEmpty()) {
+                tagEntity.copy(tagName = cleanedName)
+            } else {
+                null
+            }
+        }
         tagList.addAll(validTags)
-        tagList = tagList.distinct().toMutableList()
+        tagList = tagList.distinctBy { it.tagName.lowercase() to it.noteId }.toMutableList()
         return tagList.toList()
     }
 
-    fun addTag(tag: String): List<String> {
+
+    fun addTag(tag: String, noteId: Int): List<CustomTagEntity> {
         val cleanTag = tag.trim()
         if (cleanTag.isNotEmpty()) {
-            tagList.add(cleanTag)
+            tagList.add(CustomTagEntity(tagName = cleanTag, noteId = noteId))
         }
-        tagList = tagList.filter { it.isNotEmpty() }.distinct().toMutableList()
-        return tagList
+        tagList = tagList
+            .filter { it.tagName.isNotEmpty() }
+            .distinctBy { it.tagName.lowercase() to it.noteId }
+            .toMutableList()
+
+        return tagList.toList()
     }
 
 
-    fun removeTag(tag: String) {
+    fun removeTag(tag: CustomTagEntity) {
         tagList.remove(tag)
     }
 

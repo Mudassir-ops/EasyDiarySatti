@@ -20,6 +20,7 @@ import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
 import com.canhub.cropper.CropImageView
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.lightenColor
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.textview.MaterialTextView
@@ -58,9 +59,10 @@ fun AppCompatImageView.showIfHasImages(images: List<Any>?) {
 }
 
 @BindingAdapter("firstTagText")
-fun MaterialTextView.setFirstTagText(tags: List<String>?) {
-    text = tags?.firstOrNull() ?: "Personal"
+fun MaterialTextView.setFirstTagText(tags: List<CustomTagEntity>?) {
+    text = tags?.firstOrNull()?.tagName ?: "Personal"
 }
+
 
 
 @BindingAdapter(

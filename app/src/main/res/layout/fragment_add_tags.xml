@@ -18,12 +18,26 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="1.0">
 
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_onGoing_item_label_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_15sdp"
+            android:elevation="@dimen/_5sdp"
+            android:fontFamily="@font/outfit_bold"
+            android:text="@string/tags"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_18ssp"
+            app:layout_constraintStart_toStartOf="@+id/etTagsView"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/etTagsView"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="@dimen/_20sdp"
-            android:layout_marginTop="@dimen/_25sdp"
+            android:layout_marginTop="@dimen/_10sdp"
             app:boxBackgroundMode="outline"
             app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
             app:boxCornerRadiusBottomStart="@dimen/_8sdp"
@@ -35,7 +49,7 @@
             app:hintTextAppearance="@style/HintTextStyle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_tags"
@@ -54,11 +68,13 @@
             android:id="@+id/rvTags"
             android:layout_width="0dp"
             android:layout_height="0dp"
+            android:layout_marginTop="@dimen/_20sdp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             app:layout_constraintBottom_toTopOf="@id/btnNext"
             app:layout_constraintEnd_toEndOf="@+id/etTagsView"
             app:layout_constraintStart_toStartOf="@+id/etTagsView"
-            app:layout_constraintTop_toBottomOf="@+id/etTagsView" />
+            app:layout_constraintTop_toBottomOf="@+id/etTagsView"
+            tools:listitem="@layout/item_tags" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNext"

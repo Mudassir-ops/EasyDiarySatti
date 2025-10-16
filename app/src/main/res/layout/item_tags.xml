@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/topView"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/_50sdp"
+        android:layout_marginVertical="@dimen/_5sdp"
+        android:background="@drawable/bg_tag"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/placeholder"
+        android:layout_width="@dimen/_30sdp"
+        android:layout_height="@dimen/_30sdp"
+        android:layout_marginStart="@dimen/_10sdp"
+        app:layout_constraintBottom_toBottomOf="@+id/topView"
+        app:layout_constraintStart_toStartOf="@+id/topView"
+        app:layout_constraintTop_toTopOf="@+id/topView"
+        app:srcCompat="@drawable/tags_1" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtTagName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_5sdp"
+        android:fontFamily="@font/outfit_medium"
+        android:gravity="center_vertical|start"
+        android:paddingHorizontal="@dimen/_5sdp"
+        android:text="@string/personal"
+        android:textColor="@color/tag_txt_color"
+        android:textSize="@dimen/_14ssp"
+        app:layout_constraintBottom_toBottomOf="@id/topView"
+        app:layout_constraintEnd_toStartOf="@id/icEdit"
+        app:layout_constraintStart_toEndOf="@id/placeholder"
+        app:layout_constraintTop_toTopOf="@id/topView" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icEdit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        app:layout_constraintBottom_toBottomOf="@id/txtTagName"
+        app:layout_constraintEnd_toStartOf="@id/icDelete"
+        app:layout_constraintStart_toEndOf="@id/txtTagName"
+        app:layout_constraintTop_toTopOf="@id/txtTagName"
+        app:srcCompat="@drawable/pencil_icon" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_15sdp"
+        app:layout_constraintBottom_toBottomOf="@id/txtTagName"
+        app:layout_constraintEnd_toEndOf="@id/topView"
+        app:layout_constraintStart_toEndOf="@id/icEdit"
+        app:layout_constraintTop_toTopOf="@id/txtTagName"
+        app:srcCompat="@drawable/ic_delete" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

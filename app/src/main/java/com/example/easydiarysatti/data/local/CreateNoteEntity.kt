@@ -26,7 +26,7 @@ data class CreateNoteEntity(
     val textAlignment: String? = null,
     val text: String? = null,
     val creationTime: Long = System.currentTimeMillis(),
-    val tags: List<String>? = null,
+    val tags: List<CustomTagEntity>? = null,
     val images: List<String>? = null,
     val isAscending: Boolean = false,
     val remainderTime: Long = System.currentTimeMillis(),

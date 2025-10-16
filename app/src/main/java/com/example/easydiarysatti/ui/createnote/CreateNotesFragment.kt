@@ -14,6 +14,7 @@ import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.getHeadingSize
@@ -68,16 +69,21 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         clickListeners()
         adjustScreenKeyboard()
         setupImagesRecyclerview()
-        listOf("Personal").setupFlexBox()
+        listOf(
+            CustomTagEntity(
+                tagName = "Personal",
+                noteId = 999
+            )
+        ).setupFlexBox()
         setStyledDateTime(binding?.tvDate ?: return, R.color.black)
     }
 
-    fun List<String>.setupFlexBox() {
+    fun List<CustomTagEntity>.setupFlexBox() {
         binding?.flexboxLayout?.apply {
             removeAllViews()
             visibility = View.VISIBLE
             addTags(
-                this@setupFlexBox as MutableList<String>,
+                this@setupFlexBox as MutableList<CustomTagEntity>,
                 onTagClick = {},
                 onRemoveTagClick = { tag ->
                     viewModel.removeTag(tag = tag)
@@ -168,18 +174,35 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         is CreateNotesState.AddTag -> {
-                            val lastSavedNotesTags = viewModel.addTag(tag = note.tag.toString())
+                            val lastSavedNotesTags = viewModel
+                                .addTag(
+                                    tag = note.tag.toString(),
+                                    noteId = note.createNoteEntity?.noteId?.toInt() ?: 0
+                                )
                                 .toMutableList()
-                                .apply { if (!contains("Personal")) add("Personal") }
-                            createNoteEntity =
-                                createNoteEntity?.copy(tags = lastSavedNotesTags.reversed())
+                                .apply {
+                                    val hasPersonal =
+                                        any { it.tagName.equals("Personal", ignoreCase = true) }
+                                    if (!hasPersonal) add(
+                                        CustomTagEntity(
+                                            tagName = "Personal",
+                                            noteId = note.createNoteEntity?.noteId?.toInt() ?: 0
+                                        )
+                                    )
+                                }
+
+                            createNoteEntity = createNoteEntity?.copy(
+                                tags = lastSavedNotesTags.reversed()
+                            )
 
                             Log.e(
                                 "observeNoteAction",
-                                "observeNoteAction:${Gson().toJson(createNoteEntity)} ",
+                                "observeNoteAction: ${Gson().toJson(createNoteEntity)}"
                             )
+
                             createNoteEntity?.setupDefaultValues()
                         }
+
 
                         CreateNotesState.TagAction -> {
                             createNoteEntity = createNoteEntity?.copy(
@@ -301,13 +324,27 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             etHeader.setText(createNoteEntity?.title)
             etDescription.setText(createNoteEntity?.description)
             imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
-            if (createNoteEntity?.tags?.isEmpty() == false) {
-                if (createNoteEntity?.tags?.contains("Personal") == false) {
-                    createNoteEntity?.tags?.toMutableSet()?.add("Personal")
+            if (!createNoteEntity?.tags.isNullOrEmpty()) {
+                val tags = createNoteEntity?.tags?.toMutableList()
+                val hasPersonal = tags?.any { it.tagName.equals("Personal", ignoreCase = true) }
+                if (hasPersonal == false) {
+                    tags.add(
+                        CustomTagEntity(
+                            tagName = "Personal",
+                            noteId = createNoteEntity?.noteId?.toInt() ?: 0
+                        )
+                    )
                 }
+
+                createNoteEntity = createNoteEntity?.copy(tags = tags)
                 createNoteEntity?.tags?.setupFlexBox()
             } else {
-                listOf("Personal").setupFlexBox()
+                listOf(
+                    CustomTagEntity(
+                        tagName = "Personal",
+                        noteId = 999
+                    )
+                ).setupFlexBox()
             }
             ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
             createNoteEntity?.textColor?.let { etHeader.setTextColor(it) }

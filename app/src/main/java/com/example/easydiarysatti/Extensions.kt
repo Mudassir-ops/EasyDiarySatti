@@ -57,6 +57,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.remainder.AlarmHandler
 import com.google.android.flexbox.FlexboxLayout
@@ -482,9 +483,9 @@ fun Int.dpToPx(context: Context): Int =
 
 
 fun FlexboxLayout.addTags(
-    tagList: MutableList<String>,
-    onTagClick: ((String) -> Unit)? = null,
-    onRemoveTagClick: ((String) -> Unit)? = null,
+    tagList: MutableList<CustomTagEntity>,
+    onTagClick: ((CustomTagEntity) -> Unit)? = null,
+    onRemoveTagClick: ((CustomTagEntity) -> Unit)? = null,
 ) {
     if (tagList.isEmpty()) {
         this.visibility = View.GONE
@@ -515,7 +516,7 @@ fun FlexboxLayout.addTags(
         }
 
         val tagText = TextView(this.context).apply {
-            text = tag
+            text = tag.tagName
             setPadding(0, 8, 8, 8)
             setTextColor(ContextCompat.getColor(context, R.color.tag_txt_color))
             textSize = 14f
@@ -530,7 +531,7 @@ fun FlexboxLayout.addTags(
             setPadding(8, 12, 12, 8)
             imageTintList = ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setOnClickListener {
-                val ifOnlyUnknown = tagList.any { it == "Personal" }
+                val ifOnlyUnknown = tagList.any { it.tagName == "Personal" }
                 if (ifOnlyUnknown) {
                     onTagClick?.invoke(tag)
                     return@setOnClickListener

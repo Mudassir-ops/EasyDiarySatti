@@ -19,4 +19,17 @@ class ListStringConverter {
         val type = object : TypeToken<List<String>>() {}.type
         return gson.fromJson(value, type)
     }
+
+
+    @TypeConverter
+    fun fromCustomTagList(value: List<CustomTagEntity>?): String {
+        return gson.toJson(value)
+    }
+
+    @TypeConverter
+    fun toCustomTagList(value: String): List<CustomTagEntity>? {
+        val listType = object : TypeToken<List<CustomTagEntity>>() {}.type
+        return gson.fromJson(value, listType)
+    }
+
 }

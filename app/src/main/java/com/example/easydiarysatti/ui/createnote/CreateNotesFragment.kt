@@ -189,7 +189,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             )
                             findNavController().safeNav(
                                 currentDestId = R.id.createNotesFragment,
-                                actionId = R.id.action_createNotesFragment_to_addTagsFragment2,
+                                actionId = R.id.action_createNotesFragment2_to_addTagsFragment,
                                 Bundle().apply {
                                     putParcelable(NOTE_ENTITY, createNoteEntity)
                                     putBoolean(FROM_SCREEN, false)

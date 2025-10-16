@@ -59,6 +59,9 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
                 moveToNextScreen()
             }
             btnLater.setOnClickListener { moveToNextScreen() }
+            btnBack.setOnClickListener {
+                findNavController().navigateUp()
+            }
         }
     }
 
@@ -71,4 +74,5 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
             actionId = R.id.action_themesFragment_to_mainFragment
         )
     }
+
 }

@@ -42,6 +42,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         super.onResume()
         mainViewModel.setMainState(MainState.HomeScreen)
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         clickListener()
@@ -63,7 +64,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun moveToNextScreen() {
         findNavController().safeNav(
             currentDestId = R.id.homeFragment,
-            actionId = R.id.action_homeFragment_to_createNotesFragment
+            actionId = R.id.action_homeFragment_to_createNotesFragment2
         )
     }
 
@@ -117,7 +118,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     viewModel.currentSortOrder = isAscending == true
                     binding?.ivSorting?.animate()
                         ?.rotation(if (isAscending == true) 0f else 180f)
-                        ?.setDuration(300)
+                        ?.setDuration(100)
                         ?.start()
                 }
         }

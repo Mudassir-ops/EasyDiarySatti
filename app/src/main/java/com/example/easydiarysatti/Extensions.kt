@@ -298,7 +298,7 @@ fun AppCompatImageView.loadImage(
     placeholder: Int = R.drawable.image_placeholder
 ) {
     Glide.with(this.context)
-        .load(resourceId ?: placeholder)
+        .load(resourceId)
         .into(this)
 }
 

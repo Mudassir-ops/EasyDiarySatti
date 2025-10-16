@@ -5,9 +5,9 @@
             @mipmap/ic_launcher
         </item>
 
-<!--        <item name="colorControlActivated">@color/app_primary_color</item>-->
-<!--        <item name="android:selectableItemBackground">@drawable/calendar_selected_day_background</item>-->
-<!--        -->
+        <!--        <item name="colorControlActivated">@color/app_primary_color</item>-->
+        <!--        <item name="android:selectableItemBackground">@drawable/calendar_selected_day_background</item>-->
+        <!--        -->
     </style>
 
     <style name="Widget.App.NavButton" parent="Widget.MaterialComponents.Button">
@@ -85,6 +85,14 @@
     <style name="OnlyTopRoundedImageShape" parent="ShapeAppearance.Material3.SmallComponent">
         <item name="cornerFamily">rounded</item>
         <item name="cornerRadius">@dimen/_60sdp</item>
+    </style>
+
+    <style name="OnlyTopRoundedImageShapeMain" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">@dimen/_20sdp</item>
+        <item name="cornerSizeTopRight">@dimen/_20sdp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
     </style>
 
 

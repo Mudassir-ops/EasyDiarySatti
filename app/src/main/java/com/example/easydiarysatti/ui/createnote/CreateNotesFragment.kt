@@ -17,7 +17,6 @@ import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.getHeadingSize
-import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setHeadingSize
@@ -200,9 +199,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         is CreateNotesState.ChangeBg -> {
                             createNoteEntity =
                                 createNoteEntity?.copy(backgroundRes = note.bgImageRes)
-                            binding?.nestedScrollView?.loadBackground(
-                                resourceId = createNoteEntity?.backgroundRes
-                            )
+
                         }
 
                         is CreateNotesState.FontAction -> onFontSelected(note.font)
@@ -313,10 +310,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 listOf("Personal").setupFlexBox()
             }
             ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
-            nestedScrollView.loadBackground(
-                resourceId = createNoteEntity?.backgroundRes,
-                placeholder = R.drawable.theme_1
-            )
             createNoteEntity?.textColor?.let { etHeader.setTextColor(it) }
             createNoteEntity?.textColor?.let { etDescription.setTextColor(it) }
             val fontSizePair = createNoteEntity?.textFontSize?.toInt()?.let {

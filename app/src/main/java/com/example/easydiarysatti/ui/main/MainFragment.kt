@@ -29,6 +29,7 @@ import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.isNotificationEnabled
 import com.example.easydiarysatti.loadBackground
+import com.example.easydiarysatti.loadImage
 import com.example.easydiarysatti.notificationPermission
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
@@ -78,6 +79,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private val multiImageAdapter: MultiImageAdapter by lazy {
         MultiImageAdapter(items = (activity as MainActivity).getBgThemes(), onUploadClick = {
         }, onImageClick = {
+            binding?.ivCreateNote?.loadImage(
+                resourceId = it,
+                placeholder = 0
+            )
             createNotesViewModel.sendAction(
                 CreateNotesState.ChangeBg(
                     bgImageRes = it ?: return@MultiImageAdapter
@@ -158,6 +163,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         setClickListeners()
         setupDrawer()
         observeMainState()
+
+
     }
 
     private fun setupBottomNav() {
@@ -233,10 +240,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             binding?.icAddNotes?.visibility = View.INVISIBLE
                             ivMenu.visibility = View.INVISIBLE
                             ivBack.visibility = View.VISIBLE
+
+                            binding?.ivCreateNote?.visibility = View.VISIBLE
+
                             setNoteHeader()
                         }
 
                         R.id.homeFragment -> {
+
+                            binding?.ivCreateNote?.visibility = View.INVISIBLE
+
                             createNoteBottomBar.visibility = View.INVISIBLE
                             binding?.icAddNotes?.visibility = View.VISIBLE
                             bottomNav.visibility = View.VISIBLE
@@ -247,6 +260,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
 
                         R.id.addTagsFragment -> {
+                            binding?.ivCreateNote?.visibility = View.INVISIBLE
                             createNoteBottomBar.visibility = View.GONE
                             bottomNav.visibility = View.GONE
                             binding?.icAddNotes?.visibility = View.GONE
@@ -256,6 +270,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
 
                         else -> {
+                            binding?.ivCreateNote?.visibility = View.INVISIBLE
                             createNoteBottomBar.visibility = View.INVISIBLE
                             binding?.icAddNotes?.visibility = View.INVISIBLE
                             bottomNav.visibility = View.VISIBLE
@@ -416,8 +431,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     fun observeMainState() {
         viewLifecycleOwner.lifecycleScope.launch {
-            mainViewModel.mainState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
-
+            createNotesViewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
+                binding?.ivCreateNote?.loadImage(
+                    resourceId = it?.backgroundRes,
+                    placeholder = 0
+                )
             }
         }
     }

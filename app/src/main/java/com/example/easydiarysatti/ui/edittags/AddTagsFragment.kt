@@ -42,11 +42,16 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             val action = it.second
             when (action) {
                 DELETE_ACTION -> {
-//                    viewModel.updateTag(
-//                        noteId = selectedTagEntity?.noteId ?: -1,
-//                        oldTag = selectedTagEntity,
-//                        newTag = tag
-//                    )
+                    it.third.let { selectedTag ->
+                        val noteId = selectedTag.noteId.toLong()
+                        val updatedTags = it.first.filter { tag ->
+                            tag.tagName != selectedTag.tagName
+                        }
+                        viewModel.updateTagsForNote(
+                            noteId = noteId,
+                            newTags = updatedTags
+                        )
+                    }
                 }
 
                 EDIT_ACTION -> {
@@ -59,15 +64,11 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
                             selectedTag = selectedTag,
                             oldTags = it.first.toMutableList(),
                             onUpdateTag = { updatedTags ->
-
-                                Log.e("SattiKhananna", "${Gson().toJson(updatedTags)}: " )
-                                // 1️⃣ Update the tag list for that specific note
+                                Log.e("SattiKhananna", "${Gson().toJson(updatedTags)}: ")
                                 viewModel.updateTagsForNote(
                                     noteId = selectedTag.noteId.toLong(),
                                     newTags = updatedTags
                                 )
-
-                                // 2️⃣ Update adapter UI immediately (no need to wait for DB observer)
                                 val updatedList = tagsAdapter.currentList.map { tag ->
                                     if (tag.noteId == selectedTag.noteId) {
                                         updatedTags.find { it.tagName == tag.tagName } ?: tag
@@ -151,7 +152,6 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             observeAllNotes()
             setupBgTheme()
         }
-
         if (arguments?.getBoolean(FROM_SCREEN) == false) {
             binding?.btnNext?.visibility = View.VISIBLE
             binding?.headerLayout?.visibility = View.GONE
@@ -164,6 +164,7 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             binding?.etTags?.hint = (getString(R.string.search_tags))
         }
 
+        homeViewModel.observeAllNotes()
     }
 
     private fun setupTagRv() {

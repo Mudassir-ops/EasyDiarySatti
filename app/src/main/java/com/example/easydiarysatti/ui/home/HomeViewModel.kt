@@ -77,6 +77,6 @@ class HomeViewModel @Inject constructor(
 
 sealed interface HomeNotesState {
     object Loading : HomeNotesState
-    data class Success(val notes: List<CreateNoteEntity>) : HomeNotesState
+    data class Success(val notes: List<CreateNoteEntity>?) : HomeNotesState
     data class Error(val message: String) : HomeNotesState
 }

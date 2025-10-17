@@ -98,5 +98,6 @@
     <string name="auto">Auto</string>
     <string name="reminders">Reminders</string>
     <string name="reminder_intervals">Reminder Intervals</string>
+    <string name="search_tags">Search tags</string>
 
 </resources>

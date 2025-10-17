@@ -96,7 +96,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             when (it) {
                 0 -> findNavController().safeNav(
                     currentDestId = R.id.mainFragment,
-                    actionId = R.id.action_mainFragment_to_editTagsFragment
+                    actionId = R.id.action_mainFragment_to_addTagsFragment2,
+                    bundle = Bundle().apply {
+                        putBoolean(FROM_SCREEN,true)
+                    }
                 )
 
                 1 -> findNavController().safeNav(

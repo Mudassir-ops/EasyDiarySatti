@@ -18,6 +18,7 @@ class TagsAdapter(
         val binding = ItemTagsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return ViewHolder(binding)
     }
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val dataModel = getItem(position)
         with(holder.binding) {
@@ -39,9 +40,9 @@ class TagsAdapter(
 
     class ViewHolder(val binding: ItemTagsBinding) : RecyclerView.ViewHolder(binding.root)
 
-    fun setTags(tags: List<CustomTagEntity>) {
-        fullList = tags
-        submitList(tags)
+    override fun submitList(list: List<CustomTagEntity>?) {
+        fullList = list ?: emptyList()
+        super.submitList(ArrayList(list ?: emptyList()))
     }
 
     fun filter(query: String) {
@@ -52,7 +53,7 @@ class TagsAdapter(
                 it.tagName.contains(query, ignoreCase = true)
             }
         }
-        submitList(filteredList)
+        super.submitList(ArrayList(filteredList))
     }
 
     class DiffCallback : DiffUtil.ItemCallback<CustomTagEntity>() {
@@ -63,9 +64,7 @@ class TagsAdapter(
         override fun areContentsTheSame(
             oldItem: CustomTagEntity,
             newItem: CustomTagEntity
-        ): Boolean {
-            return oldItem == newItem
-        }
+        ): Boolean = oldItem == newItem
     }
 
     companion object {
@@ -74,6 +73,7 @@ class TagsAdapter(
         const val ITEM_CLICK = 3
     }
 }
+
 
 
 

@@ -101,6 +101,15 @@ class CreateNotesViewModel @Inject constructor(
         tagList.clear()
     }
 
+    fun updateTagsForNote(
+        noteId: Long,
+        newTags: List<CustomTagEntity>
+    ) {
+        viewModelScope.launch {
+            createNoteRepository.updateTagsForNote(noteId = noteId, newTags = newTags)
+        }
+    }
+
 }
 
 sealed interface CreateNotesState {

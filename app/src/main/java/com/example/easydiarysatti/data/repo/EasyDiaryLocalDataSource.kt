@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.data.repo
 
 import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import kotlinx.coroutines.flow.Flow
 
 interface EasyDiaryLocalDataSource {
@@ -20,4 +21,9 @@ interface EasyDiaryLocalDataSource {
 
     suspend fun updateSortOrder(isAscending: Boolean)
     fun observeSortOrder(): Flow<Boolean?>
+    suspend fun updateTagsForNote(
+        noteId: Long,
+        newTags: List<CustomTagEntity>
+    )
+
 }

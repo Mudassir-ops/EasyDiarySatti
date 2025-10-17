@@ -64,4 +64,10 @@ interface CreateNoteDao {
     fun observeSortOrder(): Flow<Boolean?>
 
 
+    @Query("UPDATE create_note_entity_table SET tags = :newTags WHERE noteId = :noteId")
+    suspend fun updateTagsForNote(
+        noteId: Long,
+        newTags: List<CustomTagEntity>
+    )
+
 }

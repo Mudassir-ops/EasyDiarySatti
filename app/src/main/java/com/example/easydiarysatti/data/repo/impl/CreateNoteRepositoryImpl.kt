@@ -2,6 +2,7 @@ package com.example.easydiarysatti.data.repo.impl
 
 import android.util.Log
 import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import kotlinx.coroutines.flow.Flow
@@ -31,13 +32,29 @@ class CreateNoteRepositoryImpl(
             images = note.images ?: existing.images,
             creationTime = existing.creationTime,
             tagColor = note.tagColor ?: existing.tagColor,
-            textColor=note.textColor ?: existing.textColor,
-            textSizeHeader=note.textSizeHeader ?: existing.textSizeHeader,
-            textFontSize=note.textFontSize ?: existing.textFontSize
+            textColor = note.textColor ?: existing.textColor,
+            textSizeHeader = note.textSizeHeader ?: existing.textSizeHeader,
+            textFontSize = note.textFontSize ?: existing.textFontSize
         ) ?: note
         if (existing == null) {
-            Log.e("headerSaveSatti", "39->setClickListeners:$existing ")
-            localDataSource.insertNote(merged)
+            val newNoteId = localDataSource.insertNote(merged)
+            Log.e("headerSaveSatti", "39->setClickListeners:$newNoteId-->$merged ")
+            val updatedTags = if (merged.tags.isNullOrEmpty()) {
+                listOf(
+                    CustomTagEntity(
+                        noteId = newNoteId.toInt(),
+                        tagName = "Personal"
+                    )
+                )
+            } else {
+                merged.tags.map { it.copy(noteId = newNoteId.toInt()) }
+            }
+            Log.e("headerSaveSattiSAAAA", "39->setClickListeners:$newNoteId-->$updatedTags ")
+            if (updatedTags.isNotEmpty()) {
+                localDataSource.updateNote(
+                    merged.copy(tags = updatedTags)
+                )
+            }
         } else {
             Log.e("headerSaveSatti", "42->setClickListeners:$existing ")
             localDataSource.updateNote(merged)
@@ -65,8 +82,7 @@ class CreateNoteRepositoryImpl(
     }
 
     override fun observeNotesForDay(
-        startOfDay: Long,
-        endOfDay: Long
+        startOfDay: Long, endOfDay: Long
     ): Flow<List<CreateNoteEntity>?> {
         return localDataSource.observeNotesForDay(startOfDay = startOfDay, endOfDay = endOfDay)
     }
@@ -78,4 +94,12 @@ class CreateNoteRepositoryImpl(
     override fun observeSortOrder(): Flow<Boolean?> {
         return localDataSource.observeSortOrder()
     }
+
+    override suspend fun updateTagsForNote(
+        noteId: Long, newTags: List<CustomTagEntity>
+    ) {
+        localDataSource.updateTagsForNote(noteId = noteId, newTags = newTags)
+    }
+
+
 }

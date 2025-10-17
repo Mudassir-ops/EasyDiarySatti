@@ -9,7 +9,7 @@ import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.ItemTagsBinding
 
 class TagsAdapter(
-    private val onItemClick: (Pair<CustomTagEntity, Int>) -> Unit
+    private val onItemClick: (Triple<List<CustomTagEntity>, Int, CustomTagEntity>) -> Unit
 ) : ListAdapter<CustomTagEntity, TagsAdapter.ViewHolder>(DiffCallback()) {
 
     private var fullList: List<CustomTagEntity> = emptyList()
@@ -25,15 +25,33 @@ class TagsAdapter(
             txtTagName.text = dataModel.tagName
 
             icEdit.setOnClickListener {
-                onItemClick.invoke(Pair(dataModel, EDIT_ACTION))
+                onItemClick.invoke(
+                    Triple(
+                        fullList.filter { it.noteId == dataModel.noteId },
+                        EDIT_ACTION,
+                        dataModel
+                    )
+                )
             }
 
             icDelete.setOnClickListener {
-                onItemClick.invoke(Pair(dataModel, DELETE_ACTION))
+                onItemClick.invoke(
+                    Triple(
+                        fullList.filter { it.noteId == dataModel.noteId },
+                        DELETE_ACTION,
+                        dataModel
+                    )
+                )
             }
 
             root.setOnClickListener {
-                onItemClick.invoke(Pair(dataModel, ITEM_CLICK))
+                onItemClick.invoke(
+                    Triple(
+                        fullList.filter { it.noteId == dataModel.noteId },
+                        ITEM_CLICK,
+                        dataModel
+                    )
+                )
             }
         }
     }

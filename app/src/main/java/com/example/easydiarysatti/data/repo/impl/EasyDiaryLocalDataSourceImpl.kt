@@ -2,6 +2,7 @@ package com.example.easydiarysatti.data.repo.impl
 
 import com.example.easydiarysatti.data.local.CreateNoteDao
 import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -56,6 +57,13 @@ class EasyDiaryLocalDataSourceImpl(
 
     override fun observeSortOrder(): Flow<Boolean?> {
         return dao.observeSortOrder()
+    }
+
+    override suspend fun updateTagsForNote(
+        noteId: Long,
+        newTags: List<CustomTagEntity>
+    ) {
+        dao.updateTagsForNote(noteId = noteId, newTags = newTags)
     }
 
 }

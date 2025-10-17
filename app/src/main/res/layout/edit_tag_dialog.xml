@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/topView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/dialog_bg"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_percent="0.85" />
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtUploadAudio"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_10sdp"
+        android:layout_marginVertical="@dimen/_10sdp"
+        android:fontFamily="@font/roboto_semibold"
+        android:text="@string/edit_tags"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_16sdp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/editTags"
+        app:layout_constraintEnd_toEndOf="@id/topView"
+        app:layout_constraintStart_toStartOf="@id/topView"
+        app:layout_constraintTop_toTopOf="@id/topView" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/editTags"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_marginVertical="@dimen/_10sdp"
+        android:layout_marginEnd="@dimen/_10sdp"
+        android:background="@drawable/bg_note_item"
+        android:hint="@string/edit_tags"
+        android:paddingStart="@dimen/_10sdp"
+        android:paddingEnd="@dimen/_5sdp"
+        app:layout_constraintBottom_toTopOf="@id/txtCancel"
+        app:layout_constraintEnd_toEndOf="@id/topView"
+        app:layout_constraintStart_toStartOf="@id/txtUploadAudio"
+        app:layout_constraintTop_toBottomOf="@id/txtUploadAudio" />
+
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/txtCancel"
+        android:layout_width="0dp"
+        android:layout_height="45dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:background="@drawable/btn_bg"
+        android:backgroundTint="@color/white"
+        android:fontFamily="@font/roboto_regular"
+        android:text="@string/cancel"
+        android:textAllCaps="false"
+        android:textColor="@color/app_color"
+        app:layout_constraintBottom_toBottomOf="@id/topView"
+        app:layout_constraintEnd_toStartOf="@id/txtEdit"
+        app:layout_constraintStart_toStartOf="@id/topView"
+        app:layout_constraintTop_toBottomOf="@id/editTags" />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/txtEdit"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:background="@drawable/btn_bg"
+        android:fontFamily="@font/roboto_regular"
+        android:text="@string/edit"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="@id/txtCancel"
+        app:layout_constraintEnd_toEndOf="@id/topView"
+        app:layout_constraintStart_toEndOf="@id/txtCancel"
+        app:layout_constraintTop_toTopOf="@id/txtCancel" />
+</androidx.constraintlayout.widget.ConstraintLayout>

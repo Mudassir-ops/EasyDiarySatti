@@ -17,7 +17,7 @@
     <fragment
         android:id="@+id/previewFragment"
         android:name="com.example.easydiarysatti.ui.previewnote.PreviewFragment"
-        android:label="Preview"
+        android:label="Note Preview"
         tools:layout="@layout/fragment_preview" />
 
 </navigation>

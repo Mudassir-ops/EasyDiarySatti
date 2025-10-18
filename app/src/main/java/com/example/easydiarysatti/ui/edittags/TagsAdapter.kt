@@ -44,7 +44,8 @@ class TagsAdapter(
                 )
             }
 
-            root.setOnClickListener {
+
+            itemView.setOnClickListener {
                 onItemClick.invoke(
                     Triple(
                         fullList.filter { it.noteId == dataModel.noteId },

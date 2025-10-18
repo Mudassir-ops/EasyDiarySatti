@@ -124,6 +124,16 @@
         android:id="@+id/addTagsFragment2"
         android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
         android:label="fragment_add_tags"
-        tools:layout="@layout/fragment_add_tags" />
+        tools:layout="@layout/fragment_add_tags" >
+        <action
+            android:id="@+id/action_addTagsFragment2_to_createNotesFragment2"
+            app:destination="@id/createNotesFragment2" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/createNotesFragment2"
+        android:name="com.example.easydiarysatti.ui.createnote.CreateNotesFragment"
+        android:label="fragment_create_notes"
+        tools:layout="@layout/fragment_create_notes" />
 
 </navigation>

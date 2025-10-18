@@ -1,8 +1,10 @@
 package com.example.easydiarysatti.ui.login
 
+import android.content.Context
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -122,5 +124,13 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+            }
+        }
+        activity?.onBackPressedDispatcher?.addCallback(this, callback)
+    }
 }
 

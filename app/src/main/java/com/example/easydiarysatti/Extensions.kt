@@ -531,8 +531,9 @@ fun FlexboxLayout.addTags(
             setPadding(8, 12, 12, 8)
             imageTintList = ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setOnClickListener {
-                val ifOnlyUnknown = tagList.any { it.tagName == "Personal" }
-                if (ifOnlyUnknown) {
+                val onlyPersonalLeft =
+                    tagList.size == 1 && tagList.firstOrNull()?.tagName == "Personal"
+                if (onlyPersonalLeft) {
                     onTagClick?.invoke(tag)
                     return@setOnClickListener
                 }
@@ -544,6 +545,7 @@ fun FlexboxLayout.addTags(
                 }
             }
         }
+
 
         tagContainer.addView(hashIcon)
         tagContainer.addView(tagText)

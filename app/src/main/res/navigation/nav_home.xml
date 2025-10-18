@@ -31,7 +31,11 @@
         android:id="@+id/addTagsFragment"
         android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
         android:label="fragment_add_tags"
-        tools:layout="@layout/fragment_add_tags" />
+        tools:layout="@layout/fragment_add_tags" >
+        <action
+            android:id="@+id/action_addTagsFragment_to_createNotesFragment"
+            app:destination="@id/createNotesFragment" />
+    </fragment>
     <fragment
         android:id="@+id/remainderFragment"
         android:name="com.example.easydiarysatti.ui.remainder.RemainderFragment"

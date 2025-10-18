@@ -1,7 +1,6 @@
 package com.example.easydiarysatti.ui.edittags
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.activity.addCallback
 import androidx.core.widget.doAfterTextChanged
@@ -12,6 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentAddTagsBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
@@ -34,6 +34,7 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
     private var selectedNoteId = -1L
+    private var allNotes: List<CreateNoteEntity>? = null
     private val tagsAdapter: TagsAdapter by lazy {
         TagsAdapter(onItemClick = {
             selectedNoteId = it.second.toLong()
@@ -75,20 +76,26 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
 
 
                 ITEM_CLICK -> {
-
-//                        val bundle = Bundle()
-//                        bundle.putString("tagName", pair.first.tagName)
-//                        bundle.putString(CHECK_NAVIGATION, FROM_TAG_FRAGMENT)
-//                        Log.e("itemClick", "onCreate: itemClick send ${pair.first.tagName}")
+//                    Log.e("sattiClicked-->", ": ")
+//                    val currentTagNote = allNotes?.find { allNotes ->
+//                        allNotes.noteId == selectedNoteId
+//                    }
+//                    Log.e("sattiClicked-->", ": $currentTagNote")
+//                    viewModel.setupNoteEntity(createNoteEntity = null)
+//                    viewModel.setupNoteEntity(createNoteEntity = currentTagNote)
+//                    findNavController().safeNav(
+//                        currentDestId = R.id.addTagsFragment2,
+//                        actionId = R.id.action_addTagsFragment2_to_createNotesFragment2,
+//                    )
+//                    val homeNavHost =
+//                        childFragmentManager.findFragmentById(R.id.nav_host_home) as? NavHostFragment
 //
-//                        if (findNavController().currentDestination?.id == R.id.tagsFragment) {
-//                            findNavController().navigate(
-//                                R.id.action_tagsFragment_to_createNotesFragment,
-//                                bundle
-//                            )
-//                        }
+//
+//                    homeNavHost?.navController?.safeNav(
+//                        currentDestId = R.id.addTagsFragment,
+//                        actionId = R.id.action_addTagsFragment_to_createNotesFragment
+//                    )
                 }
-
             }
         })
     }
@@ -132,7 +139,6 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             ivBack.setOnClickListener {
                 findNavController().navigateUp()
             }
-
             etTags.doAfterTextChanged {
                 if (arguments?.getBoolean(FROM_SCREEN) == false) return@doAfterTextChanged
                 tagsAdapter.filter(it.toString())
@@ -143,11 +149,13 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
         }
         if (arguments?.getBoolean(FROM_SCREEN) == false) {
             binding?.btnNext?.visibility = View.VISIBLE
+            binding?.rvTags?.visibility = View.INVISIBLE
             binding?.headerLayout?.visibility = View.GONE
             binding?.etTagsView?.isHintEnabled = true
             binding?.etTags?.hint = (getString(R.string.personal))
         } else {
             binding?.btnNext?.visibility = View.INVISIBLE
+            binding?.rvTags?.visibility = View.VISIBLE
             binding?.headerLayout?.visibility = View.VISIBLE
             binding?.etTagsView?.isHintEnabled = false
             binding?.etTags?.hint = (getString(R.string.search_tags))
@@ -171,9 +179,10 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
                 .collect { state ->
                     when (state) {
                         is HomeNotesState.Success -> {
+                            allNotes = state.notes
                             val listOfTags =
-                                state.notes?.flatMap { it.tags ?: emptyList() } ?: emptyList()
-                            Log.e("ListOFTAGSSIZE-->", "observeAllNotes: ${listOfTags.size}")
+                                state.notes?.flatMap { it.tags ?: emptyList() }
+                                    ?: emptyList()
                             tagsAdapter.submitList(listOfTags)
                         }
 

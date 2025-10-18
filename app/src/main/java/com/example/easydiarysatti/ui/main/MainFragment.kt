@@ -56,7 +56,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private lateinit var homeHost: NavHostFragment
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val viewModel by activityViewModels<NameViewModel>()
-    private val mainViewModel by activityViewModels<MainViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
 
@@ -98,7 +97,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     currentDestId = R.id.mainFragment,
                     actionId = R.id.action_mainFragment_to_addTagsFragment2,
                     bundle = Bundle().apply {
-                        putBoolean(FROM_SCREEN,true)
+                        putBoolean(FROM_SCREEN, true)
                     }
                 )
 
@@ -179,6 +178,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 R.id.btn_calendar -> calendarHost
                 else -> return@addOnButtonCheckedListener
             }
+
             if (targetHost == activeNavHost) return@addOnButtonCheckedListener
             childFragmentManager.beginTransaction()
                 .hide(activeNavHost ?: return@addOnButtonCheckedListener)
@@ -232,8 +232,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun setupBottomNavBar() {
         binding?.apply {
             binding?.bottomNavCreateNote?.clearChecked()
-            activeNavHost?.findNavController()
+            activeNavHost?.navController
                 ?.addOnDestinationChangedListener { _, destination, _ ->
+
+                    Log.e("OnCHangeNaju", "setupBottomNavBar: ${destination.label}")
                     when (destination.id) {
                         R.id.createNotesFragment -> {
                             createNoteBottomBar.visibility = View.VISIBLE
@@ -241,9 +243,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             binding?.icAddNotes?.visibility = View.INVISIBLE
                             ivMenu.visibility = View.INVISIBLE
                             ivBack.visibility = View.VISIBLE
-
                             binding?.ivCreateNote?.visibility = View.VISIBLE
-
                             setNoteHeader()
                         }
 
@@ -284,7 +284,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
                     }
                 }
-
             bottomNavCreateNote.addOnButtonCheckedListener { group, checkedId, isChecked ->
                 if (isChecked) {
                     when (checkedId) {
@@ -331,6 +330,27 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                 }, colorPalette = colorPalette
                             )
                         }
+                    }
+                }
+            }
+            bottomNav.addOnButtonCheckedListener { group, checkedId, isChecked ->
+                if (isChecked) {
+                    when (checkedId) {
+                        R.id.btnHome -> {
+                            binding?.icAddNotes?.visibility = View.VISIBLE
+                            binding?.ivRemainder?.visibility = View.VISIBLE
+                        }
+
+                        R.id.btn_library -> {
+                            binding?.icAddNotes?.visibility = View.GONE
+                            binding?.ivRemainder?.visibility = View.GONE
+                        }
+
+                        R.id.btn_calendar -> {
+                            binding?.icAddNotes?.visibility = View.GONE
+                            binding?.ivRemainder?.visibility = View.GONE
+                        }
+
                     }
                 }
             }

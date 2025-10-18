@@ -91,6 +91,7 @@ class CreateNotesViewModel @Inject constructor(
 
     fun removeTag(tag: CustomTagEntity) {
         tagList.remove(tag)
+       // updateTagsForNote(noteId = 0, newTags = listOf())
     }
 
     fun clearImages() {

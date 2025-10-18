@@ -32,7 +32,6 @@ import com.example.easydiarysatti.toFormattedString
 import com.example.easydiarysatti.utills.showDatePicker
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -71,8 +70,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         setupImagesRecyclerview()
         listOf(
             CustomTagEntity(
-                tagName = "Personal",
-                noteId = 999
+                tagName = "Personal", noteId = 999
             )
         ).setupFlexBox()
         setStyledDateTime(binding?.tvDate ?: return, R.color.black)
@@ -86,6 +84,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 this@setupFlexBox as MutableList<CustomTagEntity>,
                 onTagClick = {},
                 onRemoveTagClick = { tag ->
+                    if (createNoteEntity?.noteId != 0L) {
+                        //remove from db also
+                    }
                     viewModel.removeTag(tag = tag)
                 })
         }
@@ -112,16 +113,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         selectedCalendar.add(Calendar.DAY_OF_YEAR, 1)
                     }
                     activity.setReminderEasyDiary(
-                        calendar = selectedCalendar,
-                        text = "Mudassir Here",
-                        uniqueId = uniqueId
+                        calendar = selectedCalendar, text = "Mudassir Here", uniqueId = uniqueId
                     )
                     val formattedDate =
                         selectedCalendar.time.toFormattedString("dd/MM/yyyy hh:mm a")
                     setStyledDateAlreadyTime(
-                        tvDate = tvDate,
-                        colorId = R.color.black,
-                        formatted = formattedDate
+                        tvDate = tvDate, colorId = R.color.black, formatted = formattedDate
                     )
                     showToast(requireContext(), "Reminder set for $formattedDate")
                 }
@@ -137,8 +134,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     fun observeNote() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-                .distinctUntilChanged().filterNotNull()
-                .collect { note ->
+                .distinctUntilChanged().filterNotNull().collect { note ->
                     if (!isNoteInitialized) {
                         note.setupDefaultValues()
                         isNoteInitialized = true
@@ -174,13 +170,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         is CreateNotesState.AddTag -> {
-                            val lastSavedNotesTags = viewModel
-                                .addTag(
-                                    tag = note.tag.toString(),
-                                    noteId = note.createNoteEntity?.noteId?.toInt() ?: 0
-                                )
-                                .toMutableList()
-                                .apply {
+                            val lastSavedNotesTags = viewModel.addTag(
+                                tag = note.tag.toString(),
+                                noteId = note.createNoteEntity?.noteId?.toInt() ?: 0
+                            ).toMutableList().apply {
+                                if (this.isEmpty()) {
                                     val hasPersonal =
                                         any { it.tagName.equals("Personal", ignoreCase = true) }
                                     if (!hasPersonal) add(
@@ -190,19 +184,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                                         )
                                     )
                                 }
-
-                            createNoteEntity = createNoteEntity?.copy(
-                                tags = lastSavedNotesTags.reversed()
-                            )
-
-                            Log.e(
-                                "observeNoteAction",
-                                "observeNoteAction: ${Gson().toJson(createNoteEntity)}"
-                            )
-
+                            }
+                            createNoteEntity =
+                                createNoteEntity?.copy(tags = lastSavedNotesTags.reversed())
                             createNoteEntity?.setupDefaultValues()
                         }
-
 
                         CreateNotesState.TagAction -> {
                             createNoteEntity = createNoteEntity?.copy(
@@ -215,8 +201,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                                 Bundle().apply {
                                     putParcelable(NOTE_ENTITY, createNoteEntity)
                                     putBoolean(FROM_SCREEN, false)
-                                }
-                            )
+                                })
                         }
 
                         is CreateNotesState.ChangeBg -> {
@@ -326,25 +311,21 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
             if (!createNoteEntity?.tags.isNullOrEmpty()) {
                 val tags = createNoteEntity?.tags?.toMutableList()
-                val hasPersonal = tags?.any { it.tagName.equals("Personal", ignoreCase = true) }
-                if (hasPersonal == false) {
-                    tags.add(
-                        CustomTagEntity(
-                            tagName = "Personal",
-                            noteId = createNoteEntity?.noteId?.toInt() ?: 0
+                if (tags.isNullOrEmpty()) {
+                    val hasPersonal = tags?.any { it.tagName.equals("Personal", ignoreCase = true) }
+                    if (hasPersonal == false) {
+                        tags.add(
+                            CustomTagEntity(
+                                tagName = "Personal",
+                                noteId = createNoteEntity?.noteId?.toInt() ?: 0
+                            )
                         )
-                    )
+                    }
                 }
-
                 createNoteEntity = createNoteEntity?.copy(tags = tags)
                 createNoteEntity?.tags?.setupFlexBox()
             } else {
-                listOf(
-                    CustomTagEntity(
-                        tagName = "Personal",
-                        noteId = 999
-                    )
-                ).setupFlexBox()
+                listOf(CustomTagEntity(tagName = "Personal", noteId = 999)).setupFlexBox()
             }
             ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
             createNoteEntity?.textColor?.let { etHeader.setTextColor(it) }
@@ -352,8 +333,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             val fontSizePair = createNoteEntity?.textFontSize?.toInt()?.let {
                 createNoteEntity?.textFontSize?.toInt()?.let { index ->
                     Pair(
-                        (getHeadingSize(it) + 3F),
-                        (getHeadingSize(index) + 8F)
+                        (getHeadingSize(it) + 3F), (getHeadingSize(index) + 8F)
                     )
                 }
             }
@@ -373,4 +353,5 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             createNoteEntity?.textFont?.let { etDescription.setFont(it, context ?: return) }
         }
     }
+
 }

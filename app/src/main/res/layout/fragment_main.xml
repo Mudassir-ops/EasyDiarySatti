@@ -76,6 +76,19 @@
                 app:srcCompat="@drawable/notification"
                 app:tint="@color/white" />
 
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_kabab"
+                android:layout_width="@dimen/_22sdp"
+                android:layout_height="@dimen/_22sdp"
+                android:layout_marginEnd="@dimen/_20sdp"
+                android:elevation="@dimen/_100sdp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/headerTitle"
+                app:srcCompat="@drawable/kabab"
+                app:tint="@color/white" />
+
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/headerSave"
                 android:layout_width="wrap_content"

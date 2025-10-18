@@ -1,18 +1,23 @@
 package com.example.easydiarysatti.ui.previewnote
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentPreviewBinding
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.getHeadingSize
+import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setHeadingSize
 import com.example.easydiarysatti.setTextAlignmentByName
@@ -20,22 +25,40 @@ import com.example.easydiarysatti.ui.createnote.ImagesItemAdapter
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class PreviewFragment : Fragment(R.layout.fragment_preview) {
     private val binding by viewBinding(FragmentPreviewBinding::bind)
-    private val viewModel by viewModels<PreviewViewModel>()
+    private val viewModel by activityViewModels<PreviewViewModel>()
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
         ImagesItemAdapter(onNoteItemClick = { note -> })
     }
     private var noteId = 0L
 
+    @Inject
+    lateinit var sessionManagerRepo: SessionManagerRepo
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        viewModel.changePreviewState(PreviewState.VisibilityOn)
         noteId = arguments?.getLong(NOTE_ID) ?: 0L
         viewModel.getNoteById(noteId = noteId)
         setupImagesRecyclerview()
         observeNote()
+        clickListener()
+        setupBgTheme()
+    }
+
+    private fun clickListener() {
+        binding?.apply {
+//            ivBack.setOnClickListener {
+//                findNavController().popBackStack()
+//            }
+//            ivKabab.setOnClickListener {
+//
+//            }
+        }
     }
 
     private fun observeNote() {
@@ -102,5 +125,25 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
             this@setupDefaultValues.textFont?.let { etHeader.setFont(it, context ?: return) }
             this@setupDefaultValues.textFont?.let { etDescription.setFont(it, context ?: return) }
         }
+    }
+
+    private fun setupBgTheme() {
+
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                findNavController().popBackStack()
+            }
+        }
+        activity?.onBackPressedDispatcher?.addCallback(this, callback)
+    }
+
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        viewModel.changePreviewState(PreviewState.VisibilityOff)
     }
 }

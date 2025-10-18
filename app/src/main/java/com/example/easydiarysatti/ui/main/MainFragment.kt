@@ -35,6 +35,8 @@ import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.name.NameViewModel
+import com.example.easydiarysatti.ui.previewnote.PreviewState
+import com.example.easydiarysatti.ui.previewnote.PreviewViewModel
 import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.MultiImageAdapter
 import com.example.easydiarysatti.utills.setImage
@@ -56,11 +58,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private lateinit var homeHost: NavHostFragment
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val viewModel by activityViewModels<NameViewModel>()
+    private val previewState by activityViewModels<PreviewViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
-
     private var activeNavHost: NavHostFragment? = null
-
     private val colorPalette by lazy {
         listOf(
             "#334155".toColorInt(), // black-ish
@@ -71,6 +72,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             "#4C0821".toColorInt()  // purple
         )
     }
+
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
@@ -165,8 +167,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         setClickListeners()
         setupDrawer()
         observeMainState()
-
-
+        observePreview()
     }
 
     private fun setupBottomNav() {
@@ -178,8 +179,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 R.id.btn_calendar -> calendarHost
                 else -> return@addOnButtonCheckedListener
             }
-
-            if (targetHost == activeNavHost) return@addOnButtonCheckedListener
+            Log.e("Machood", "setupBottomNav: ${activeNavHost?.id}-->${targetHost.id}")
+            if (targetHost == activeNavHost) {
+                val navController = targetHost.navController
+                val startDestinationId = navController.graph.startDestinationId
+                navController.popBackStack(startDestinationId, false)
+                Log.e("Machood", "setupBottomNav: ${targetHost.id}")
+                return@addOnButtonCheckedListener
+            }
             childFragmentManager.beginTransaction()
                 .hide(activeNavHost ?: return@addOnButtonCheckedListener)
                 .show(targetHost)
@@ -234,12 +241,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             binding?.bottomNavCreateNote?.clearChecked()
             activeNavHost?.navController
                 ?.addOnDestinationChangedListener { _, destination, _ ->
-
                     Log.e("OnCHangeNaju", "setupBottomNavBar: ${destination.label}")
                     when (destination.id) {
                         R.id.createNotesFragment -> {
                             createNoteBottomBar.visibility = View.VISIBLE
-                            bottomNav.visibility = View.INVISIBLE
+                            bottomNav.visibility = View.GONE
                             binding?.icAddNotes?.visibility = View.INVISIBLE
                             ivMenu.visibility = View.INVISIBLE
                             ivBack.visibility = View.VISIBLE
@@ -457,6 +463,33 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     resourceId = it?.backgroundRes,
                     placeholder = 0
                 )
+            }
+        }
+    }
+
+    fun observePreview() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            previewState.previewState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
+                when (it) {
+                    PreviewState.VisibilityOff -> {
+                        binding?.ivBack?.visibility = View.GONE
+                        binding?.ivMenu?.visibility = View.VISIBLE
+                        binding?.bottomNav?.visibility = View.VISIBLE
+                        binding?.ivKabab?.visibility = View.GONE
+                        binding?.headerTitle?.text = resources.getString(R.string.title_home)
+                    }
+
+                    PreviewState.VisibilityOn -> {
+                        binding?.ivBack?.visibility = View.VISIBLE
+                        binding?.ivMenu?.visibility = View.GONE
+                        binding?.bottomNav?.visibility = View.GONE
+                        binding?.ivKabab?.visibility = View.VISIBLE
+                        binding?.headerTitle?.text = resources.getString(R.string.note_preview)
+                    }
+
+                    else -> Unit
+                }
+
             }
         }
     }

@@ -101,5 +101,6 @@
     <string name="search_tags">Search tags</string>
     <string name="edit">Edit</string>
     <string name="please_enter_valid_text">Please enter valid text</string>
+    <string name="note_preview">Note Preview</string>
 
 </resources>

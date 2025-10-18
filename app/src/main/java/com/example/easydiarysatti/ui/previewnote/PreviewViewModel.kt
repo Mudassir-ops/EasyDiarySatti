@@ -18,10 +18,26 @@ class PreviewViewModel @Inject constructor(
     private val _allNotesPreviewState = MutableStateFlow<CreateNoteEntity?>(null)
     val allNotesPreviewState: StateFlow<CreateNoteEntity?> = _allNotesPreviewState
 
+    private val _previewState = MutableStateFlow<PreviewState?>(null)
+    val previewState: StateFlow<PreviewState?> = _previewState
+
+
     fun getNoteById(noteId: Long) {
         viewModelScope.launch {
             _allNotesPreviewState.emit(createNoteRepository.getNoteById(id = noteId))
         }
     }
 
+    fun changePreviewState(previewState: PreviewState) {
+        viewModelScope.launch {
+            _previewState.emit(previewState)
+        }
+    }
+
 }
+
+sealed interface PreviewState {
+    object VisibilityOn : PreviewState
+    object VisibilityOff : PreviewState
+}
+

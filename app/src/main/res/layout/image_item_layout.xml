@@ -19,7 +19,7 @@
 
     <View
         android:id="@+id/viewEdit"
-        android:layout_width="@dimen/_70sdp"
+        android:layout_width="@dimen/_36sdp"
         android:layout_height="@dimen/_25sdp"
         android:background="@drawable/bg_edit_iamge"
         android:backgroundTint="#1D293933"
@@ -31,6 +31,7 @@
         android:id="@+id/icEdit"
         android:layout_width="@dimen/_15sdp"
         android:layout_height="@dimen/_15sdp"
+        android:visibility="invisible"
         android:layout_marginHorizontal="@dimen/_10sdp"
         app:layout_constraintBottom_toBottomOf="@+id/icDelete"
         app:layout_constraintStart_toStartOf="@+id/viewEdit"

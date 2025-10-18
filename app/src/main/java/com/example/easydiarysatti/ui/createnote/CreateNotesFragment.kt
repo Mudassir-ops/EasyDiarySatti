@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
-import com.airbnb.lottie.utils.Logger
 import com.example.easydiarysatti.AppLogger
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ENTITY
@@ -58,15 +57,11 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 createNoteEntity = createNoteEntity?.copy(
                     images = viewModel.removeImage(imageToDelete)
                 )
-                AppLogger.createLog("ImagePicked","${createNoteEntity?.images?.size}")
-                Log.e("AfterRemoveImagesList", "${createNoteEntity?.images?.size}: ")
-
+                AppLogger.createLog("ImagePicked", "${createNoteEntity?.images?.size}")
                 val updatedList = imagesItemAdapter.currentList.toMutableList().apply {
                     remove(imageToDelete)
                 }
                 imagesItemAdapter.submitList(updatedList)
-
-                // 2️⃣ Update DB
                 val noteId = viewModel.noteState.value?.noteId ?: return@ImagesItemAdapter
                 val currentImages =
                     viewModel.noteState.value?.images?.toMutableList() ?: mutableListOf()
@@ -75,7 +70,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     noteId = noteId,
                     imagesList = currentImages
                 )
-
             }
         )
     }
@@ -195,10 +189,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         is CreateNotesState.ImagePicked -> {
-                            AppLogger.createLog("ImagePicked","${createNoteEntity?.images?.size}")
+                            AppLogger.createLog("ImagePicked", "${createNoteEntity?.images?.size}")
                             val lastSavedNotesImages =
                                 viewModel.addImage(imagePath = note.imageUri.toString())
-                            AppLogger.createLog("ImagePicked","${lastSavedNotesImages.size}")
+                            AppLogger.createLog("ImagePicked", "${lastSavedNotesImages.size}")
                             createNoteEntity = createNoteEntity?.copy(images = lastSavedNotesImages)
                             imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
                         }

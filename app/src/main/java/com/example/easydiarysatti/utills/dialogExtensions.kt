@@ -8,14 +8,16 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Window
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.easydiarysatti.R
-import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.DialogBackgroundBinding
 import com.example.easydiarysatti.databinding.DialogDateTimePickerBinding
 import com.example.easydiarysatti.databinding.DialogImageviewBinding
 import com.example.easydiarysatti.databinding.EditFeelingsDialogBinding
+import com.example.easydiarysatti.databinding.EditTagDialogBinding
 import com.example.easydiarysatti.databinding.EditTextDialogBinding
 import com.example.easydiarysatti.databinding.FeedbackLayoutBinding
 import com.example.easydiarysatti.domain.model.EmojiInfo
@@ -388,6 +390,59 @@ inline fun Fragment.showFeedBackDialog(
         btnDone.setOnClickListener {
             imageDialog.dismiss()
             activity?.finishAffinity()
+        }
+    }
+}
+
+inline fun Fragment.editTagDialog(
+    oldTags: List<CustomTagEntity>,
+    selectedTag: CustomTagEntity,
+    crossinline onUpdateTag: (List<CustomTagEntity>) -> Unit
+) {
+
+    val binding = EditTagDialogBinding.inflate(LayoutInflater.from(context ?: return))
+    val imageDialog = Dialog(context ?: return)
+
+    imageDialog.run {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(binding.root)
+        window?.apply {
+            val params = WindowManager.LayoutParams()
+            params.copyFrom(attributes)
+            val displayMetrics = context.resources.displayMetrics
+            val horizontalMargin = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._25sdp)
+            params.width = displayMetrics.widthPixels - 2 * horizontalMargin
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT
+            attributes = params
+            setBackgroundDrawableResource(android.R.color.transparent)
+        }
+        setCancelable(false)
+        setCanceledOnTouchOutside(false)
+        show()
+    }
+
+    binding.apply {
+        editTags.setText(selectedTag.tagName)
+        editTags.setSelection(selectedTag.tagName.length)
+        btnCancel.setOnClickListener {
+            imageDialog.dismiss()
+        }
+        btnDone.setOnClickListener {
+            val updatedText = editTags.text.toString().trim()
+            if (updatedText.isNotEmpty()) {
+                val updatedTag = selectedTag.copy(tagName = updatedText)
+                val updatedList = oldTags.map { tag ->
+                    if (tag.tagName == selectedTag.tagName) updatedTag else tag
+                }
+                onUpdateTag.invoke(updatedList)
+                imageDialog.dismiss()
+            } else {
+                Toast.makeText(
+                    context,
+                    context?.getString(R.string.please_enter_valid_text),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 }

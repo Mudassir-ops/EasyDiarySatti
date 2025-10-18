@@ -22,16 +22,14 @@ import com.example.easydiarysatti.ui.edittags.TagsAdapter.Companion.EDIT_ACTION
 import com.example.easydiarysatti.ui.edittags.TagsAdapter.Companion.ITEM_CLICK
 import com.example.easydiarysatti.ui.home.HomeNotesState
 import com.example.easydiarysatti.ui.home.HomeViewModel
-import com.example.easydiarysatti.utills.EditTagDialog
+import com.example.easydiarysatti.utills.editTagDialog
 import com.example.easydiarysatti.viewBinding
-import com.google.gson.Gson
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
-    private var editDialog: EditTagDialog? = null
     private val binding by viewBinding(FragmentAddTagsBinding::bind)
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
@@ -56,31 +54,22 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
 
                 EDIT_ACTION -> {
                     it.third.let { selectedTag ->
-                        editDialog = EditTagDialog(
-                            activity = activity ?: return@TagsAdapter,
-                            label1 = getString(R.string.edit_tags),
-                            label2 = getString(R.string.edit_tags),
-                            label3 = getString(R.string.edit),
-                            selectedTag = selectedTag,
+                        editTagDialog(
                             oldTags = it.first.toMutableList(),
+                            selectedTag = selectedTag,
                             onUpdateTag = { updatedTags ->
-                                Log.e("SattiKhananna", "${Gson().toJson(updatedTags)}: ")
                                 viewModel.updateTagsForNote(
                                     noteId = selectedTag.noteId.toLong(),
                                     newTags = updatedTags
                                 )
                                 val updatedList = tagsAdapter.currentList.map { tag ->
                                     if (tag.noteId == selectedTag.noteId) {
-                                        updatedTags.find { it.tagName == tag.tagName } ?: tag
+                                        updatedTags.find { tags -> tags.tagName == tag.tagName }
+                                            ?: tag
                                     } else tag
                                 }
                                 tagsAdapter.submitList(updatedList)
-                            },
-                            onCancelTag = {
-                                editDialog?.dismiss()
-                            }
-                        )
-                        editDialog?.show()
+                            })
                     }
                 }
 
@@ -197,7 +186,6 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
                 }
         }
     }
-
 
     private fun setupBgTheme() {
         binding?.parentView?.loadBackground(

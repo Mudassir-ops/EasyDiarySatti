@@ -16,6 +16,9 @@
         <action
             android:id="@+id/action_homeFragment_to_remainderFragment"
             app:destination="@id/remainderFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_previewFragment2"
+            app:destination="@id/previewFragment2" />
     </fragment>
 
     <fragment
@@ -31,7 +34,7 @@
         android:id="@+id/addTagsFragment"
         android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
         android:label="fragment_add_tags"
-        tools:layout="@layout/fragment_add_tags" >
+        tools:layout="@layout/fragment_add_tags">
         <action
             android:id="@+id/action_addTagsFragment_to_createNotesFragment"
             app:destination="@id/createNotesFragment" />
@@ -41,5 +44,10 @@
         android:name="com.example.easydiarysatti.ui.remainder.RemainderFragment"
         android:label="@string/reminder_intervals"
         tools:layout="@layout/fragment_remainder" />
+    <fragment
+        android:id="@+id/previewFragment2"
+        android:name="com.example.easydiarysatti.ui.previewnote.PreviewFragment"
+        android:label="fragment_preview"
+        tools:layout="@layout/fragment_preview" />
 
 </navigation>

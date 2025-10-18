@@ -9,7 +9,8 @@ import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.NoteItemLayoutBinding
 
 class NotesItemAdapter(
-    private val onNoteItemClick: (CreateNoteEntity) -> Unit
+    private val onNoteItemClick: (CreateNoteEntity) -> Unit,
+    private val onNoteItemLongClick: (CreateNoteEntity) -> Unit,
 ) : ListAdapter<CreateNoteEntity, NotesItemAdapter.NoteItemViewHolder>(DiffCallback) {
 
     inner class NoteItemViewHolder(private val binding: NoteItemLayoutBinding) :
@@ -21,6 +22,12 @@ class NotesItemAdapter(
             binding.root.setOnClickListener {
                 onNoteItemClick.invoke(noteEntity)
             }
+
+            binding.root.setOnLongClickListener {
+                onNoteItemLongClick.invoke(noteEntity)
+                true
+            }
+
         }
     }
 

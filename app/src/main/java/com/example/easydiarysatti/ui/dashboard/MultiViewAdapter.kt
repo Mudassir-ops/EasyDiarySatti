@@ -10,7 +10,7 @@ import com.example.easydiarysatti.databinding.ItemDateHeaderBinding
 import com.example.easydiarysatti.databinding.ItemSingleImageBinding
 
 class MultiViewAdapter(
-    private val onImageClick: (String, String) -> Unit
+    private val onImageClick: (String, String, Long) -> Unit
 ) : ListAdapter<LibraryItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
     companion object {
@@ -42,7 +42,7 @@ class MultiViewAdapter(
                     parent,
                     false
                 )
-                ImageViewHolder(binding, onImageClick)
+                ImageViewHolder(binding, onImageClick,)
             }
 
             else -> throw IllegalArgumentException("Unknown viewType $viewType")
@@ -65,7 +65,7 @@ class MultiViewAdapter(
 
     class ImageViewHolder(
         private val binding: ItemSingleImageBinding,
-        private val onImageClick: (String, String) -> Unit
+        private val onImageClick: (String, String,Long) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: LibraryItem.ImagesItem) {
@@ -77,7 +77,7 @@ class MultiViewAdapter(
 
             binding.tvTitle.text = item.noteTitle
             binding.imageView.setOnClickListener {
-                onImageClick(item.imagePaths, item.date)
+                onImageClick(item.imagePaths, item.date,item.noteId)
             }
         }
     }

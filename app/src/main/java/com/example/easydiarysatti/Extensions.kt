@@ -483,6 +483,7 @@ fun Int.dpToPx(context: Context): Int =
 
 
 fun FlexboxLayout.addTags(
+    fromPreview: Boolean = false,
     tagList: MutableList<CustomTagEntity>,
     onTagClick: ((CustomTagEntity) -> Unit)? = null,
     onRemoveTagClick: ((CustomTagEntity) -> Unit)? = null,
@@ -531,6 +532,7 @@ fun FlexboxLayout.addTags(
             setPadding(8, 12, 12, 8)
             imageTintList = ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setOnClickListener {
+                if (fromPreview) return@setOnClickListener
                 val onlyPersonalLeft =
                     tagList.size == 1 && tagList.firstOrNull()?.tagName == "Personal"
                 if (onlyPersonalLeft) {

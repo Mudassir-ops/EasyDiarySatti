@@ -81,6 +81,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             removeAllViews()
             visibility = View.VISIBLE
             addTags(
+                fromPreview = false,
                 this@setupFlexBox as MutableList<CustomTagEntity>,
                 onTagClick = {},
                 onRemoveTagClick = { tag ->

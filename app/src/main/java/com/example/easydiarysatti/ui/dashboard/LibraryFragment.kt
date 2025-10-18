@@ -7,9 +7,12 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentLibraryBinding
+import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.dashboard.MultiViewAdapter.Companion.TYPE_DATE
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -26,14 +29,19 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         setupRecyclerView()
         observeAllImages()
     }
 
     private fun setupRecyclerView() {
-        adapter = MultiViewAdapter { imagePath, date ->
-
+        adapter = MultiViewAdapter { imagePath, date, noteId ->
+            findNavController().safeNav(
+                currentDestId = R.id.libraryFragment,
+                actionId = R.id.action_libraryFragment_to_previewFragment,
+                bundle = Bundle().apply {
+                    putLong(NOTE_ID, noteId)
+                }
+            )
         }
         layoutManager = GridLayoutManager(context ?: return, 2)
         binding?.libraryRecyclerView?.adapter = adapter

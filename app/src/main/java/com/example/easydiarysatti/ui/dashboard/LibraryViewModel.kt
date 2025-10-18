@@ -54,7 +54,8 @@ class LibraryViewModel @Inject constructor(
                                         LibraryItem.ImagesItem(
                                             date = date,
                                             imagePaths = imagePath,
-                                            noteTitle = note.title ?: "no title"
+                                            noteTitle = note.title ?: "no title",
+                                            noteId = note.noteId
                                         )
                                     )
                                 }

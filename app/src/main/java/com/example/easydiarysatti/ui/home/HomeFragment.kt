@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.monthlyFormatDate
@@ -35,6 +36,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             createNotesViewModel.setupNoteEntity(createNoteEntity = null)
             createNotesViewModel.setupNoteEntity(createNoteEntity = note)
             moveToNextScreen()
+        }, onNoteItemLongClick = {
+            findNavController().safeNav(
+                currentDestId = R.id.homeFragment,
+                actionId = R.id.action_homeFragment_to_previewFragment2,
+                bundle = Bundle().apply {
+                    putLong(NOTE_ID, it.noteId)
+                }
+            )
         })
     }
 

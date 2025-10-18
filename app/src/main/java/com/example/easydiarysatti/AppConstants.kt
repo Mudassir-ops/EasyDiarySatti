@@ -1,8 +1,6 @@
 package com.example.easydiarysatti
 
-const val SPLASH_DELAY = 1000L
 const val ON_GOING_DATA_MODEL = "onGoingDataModel"
-const val SELECTED_USER_IMAGE = "selected_user_image"
 const val PREF_NAME = "AUTO_INSPECTION_APP"
 const val LANGUAGE_SETTLED_IN = "language_settled_in"
 const val BG_THEME_ID = "bg_theme_id"
@@ -15,7 +13,7 @@ const val FROM_ONBOARDING = "from_onboarding"
 const val IS_LOGIN_REQUIRED = "is_login_required"
 const val NOTE_ENTITY = "note_entity"
 const val FROM_SCREEN = "from_screen"
+const val NOTE_ID = "note_id"
 const val REMAINDER_INTENT = "reminder_intent"
 const val REMAINDER_UNIQUE_ID = "reminder_unique_id"
-const val BASE_URL_BG_REMOVER = "http://54.173.238.199:8000"
 

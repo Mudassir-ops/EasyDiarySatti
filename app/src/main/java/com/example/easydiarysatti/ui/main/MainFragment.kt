@@ -40,10 +40,13 @@ import com.example.easydiarysatti.ui.previewnote.PreviewViewModel
 import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.MultiImageAdapter
 import com.example.easydiarysatti.utills.setImage
+import com.example.easydiarysatti.utills.showBackgroundDialog
+import com.example.easydiarysatti.utills.showEditTexDialog
 import com.example.easydiarysatti.utills.showFeedBackDialog
 import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.io.File
 import javax.inject.Inject
@@ -163,12 +166,87 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         binding?.bottomNav?.clearChecked()
         setupNavControllerListener()
         setupBottomNav()
-        // setupBottomNavBar()
+        setupBottomNavBar()
         setupBgTheme()
         setClickListeners()
         setupDrawer()
         observeMainState()
         observePreview()
+    }
+
+    private fun setupBottomNavBar() {
+        binding?.apply {
+            bottomNavCreateNote.addOnButtonCheckedListener { group, checkedId, isChecked ->
+                if (isChecked) {
+                    when (checkedId) {
+                        R.id.btnBackground -> {
+                            showBackgroundDialog(
+                                adapterMultiImageAdapter = multiImageAdapter,
+                                closeDialog = {
+                                    binding?.bottomNavCreateNote?.clearChecked()
+                                })
+                        }
+
+                        R.id.btn_hash_tag -> {
+                            createNotesViewModel.sendAction(CreateNotesState.TagAction)
+                            viewLifecycleOwner.lifecycleScope.launch {
+                                delay(50)
+                                group.clearChecked()
+                            }
+                        }
+
+                        R.id.btn_media -> {
+                            imagePicker.showPickerDialog()
+                        }
+
+                        R.id.btn_text -> {
+                            showEditTexDialog(
+                                closeDialog = {
+                                    binding?.bottomNavCreateNote?.clearChecked()
+                                }, fontSelectionListener = {
+                                    createNotesViewModel.sendAction(CreateNotesState.FontAction(it))
+                                },
+                                textAlignmentListener = {
+                                    createNotesViewModel.sendAction(
+                                        CreateNotesState.TextAlignment(
+                                            it
+                                        )
+                                    )
+                                },
+                                textBoldListener = {
+                                    createNotesViewModel.sendAction(CreateNotesState.HeadingSize(it))
+                                },
+                                textColorListener = {
+                                    Log.e("SelecetdColor", "setTextColor: SelecetdColor$it")
+                                    createNotesViewModel.sendAction(CreateNotesState.TextColor(it))
+                                }, colorPalette = colorPalette
+                            )
+                        }
+                    }
+                }
+            }
+            bottomNav.addOnButtonCheckedListener { group, checkedId, isChecked ->
+                if (isChecked) {
+                    when (checkedId) {
+                        R.id.btnHome -> {
+                            binding?.icAddNotes?.visibility = View.VISIBLE
+                            binding?.ivRemainder?.visibility = View.VISIBLE
+                        }
+
+                        R.id.btn_library -> {
+                            binding?.icAddNotes?.visibility = View.GONE
+                            binding?.ivRemainder?.visibility = View.GONE
+                        }
+
+                        R.id.btn_calendar -> {
+                            binding?.icAddNotes?.visibility = View.GONE
+                            binding?.ivRemainder?.visibility = View.GONE
+                        }
+
+                    }
+                }
+            }
+        }
     }
 
     private fun setupBottomNav() {
@@ -296,6 +374,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     binding?.ivKabab?.visibility = View.VISIBLE
                     binding?.headerSave?.visibility = View.GONE
                     binding?.ivRemainder?.visibility = View.GONE
+                    ivMenu.visibility = View.INVISIBLE
+                    ivBack.visibility = View.VISIBLE
+                    icAddNotes.visibility = View.GONE
                 }
 
                 else -> {
@@ -320,7 +401,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
             ivBack.setOnClickListener {
                 val currentDestId = activeNavHost?.findNavController()?.currentDestination?.id
-                Log.d("CurrentDest", "Current destination ID: $currentDestId")
+                Log.d(
+                    "CurrentDest",
+                    "Current destination ID: $currentDestId--${activeNavHost?.findNavController()?.currentDestination?.label}"
+                )
                 when (currentDestId) {
                     R.id.addTagsFragment -> {
                         createNotesViewModel.sendAction(
@@ -332,7 +416,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         activeNavHost?.findNavController()?.navigateUp()
                     }
 
-                    else -> activeNavHost?.findNavController()?.navigateUp()
+                    else -> {
+                        val currentHost = activeNavHost ?: return@setOnClickListener
+                        if (currentHost != homeHost) {
+                            binding?.bottomNav?.check(R.id.btnHome)
+                            return@setOnClickListener
+                        }
+                        val homeNavController = homeHost.navController
+                        if (homeNavController.currentDestination?.id != R.id.homeFragment &&
+                            homeNavController.popBackStack()
+                        ) {
+                            return@setOnClickListener
+                        }
+                    }
                 }
             }
             headerSave.setOnClickListener {

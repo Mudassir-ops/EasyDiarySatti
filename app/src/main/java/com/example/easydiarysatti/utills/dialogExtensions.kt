@@ -20,6 +20,7 @@ import com.example.easydiarysatti.databinding.EditFeelingsDialogBinding
 import com.example.easydiarysatti.databinding.EditTagDialogBinding
 import com.example.easydiarysatti.databinding.EditTextDialogBinding
 import com.example.easydiarysatti.databinding.FeedbackLayoutBinding
+import com.example.easydiarysatti.databinding.PickPhotoDialogBinding
 import com.example.easydiarysatti.domain.model.EmojiInfo
 import com.example.easydiarysatti.saveBitmapToUri
 import com.example.easydiarysatti.setExclusiveSelection
@@ -287,22 +288,14 @@ inline fun Fragment.showEditTexDialog(
             closeDialog.invoke()
         }
         binding.icBlueColor.setOnClickListener {
-            ColorPickerDialog.Builder(requireContext())
-                .setTitle(getString(R.string.colorpicker))
-                .setPreferenceName(getString(R.string.mycolorpickerdialog))
-                .setPositiveButton(
-                    getString(R.string.confirm),
-                    ColorEnvelopeListener { envelope, fromUser ->
+            ColorPickerDialog.Builder(requireContext()).setTitle(getString(R.string.colorpicker))
+                .setPreferenceName(getString(R.string.mycolorpickerdialog)).setPositiveButton(
+                    getString(R.string.confirm), ColorEnvelopeListener { envelope, fromUser ->
                         textColorListener.invoke(envelope.color)
                         imageDialog.dismiss()
-                    })
-                .setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
+                    }).setNegativeButton(getString(R.string.cancel)) { dialog, _ ->
                     dialog.dismiss()
-                }
-                .attachAlphaSlideBar(true)
-                .attachBrightnessSlideBar(true)
-                .setBottomSpace(12)
-                .show()
+                }.attachAlphaSlideBar(true).attachBrightnessSlideBar(true).setBottomSpace(12).show()
         }
 
 
@@ -447,3 +440,46 @@ inline fun Fragment.editTagDialog(
     }
 }
 
+
+inline fun Fragment.pickPhotDialog(
+    crossinline cameraCallBack: (Boolean) -> Unit,
+    crossinline galleryCallBack: (Boolean) -> Unit,
+    crossinline onDismiss: () -> Unit,
+) {
+
+    val binding = PickPhotoDialogBinding.inflate(LayoutInflater.from(context ?: return))
+    val imageDialog = Dialog(context ?: return)
+
+    imageDialog.run {
+        requestWindowFeature(Window.FEATURE_NO_TITLE)
+        setContentView(binding.root)
+        window?.apply {
+            val params = WindowManager.LayoutParams()
+            params.copyFrom(attributes)
+            val displayMetrics = context.resources.displayMetrics
+            val horizontalMargin = resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._25sdp)
+            params.width = displayMetrics.widthPixels - 2 * horizontalMargin
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT
+            attributes = params
+            setBackgroundDrawableResource(android.R.color.transparent)
+        }
+        setCancelable(false)
+        setCanceledOnTouchOutside(false)
+        show()
+    }
+
+    binding.apply {
+        ivClose.setOnClickListener {
+            imageDialog.dismiss()
+            onDismiss.invoke()
+        }
+        viewCamera.setOnClickListener {
+            imageDialog.dismiss()
+            cameraCallBack.invoke(true)
+        }
+        viewGallery.setOnClickListener {
+            imageDialog.dismiss()
+            galleryCallBack.invoke(true)
+        }
+    }
+}

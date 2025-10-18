@@ -21,6 +21,7 @@ class ImagePickerDelegate(
 ) {
     private val context = fragment.context
     private var tempImageUri: Uri? = null
+
     private val cameraPermissionLauncher =
         fragment.registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (granted) {
@@ -44,25 +45,25 @@ class ImagePickerDelegate(
             if (success) {
                 tempImageUri?.let { uri ->
                     onImagePicked(uri, uriToFile(uri))
-                    onPickerClosed?.invoke()
                 }
-            } else {
-                onPickerClosed?.invoke()
             }
+            onPickerClosed?.invoke()
         }
 
     private val galleryLauncher =
         fragment.registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri != null) {
                 onImagePicked(uri, uriToFile(uri))
-                onPickerClosed?.invoke()
-            } else {
-                onPickerClosed?.invoke()
             }
+            onPickerClosed?.invoke()
             Log.e("MediaLauncher", "$uri:")
         }
 
-    fun showPickerDialog() {
+    fun pickFromCameraWithPermission() {
+        requestCameraPermission()
+    }
+
+    fun pickFromGalleryWithPermission() {
         requestGalleryPermission()
     }
 
@@ -93,7 +94,6 @@ class ImagePickerDelegate(
         galleryLauncher.launch("image/*")
     }
 
-
     private fun createImageFile(): File {
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         val storageDir: File? = context?.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
@@ -114,6 +114,7 @@ class ImagePickerDelegate(
         com.example.easydiarysatti.showToast(message = message, context = context ?: return)
     }
 }
+
 
 
 

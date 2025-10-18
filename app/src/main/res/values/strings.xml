@@ -102,5 +102,7 @@
     <string name="edit">Edit</string>
     <string name="please_enter_valid_text">Please enter valid text</string>
     <string name="note_preview">Note Preview</string>
+    <string name="upload_picture">Upload Picture</string>
+    <string name="upload_from_gallery">Upload From Gallery</string>
 
 </resources>

@@ -44,7 +44,6 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
         super.onViewCreated(view, savedInstanceState)
         noteId = arguments?.getLong(NOTE_ID) ?: 0L
         fromHome = arguments?.getBoolean(FROM_SCREEN) ?: false
-        viewModel.changePreviewState(PreviewState.VisibilityOn(fromHome))
         viewModel.getNoteById(noteId = noteId)
         setupImagesRecyclerview()
         observeNote()
@@ -138,8 +137,4 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
     }
 
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        viewModel.changePreviewState(PreviewState.VisibilityOff(fromHome))
-    }
 }

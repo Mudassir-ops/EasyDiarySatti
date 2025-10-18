@@ -49,10 +49,10 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     private fun setupClickListeners() {
         binding?.apply {
             ivEditProfile.setOnClickListener {
-                imagePicker.showPickerDialog()
+                imagePicker.pickFromGalleryWithPermission()
             }
             ivProfile.setOnClickListener {
-                imagePicker.showPickerDialog()
+                imagePicker.pickFromGalleryWithPermission()
             }
             etPname.doOnTextChanged { text, _, _, _ ->
 

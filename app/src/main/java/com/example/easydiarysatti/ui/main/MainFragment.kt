@@ -36,9 +36,9 @@ import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.name.NameViewModel
-import com.example.easydiarysatti.ui.previewnote.PreviewViewModel
 import com.example.easydiarysatti.utills.ImagePickerDelegate
 import com.example.easydiarysatti.utills.MultiImageAdapter
+import com.example.easydiarysatti.utills.pickPhotDialog
 import com.example.easydiarysatti.utills.setImage
 import com.example.easydiarysatti.utills.showBackgroundDialog
 import com.example.easydiarysatti.utills.showEditTexDialog
@@ -58,7 +58,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private lateinit var homeHost: NavHostFragment
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val viewModel by activityViewModels<NameViewModel>()
-    private val previewState by activityViewModels<PreviewViewModel>()
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
     private var activeNavHost: NavHostFragment? = null
@@ -110,7 +109,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     actionId = R.id.action_mainFragment_to_themesFragment
                 )
 
-                2 -> Unit
+                2 -> onRemainderClick()
                 3 -> findNavController().safeNav(
                     currentDestId = R.id.mainFragment,
                     actionId = R.id.action_mainFragment_to_changePasswordFragment
@@ -146,7 +145,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     closeDialog = {
                         binding?.bottomNavCreateNote?.clearChecked()
                     })
-
             })
     }
 
@@ -171,7 +169,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         setClickListeners()
         setupDrawer()
         observeMainState()
-        observePreview()
     }
 
     private fun setupBottomNavBar() {
@@ -196,7 +193,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
 
                         R.id.btn_media -> {
-                            imagePicker.showPickerDialog()
+                            pickPhotDialog(cameraCallBack = {
+                                sessionManagerRepo.setRequireLogin(false)
+                                imagePicker.pickFromCameraWithPermission()
+                            }, galleryCallBack = {
+                                imagePicker.pickFromGalleryWithPermission()
+                            }, onDismiss = {
+                                sessionManagerRepo.setRequireLogin(true)
+                                binding?.bottomNavCreateNote?.clearChecked()
+                            })
                         }
 
                         R.id.btn_text -> {
@@ -436,23 +441,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
             }
             ivRemainder.setOnClickListener {
-                val alarmManager =
-                    requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
-                if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                        startActivity(intent)
-                    }
-                    return@setOnClickListener
-                }
-                if (activity?.isNotificationEnabled() == true) {
-                    activeNavHost?.findNavController()?.safeNav(
-                        currentDestId = R.id.homeFragment,
-                        actionId = R.id.action_homeFragment_to_remainderFragment
-                    )
-                } else {
-                    activity.notificationPermission()
-                }
+                onRemainderClick()
             }
             icAddNotes.setOnClickListener {
                 createNotesViewModel.clearTags()
@@ -512,37 +501,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
-    fun observePreview() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            previewState.previewState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
-//                when (it) {
-//                    is PreviewState.VisibilityOff -> {
-//                        binding?.ivBack?.visibility = View.GONE
-//                        binding?.ivMenu?.visibility = View.VISIBLE
-//                        binding?.bottomNav?.visibility = View.VISIBLE
-//                        binding?.ivKabab?.visibility = View.GONE
-//                        if (it.fromHome) {
-//                            binding?.headerTitle?.text = resources.getString(R.string.title_home)
-//                        } else {
-//                            binding?.headerTitle?.text = resources.getString(R.string.library)
-//                        }
-//                    }
-//
-//                    is PreviewState.VisibilityOn -> {
-//                        binding?.ivBack?.visibility = View.VISIBLE
-//                        binding?.ivMenu?.visibility = View.GONE
-//                        binding?.bottomNav?.visibility = View.GONE
-//                        binding?.ivKabab?.visibility = View.VISIBLE
-//                        binding?.headerTitle?.text = resources.getString(R.string.note_preview)
-//                    }
-//
-//                    else -> Unit
-//                }
-
-            }
-        }
-    }
-
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val callback = object : OnBackPressedCallback(true) {
@@ -567,7 +525,27 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 }
             }
         }
-        requireActivity().onBackPressedDispatcher.addCallback(this, callback)
+        activity?.onBackPressedDispatcher?.addCallback(this, callback)
+    }
+
+    private fun onRemainderClick() {
+        val alarmManager =
+            requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+            }
+            return
+        }
+        if (activity?.isNotificationEnabled() == true) {
+            activeNavHost?.findNavController()?.safeNav(
+                currentDestId = R.id.homeFragment,
+                actionId = R.id.action_homeFragment_to_remainderFragment
+            )
+        } else {
+            activity.notificationPermission()
+        }
     }
 
     override fun onDestroyView() {

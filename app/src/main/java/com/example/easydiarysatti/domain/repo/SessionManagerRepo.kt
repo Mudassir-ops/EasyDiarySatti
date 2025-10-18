@@ -30,4 +30,6 @@ interface SessionManagerRepo {
     fun shouldRequireLogin(): Boolean
     fun clearRequireLogin()
 
+    fun bypassSecurityLogin(value: Boolean)
+    fun isBypassSecurityLogin(): Boolean
 }

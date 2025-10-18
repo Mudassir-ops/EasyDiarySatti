@@ -130,9 +130,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         imagePicker = ImagePickerDelegate(
             this,
             onPickerClosed = {
+                sessionManagerRepo.bypassSecurityLogin(false)
                 binding?.bottomNavCreateNote?.clearChecked()
             },
             onImagePicked = { uri: Uri?, file: File? ->
+                sessionManagerRepo.bypassSecurityLogin(false)
                 showImageCropDialog(
                     imagePath = file?.path ?: return@ImagePickerDelegate,
                     btnDone = {
@@ -194,12 +196,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
                         R.id.btn_media -> {
                             pickPhotDialog(cameraCallBack = {
-                                sessionManagerRepo.setRequireLogin(false)
+                                sessionManagerRepo.bypassSecurityLogin(true)
                                 imagePicker.pickFromCameraWithPermission()
                             }, galleryCallBack = {
                                 imagePicker.pickFromGalleryWithPermission()
                             }, onDismiss = {
-                                sessionManagerRepo.setRequireLogin(true)
                                 binding?.bottomNavCreateNote?.clearChecked()
                             })
                         }

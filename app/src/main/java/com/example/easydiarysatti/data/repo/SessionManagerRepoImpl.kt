@@ -3,6 +3,7 @@ package com.example.easydiarysatti.data.repo
 import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.example.easydiarysatti.BG_THEME_ID
+import com.example.easydiarysatti.BYPASS_SECURITY
 import com.example.easydiarysatti.IS_LOGIN_REQUIRED
 import com.example.easydiarysatti.LANGUAGE_SETTLED_IN
 import com.example.easydiarysatti.ON_BOARDING_DONE
@@ -118,4 +119,17 @@ class SessionManagerRepoImpl(
             this.putBoolean(IS_LOGIN_REQUIRED, false)
         }
     }
+
+    override fun bypassSecurityLogin(value: Boolean) {
+        preferences.edit {
+            this.putBoolean(BYPASS_SECURITY, value)
+        }
+    }
+
+    override fun isBypassSecurityLogin(): Boolean {
+        return preferences.getBoolean(
+            BYPASS_SECURITY, false
+        )
+    }
+
 }

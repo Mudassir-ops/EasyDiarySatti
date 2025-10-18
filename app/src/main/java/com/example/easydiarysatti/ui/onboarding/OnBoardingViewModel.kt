@@ -18,6 +18,10 @@ class OnBoardingViewModel @Inject constructor(
         return sessionManagerRepo.shouldRequireLogin()
     }
 
+    fun getCameraCall(): Boolean {
+        return sessionManagerRepo.isBypassSecurityLogin()
+    }
+
     fun clearLogin() {
         sessionManagerRepo.clearRequireLogin()
     }

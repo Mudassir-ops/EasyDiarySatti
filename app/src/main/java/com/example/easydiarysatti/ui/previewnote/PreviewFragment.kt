@@ -32,7 +32,10 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
     private val binding by viewBinding(FragmentPreviewBinding::bind)
     private val viewModel by activityViewModels<PreviewViewModel>()
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
-        ImagesItemAdapter(onNoteItemClick = { note -> })
+        ImagesItemAdapter(
+            onNoteItemClick = { note -> },
+            fromPreview = true
+        )
     }
     private var noteId = 0L
     private var fromHome = false

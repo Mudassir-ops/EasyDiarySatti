@@ -20,5 +20,6 @@
     <color name="tag_bg_color">#F5F5F5</color>
     <color name="tag_txt_color">#475569</color>
     <color name="drawer_color">#323C4B</color>
+    <color name="opacity_color">#1D2939</color>
 
 </resources>

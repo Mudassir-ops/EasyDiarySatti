@@ -1,6 +1,7 @@
 package com.example.easydiarysatti
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -92,6 +93,8 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         val isOnBoardingDone = viewModel.isOnBoardingCompleted()
         if (!isOnBoardingDone) return
+        val cameraCall = viewModel.getCameraCall()
+        Log.e("OnResumeApp-->", "onResume: $cameraCall")
         if (viewModel.shouldRequireLogin()) {
             viewModel.clearLogin()
             val navHostFragment = supportFragmentManager

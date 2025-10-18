@@ -23,6 +23,7 @@ class MyApp : Application(), DefaultLifecycleObserver {
     }
 
     override fun onStop(owner: LifecycleOwner) {
+        if (sessionManagerRepo.isBypassSecurityLogin()) return
         isInBackground = true
         sessionManagerRepo.setRequireLogin(true)
     }

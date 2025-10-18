@@ -47,7 +47,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private var createNoteEntity: CreateNoteEntity? = null
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
-        ImagesItemAdapter(onNoteItemClick = { note -> })
+        ImagesItemAdapter(onNoteItemClick = { note -> }, fromPreview = false)
     }
     private var isNoteInitialized = false
 

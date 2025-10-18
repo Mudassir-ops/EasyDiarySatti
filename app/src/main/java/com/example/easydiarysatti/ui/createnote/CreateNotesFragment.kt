@@ -9,6 +9,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.airbnb.lottie.utils.Logger
+import com.example.easydiarysatti.AppLogger
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
@@ -47,8 +49,37 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private var createNoteEntity: CreateNoteEntity? = null
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
-        ImagesItemAdapter(onNoteItemClick = { note -> }, fromPreview = false)
+        ImagesItemAdapter(
+            onNoteItemClick = { note ->
+                // Handle image click here if needed
+            },
+            fromPreview = false,
+            onDeleteItemClick = { imageToDelete ->
+                createNoteEntity = createNoteEntity?.copy(
+                    images = viewModel.removeImage(imageToDelete)
+                )
+                AppLogger.createLog("ImagePicked","${createNoteEntity?.images?.size}")
+                Log.e("AfterRemoveImagesList", "${createNoteEntity?.images?.size}: ")
+
+                val updatedList = imagesItemAdapter.currentList.toMutableList().apply {
+                    remove(imageToDelete)
+                }
+                imagesItemAdapter.submitList(updatedList)
+
+                // 2️⃣ Update DB
+                val noteId = viewModel.noteState.value?.noteId ?: return@ImagesItemAdapter
+                val currentImages =
+                    viewModel.noteState.value?.images?.toMutableList() ?: mutableListOf()
+                currentImages.remove(imageToDelete)
+                viewModel.removeImageDb(
+                    noteId = noteId,
+                    imagesList = currentImages
+                )
+
+            }
+        )
     }
+
     private var isNoteInitialized = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -164,8 +195,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         is CreateNotesState.ImagePicked -> {
+                            AppLogger.createLog("ImagePicked","${createNoteEntity?.images?.size}")
                             val lastSavedNotesImages =
                                 viewModel.addImage(imagePath = note.imageUri.toString())
+                            AppLogger.createLog("ImagePicked","${lastSavedNotesImages.size}")
                             createNoteEntity = createNoteEntity?.copy(images = lastSavedNotesImages)
                             imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
                         }
@@ -226,6 +259,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             title = binding?.etHeader?.text?.toString().orEmpty(),
             description = binding?.etDescription?.text?.toString().orEmpty()
         )
+
         createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) } ?: run {
             Log.e("headerSaveSatti", "setClickListeners:$createNoteEntity is Null ")
         }
@@ -304,6 +338,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         createNoteEntity = this
         viewModel.clearTags()
         viewModel.clearImages()
+        Log.e("setupDefaultValues", "setupDefaultValues: ${createNoteEntity?.images}")
         viewModel.addImages(imagePath = createNoteEntity?.images ?: listOf())
         viewModel.addTags(tags = createNoteEntity?.tags ?: listOf())
         binding?.apply {

@@ -34,7 +34,7 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
         ImagesItemAdapter(
             onNoteItemClick = { note -> },
-            fromPreview = true
+            fromPreview = true, onDeleteItemClick = {}
         )
     }
     private var noteId = 0L

@@ -101,5 +101,11 @@ class CreateNoteRepositoryImpl(
         localDataSource.updateTagsForNote(noteId = noteId, newTags = newTags)
     }
 
+    override suspend fun updateImageForNote(
+        noteId: Long,
+        newImages: List<String>
+    ) {
+        localDataSource.updateImageForNote(noteId = noteId, newImages = newImages)
+    }
 
 }

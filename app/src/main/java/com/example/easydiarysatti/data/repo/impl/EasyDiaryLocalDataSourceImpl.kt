@@ -66,4 +66,12 @@ class EasyDiaryLocalDataSourceImpl(
         dao.updateTagsForNote(noteId = noteId, newTags = newTags)
     }
 
+    override suspend fun updateImageForNote(
+        noteId: Long,
+        newImages: List<String>
+    ) {
+        dao.updateImageForNote(noteId = noteId, newImages = newImages)
+    }
+
+
 }

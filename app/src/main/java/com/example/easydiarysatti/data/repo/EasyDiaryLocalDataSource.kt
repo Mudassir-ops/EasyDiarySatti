@@ -25,5 +25,8 @@ interface EasyDiaryLocalDataSource {
         noteId: Long,
         newTags: List<CustomTagEntity>
     )
-
+    suspend fun updateImageForNote(
+        noteId: Long,
+        newImages: List<String>
+    )
 }

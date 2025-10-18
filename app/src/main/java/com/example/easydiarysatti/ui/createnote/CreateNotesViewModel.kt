@@ -91,7 +91,20 @@ class CreateNotesViewModel @Inject constructor(
 
     fun removeTag(tag: CustomTagEntity) {
         tagList.remove(tag)
-       // updateTagsForNote(noteId = 0, newTags = listOf())
+    }
+
+    fun removeImage(image: String): List<String>? {
+        imagesList = imagesList?.toMutableList().apply {
+            this?.remove(image)
+        }
+        return imagesList?.toList()
+    }
+
+    fun removeImageDb(noteId: Long, imagesList: List<String>) {
+        Log.e("removeImageDb-->", "removeImageDb: $noteId--_$imagesList")
+        viewModelScope.launch {
+            createNoteRepository.updateImageForNote(noteId = noteId, newImages = imagesList)
+        }
     }
 
     fun clearImages() {

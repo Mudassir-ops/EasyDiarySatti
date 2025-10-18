@@ -70,4 +70,10 @@ interface CreateNoteDao {
         newTags: List<CustomTagEntity>
     )
 
+    @Query("UPDATE create_note_entity_table SET images = :newImages WHERE noteId = :noteId")
+    suspend fun updateImageForNote(
+        noteId: Long,
+        newImages: List<String>
+    )
+
 }

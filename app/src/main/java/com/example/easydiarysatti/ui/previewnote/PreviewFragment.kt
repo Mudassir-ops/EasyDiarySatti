@@ -9,6 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
@@ -17,7 +18,6 @@ import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentPreviewBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.getHeadingSize
-import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setHeadingSize
 import com.example.easydiarysatti.setTextAlignmentByName
@@ -35,14 +35,16 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
         ImagesItemAdapter(onNoteItemClick = { note -> })
     }
     private var noteId = 0L
+    private var fromHome = false
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.changePreviewState(PreviewState.VisibilityOn)
         noteId = arguments?.getLong(NOTE_ID) ?: 0L
+        fromHome = arguments?.getBoolean(FROM_SCREEN) ?: false
+        viewModel.changePreviewState(PreviewState.VisibilityOn(fromHome))
         viewModel.getNoteById(noteId = noteId)
         setupImagesRecyclerview()
         observeNote()
@@ -52,12 +54,6 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
 
     private fun clickListener() {
         binding?.apply {
-//            ivBack.setOnClickListener {
-//                findNavController().popBackStack()
-//            }
-//            ivKabab.setOnClickListener {
-//
-//            }
         }
     }
 
@@ -144,6 +140,6 @@ class PreviewFragment : Fragment(R.layout.fragment_preview) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        viewModel.changePreviewState(PreviewState.VisibilityOff)
+        viewModel.changePreviewState(PreviewState.VisibilityOff(fromHome))
     }
 }

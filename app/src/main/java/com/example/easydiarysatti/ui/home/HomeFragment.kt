@@ -8,6 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
@@ -42,6 +43,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 actionId = R.id.action_homeFragment_to_previewFragment2,
                 bundle = Bundle().apply {
                     putLong(NOTE_ID, it.noteId)
+                    putBoolean(FROM_SCREEN, true)
                 }
             )
         })

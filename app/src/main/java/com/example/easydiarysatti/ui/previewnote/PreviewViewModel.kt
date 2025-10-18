@@ -37,7 +37,7 @@ class PreviewViewModel @Inject constructor(
 }
 
 sealed interface PreviewState {
-    object VisibilityOn : PreviewState
-    object VisibilityOff : PreviewState
+    data class VisibilityOn(val fromHome: Boolean) : PreviewState
+    data class VisibilityOff(val fromHome: Boolean) : PreviewState
 }
 

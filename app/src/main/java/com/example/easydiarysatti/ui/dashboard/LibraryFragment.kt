@@ -9,6 +9,7 @@ import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentLibraryBinding
@@ -40,6 +41,7 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
                 actionId = R.id.action_libraryFragment_to_previewFragment,
                 bundle = Bundle().apply {
                     putLong(NOTE_ID, noteId)
+                    putBoolean(FROM_SCREEN, false)
                 }
             )
         }

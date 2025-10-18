@@ -471,15 +471,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         viewLifecycleOwner.lifecycleScope.launch {
             previewState.previewState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
                 when (it) {
-                    PreviewState.VisibilityOff -> {
+                    is PreviewState.VisibilityOff -> {
                         binding?.ivBack?.visibility = View.GONE
                         binding?.ivMenu?.visibility = View.VISIBLE
                         binding?.bottomNav?.visibility = View.VISIBLE
                         binding?.ivKabab?.visibility = View.GONE
-                        binding?.headerTitle?.text = resources.getString(R.string.title_home)
+                        if (it.fromHome) {
+                            binding?.headerTitle?.text = resources.getString(R.string.title_home)
+                        } else {
+                            binding?.headerTitle?.text = resources.getString(R.string.library)
+                        }
                     }
 
-                    PreviewState.VisibilityOn -> {
+                    is PreviewState.VisibilityOn -> {
                         binding?.ivBack?.visibility = View.VISIBLE
                         binding?.ivMenu?.visibility = View.GONE
                         binding?.bottomNav?.visibility = View.GONE

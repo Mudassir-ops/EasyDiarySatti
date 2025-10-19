@@ -48,32 +48,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/txtReminder" />
 
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/tvLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_18sdp"
-        android:drawableTint="@color/app_primary_color"
-        android:fontFamily="@font/outfit"
-        android:gravity="center"
-        android:text="@string/other_reminder"
-        android:textColor="@color/tag_txt_color"
-        android:textSize="@dimen/_13ssp"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="@+id/viewReminderAutoText"
-        app:layout_constraintTop_toBottomOf="@+id/txtAddNew" />
-
-    <View
-        android:id="@+id/viewReminderAutoText"
-        android:layout_width="0dp"
-        android:layout_height="?actionBarSize"
-        android:layout_marginTop="@dimen/_5sdp"
-        android:visibility="invisible"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvLabel"
-        app:layout_constraintWidth_percent="0.9" />
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reminderRecyclerView"
         android:layout_width="0dp"
@@ -81,11 +55,13 @@
         android:layout_marginVertical="@dimen/_15sdp"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
-        app:layout_constraintHeight_percent="0.3"
-        app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
-        app:layout_constraintTop_toBottomOf="@id/tvLabel"
-        tools:itemCount="2"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtAddNew"
+        app:layout_constraintVertical_bias="0"
+        app:layout_constraintWidth_percent="0.9"
+        tools:itemCount="10"
         tools:listitem="@layout/item_reminder" />
 
     <com.google.android.material.textview.MaterialTextView
@@ -99,54 +75,9 @@
         android:textColor="@color/txt_color_gray"
         android:textSize="@dimen/_12ssp"
         android:visibility="visible"
-        app:layout_constraintBottom_toTopOf="@+id/tvLabelSecond"
-        app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
-        app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
-        app:layout_constraintTop_toBottomOf="@id/tvLabel" />
-
-    <androidx.appcompat.widget.AppCompatTextView
-        android:id="@+id/tvLabelSecond"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_36sdp"
-        android:drawableTint="@color/app_primary_color"
-        android:fontFamily="@font/outfit"
-        android:gravity="center"
-        android:text="@string/note_reminders"
-        android:textColor="@color/tag_txt_color"
-        android:textSize="@dimen/_13ssp"
-        android:visibility="visible"
-        app:layout_constraintStart_toStartOf="@+id/tvLabel"
-        app:layout_constraintTop_toBottomOf="@+id/reminderRecyclerView" />
-
-    <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/tv_no_notes_data"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_10sdp"
-        android:elevation="@dimen/_5sdp"
-        android:fontFamily="@font/outfit"
-        android:text="@string/no_note_reminder"
-        android:textAlignment="center"
-        android:textColor="@color/txt_color_gray"
-        android:textSize="@dimen/_12ssp"
-        android:visibility="visible"
-        app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
-        app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
-        app:layout_constraintTop_toBottomOf="@id/tvLabelSecond" />
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/reminderNotesRecyclerView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginVertical="@dimen/_15sdp"
-        android:visibility="gone"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
-        app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
-        app:layout_constraintTop_toBottomOf="@id/tvLabelSecond"
-        tools:itemCount="2"
-        tools:listitem="@layout/item_reminder" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtAddNew" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

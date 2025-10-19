@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.remainder
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -12,6 +13,7 @@ import java.util.Calendar
 
 class AlarmHandler(private val context: Context?) {
 
+    @SuppressLint("ScheduleExactAlarm") //as already permission granted
     fun createAlarm(c: Calendar, text: String?, uniqueId: Int, contentTitle: String) {
         val alarmManager = context?.getSystemService(Context.ALARM_SERVICE) as? AlarmManager
         val intent = Intent(context ?: return, AlarmReceiver::class.java).apply {
@@ -26,6 +28,7 @@ class AlarmHandler(private val context: Context?) {
             intent,
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         )
+
         alarmManager?.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             c.timeInMillis,

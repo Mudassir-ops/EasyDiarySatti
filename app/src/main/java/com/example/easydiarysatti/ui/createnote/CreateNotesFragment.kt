@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.ui.createnote
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -118,6 +119,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     fun clickListeners() {
         binding?.apply {
             ivEmoji.setOnClickListener {
@@ -135,6 +137,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 onClickDateTimePick()
             }
             ivBottomArrow.setOnClickListener {
+                onClickDateTimePick()
+            }
+            binding?.icSwitchRemainder?.setOnClickListener {
+                binding?.icSwitchRemainder?.isChecked = false
                 onClickDateTimePick()
             }
         }
@@ -433,7 +439,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     uniqueId = uniqueId,
                     contentTitle = getString(R.string.note_reminder)
                 )
+                binding?.icSwitchRemainder?.isChecked = true
             }
         }
     }
+
 }

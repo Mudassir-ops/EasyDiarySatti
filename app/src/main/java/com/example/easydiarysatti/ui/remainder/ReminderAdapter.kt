@@ -7,40 +7,68 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.databinding.ItemReminderBinding
+import com.example.easydiarysatti.databinding.ItemReminderNoteBinding
 
 class ReminderAdapter(
     private val onItemClick: (ReminderEntity) -> Unit
-) : ListAdapter<ReminderEntity, ReminderAdapter.ViewHolder>(DiffCallback) {
+) : ListAdapter<ReminderEntity, RecyclerView.ViewHolder>(DiffCallback) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding =
-            ItemReminderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
-    }
+    companion object {
+        private const val VIEW_TYPE_DAILY = 0
+        private const val VIEW_TYPE_NOTE = 1
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val dataModel = getItem(position)
-        with(holder.binding) {
-            txtReminderTime.text = dataModel.formattedDate
-            icCross.setOnClickListener { onItemClick.invoke(dataModel) }
+        private val DiffCallback = object : DiffUtil.ItemCallback<ReminderEntity>() {
+            override fun areItemsTheSame(oldItem: ReminderEntity, newItem: ReminderEntity) =
+                oldItem.id == newItem.id
+
+            override fun areContentsTheSame(oldItem: ReminderEntity, newItem: ReminderEntity) =
+                oldItem == newItem
         }
     }
 
-    class ViewHolder(val binding: ItemReminderBinding) : RecyclerView.ViewHolder(binding.root)
+    override fun getItemViewType(position: Int): Int {
+        return if (getItem(position).noteReminder) VIEW_TYPE_NOTE else VIEW_TYPE_DAILY
+    }
 
-    companion object {
-        private val DiffCallback = object : DiffUtil.ItemCallback<ReminderEntity>() {
-            override fun areItemsTheSame(
-                oldItem: ReminderEntity, newItem: ReminderEntity
-            ): Boolean {
-                return oldItem.id == newItem.id
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            VIEW_TYPE_NOTE -> {
+                val binding = ItemReminderNoteBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
+                NoteReminderViewHolder(binding)
             }
 
-            override fun areContentsTheSame(
-                oldItem: ReminderEntity, newItem: ReminderEntity
-            ): Boolean {
-                return oldItem == newItem
+            else -> {
+                val binding = ItemReminderBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
+                DailyReminderViewHolder(binding)
             }
+        }
+    }
+
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val item = getItem(position)
+        when (holder) {
+            is NoteReminderViewHolder -> holder.bind(item)
+            is DailyReminderViewHolder -> holder.bind(item)
+        }
+    }
+
+    inner class DailyReminderViewHolder(private val binding: ItemReminderBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ReminderEntity) {
+            binding.txtReminderTime.text = item.formattedDate
+            binding.icCross.setOnClickListener { onItemClick(item) }
+        }
+    }
+
+    inner class NoteReminderViewHolder(private val binding: ItemReminderNoteBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ReminderEntity) {
+            binding.txtReminderTime.text = item.formattedDate
+            binding.icCross.setOnClickListener { onItemClick(item) }
         }
     }
 
@@ -48,6 +76,6 @@ class ReminderAdapter(
         val updatedList = currentList.toMutableList().apply { remove(reminder) }
         submitList(updatedList)
     }
-
 }
+
 

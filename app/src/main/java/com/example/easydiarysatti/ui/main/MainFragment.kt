@@ -374,6 +374,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     icAddNotes.visibility = View.GONE
                 }
 
+                R.id.remainderFragment -> {
+                    binding?.bottomNav?.visibility = View.GONE
+                    binding?.ivKabab?.visibility = View.VISIBLE
+                    binding?.headerSave?.visibility = View.GONE
+                    binding?.ivRemainder?.visibility = View.GONE
+                    ivMenu.visibility = View.INVISIBLE
+                    ivBack.visibility = View.VISIBLE
+                    icAddNotes.visibility = View.GONE
+                }
+
                 else -> {
                     ivCreateNote.visibility = View.INVISIBLE
                     createNoteBottomBar.visibility = View.INVISIBLE

@@ -42,7 +42,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_15sdp"
-            android:checked="true"
+            android:checked="false"
             android:scaleX="0.6"
             android:scaleY="0.6"
             android:thumb="@drawable/custom_thumb"

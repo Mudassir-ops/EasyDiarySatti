@@ -884,8 +884,15 @@ fun Activity?.setReminderEasyDiary(
     uniqueId: Int,
     contentTitle: String
 ) {
-    val alarmHandler = AlarmHandler(this@setReminderEasyDiary ?: return)
+    val context = this?.applicationContext ?: return
+    val alarmHandler = AlarmHandler(context)
     alarmHandler.createAlarm(calendar, text, uniqueId = uniqueId, contentTitle = contentTitle)
+}
+
+fun Activity?.cancelAlarm(uniqueId: Int) {
+    val context = this?.applicationContext ?: return
+    val alarmHandler = AlarmHandler(context)
+    alarmHandler.cancelAlarm(uniqueId)
 }
 
 
@@ -932,6 +939,8 @@ fun Date.toFormattedString(pattern: String, locale: Locale = Locale.getDefault()
     return dateFormat.format(this)
 }
 
-
-
+fun Activity?.appName(): String {
+    return this?.packageManager?.let { pm -> applicationInfo?.loadLabel(pm) }
+        .toString()
+}
 

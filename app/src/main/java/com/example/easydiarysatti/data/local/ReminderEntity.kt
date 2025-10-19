@@ -13,5 +13,5 @@ data class ReminderEntity(
     val formattedDate: String? = null,
     val scheduleAt: Long,
     val shouldPlay: Boolean = false,
-    val noteReminder: Boolean = false,
+    val noteReminder: Boolean = false
 ) : Parcelable

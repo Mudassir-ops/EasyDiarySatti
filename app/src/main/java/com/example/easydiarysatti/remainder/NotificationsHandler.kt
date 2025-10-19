@@ -14,27 +14,11 @@ import com.example.easydiarysatti.R
 
 class NotificationsHandler(private val context: Context?) {
 
-    private fun ensureChannelExists(channelId: String) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val notificationManager =
-                context?.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
-                    ?: return
-
-            if (notificationManager.getNotificationChannel(channelId) == null) {
-                val channel = NotificationChannel(
-                    channelId,
-                    "Reminders channel",
-                    NotificationManager.IMPORTANCE_HIGH
-                ).apply {
-                    description = "Notification channel for reminders"
-                }
-                notificationManager.createNotificationChannel(channel)
-            }
-        }
-    }
-
-
-    fun createNotification(text: String?, uniqueId: Int = generateUniqueId()) {
+    fun createNotification(
+        text: String?,
+        uniqueId: Int = generateUniqueId(),
+        contentTitle: String
+    ) {
         if (context == null) return
         val channelId = "channel_reminders"
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -55,8 +39,8 @@ class NotificationsHandler(private val context: Context?) {
         val bigTextStyle = NotificationCompat.BigTextStyle().bigText(text)
 
         val notificationBuilder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(R.drawable.ic_add)
-            .setContentTitle("Reminder")
+            .setSmallIcon(R.drawable.app_icon_svg)
+            .setContentTitle(contentTitle)
             .setContentText(text)
             .setStyle(bigTextStyle)
             .setDefaults(Notification.DEFAULT_SOUND)

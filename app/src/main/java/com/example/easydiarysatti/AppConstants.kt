@@ -17,4 +17,6 @@ const val FROM_SCREEN = "from_screen"
 const val NOTE_ID = "note_id"
 const val REMAINDER_INTENT = "reminder_intent"
 const val REMAINDER_UNIQUE_ID = "reminder_unique_id"
+const val CONTENT_TITLE: String = "content_title"
+
 

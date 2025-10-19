@@ -77,11 +77,12 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reminderRecyclerView"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_marginVertical="@dimen/_15sdp"
         android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
+        app:layout_constraintHeight_percent="0.3"
         app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
         app:layout_constraintTop_toBottomOf="@id/tvLabel"
         tools:itemCount="2"
@@ -117,7 +118,6 @@
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="@+id/tvLabel"
         app:layout_constraintTop_toBottomOf="@+id/reminderRecyclerView" />
-
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_no_notes_data"

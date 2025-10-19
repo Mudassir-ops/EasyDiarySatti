@@ -95,7 +95,8 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
                         activity.setReminderEasyDiary(
                             calendar = selectedCalendar,
                             text = getString(R.string.its_time_to_log_your_day_diary),
-                            uniqueId = uniqueId
+                            uniqueId = uniqueId,
+                            contentTitle = getString(R.string.daily_reminder)
                         )
                     }
                 }

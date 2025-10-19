@@ -24,7 +24,6 @@ import com.example.easydiarysatti.ui.onboarding.OnBoardingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
-
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -52,9 +51,7 @@ class MainActivity : AppCompatActivity() {
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             sessionManagerRepo.bypassSecurityLogin(false)
-
             if (isGranted) {
-                Log.d("Permission", "Notification permission granted")
                 onAllPermissionsGranted?.invoke()
                 onAllPermissionsGranted = null
             } else {

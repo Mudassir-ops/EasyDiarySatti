@@ -878,9 +878,14 @@ fun Activity?.notificationPermission() {
     }
 }
 
-fun Activity?.setReminderEasyDiary(calendar: Calendar, text: String, uniqueId: Int) {
+fun Activity?.setReminderEasyDiary(
+    calendar: Calendar,
+    text: String,
+    uniqueId: Int,
+    contentTitle: String
+) {
     val alarmHandler = AlarmHandler(this@setReminderEasyDiary ?: return)
-    alarmHandler.createAlarm(calendar, text, uniqueId = uniqueId)
+    alarmHandler.createAlarm(calendar, text, uniqueId = uniqueId, contentTitle = contentTitle)
 }
 
 

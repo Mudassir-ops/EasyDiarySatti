@@ -430,7 +430,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 activity.setReminderEasyDiary(
                     calendar = selectedCalendar,
                     text = getString(R.string.don_t_forget_your_note, binding?.etHeader?.text),
-                    uniqueId = uniqueId
+                    uniqueId = uniqueId,
+                    contentTitle = getString(R.string.note_reminder)
                 )
             }
         }

@@ -98,14 +98,13 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
                 .collect { state ->
                     state?.let {
                         val combinedList = (it.dailyReminders + it.noteReminders)
-                            .sortedByDescending { reminder -> reminder.scheduleAt }
                         if (combinedList.isEmpty()) {
                             binding?.tvNoData?.visibility = View.VISIBLE
                             binding?.reminderRecyclerView?.visibility = View.GONE
                         } else {
                             binding?.tvNoData?.visibility = View.GONE
                             binding?.reminderRecyclerView?.visibility = View.VISIBLE
-                            reminderAdapter.submitList(combinedList)
+                            reminderAdapter.submitList(combinedList.reversed())
                         }
                     }
                 }

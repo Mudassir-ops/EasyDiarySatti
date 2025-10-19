@@ -58,7 +58,7 @@ class MainActivity : AppCompatActivity() {
                 onAllPermissionsGranted?.invoke()
                 onAllPermissionsGranted = null
             } else {
-                binding.main.showSnackbar(getString(R.string.you_must_allow_schedule_alarm_permission))
+                binding.main.showSnackbar(getString(R.string.you_must_allow_notification_permission))
                 onAllPermissionsGranted = null
             }
         }

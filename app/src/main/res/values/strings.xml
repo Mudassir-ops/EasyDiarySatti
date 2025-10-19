@@ -115,5 +115,6 @@
     <string name="required_title">Note title is required</string>
     <string name="don_t_forget_your_note">🔔 Don’t forget your note — “%1$s”.</string>
     <string name="you_must_allow_schedule_alarm_permission">You must allow Schedule Alarm permission</string>
+    <string name="you_must_allow_notification_permission">You must allow Notification  permission</string>
 
 </resources>

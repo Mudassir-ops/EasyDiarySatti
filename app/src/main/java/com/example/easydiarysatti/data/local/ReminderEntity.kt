@@ -7,11 +7,10 @@ import androidx.room.PrimaryKey
 @kotlinx.parcelize.Parcelize
 @Entity(tableName = "reminder_table")
 data class ReminderEntity(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     val id: Int = 0,
-    val reminderDate: String,
-    val reminderTime: String,
     val description: String? = null,
+    val formattedDate: String? = null,
     val scheduleAt: Long,
     val shouldPlay: Boolean = false,
     val noteReminder: Boolean = false,

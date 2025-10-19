@@ -109,5 +109,10 @@
     <string name="note_reminders">Note Reminders</string>
     <string name="no_daily_reminder">No daily reminder</string>
     <string name="no_note_reminder">No note reminder</string>
+    <string name="reminder_set_for_future_date">Reminder set for future date</string>
+    <string name="its_time_to_log_your_day_diary">It’s time to log your \uD83D\uDCD4 diary</string>
+    <string name="reminder_set_for_time">Day Logging Reminder set for %1$s</string>
+    <string name="required_title">Note title is required</string>
+    <string name="don_t_forget_your_note">🔔 Don’t forget your note — “%1$s”.</string>
 
 </resources>

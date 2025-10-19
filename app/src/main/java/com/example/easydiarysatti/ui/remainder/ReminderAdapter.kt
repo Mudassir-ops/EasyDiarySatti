@@ -21,6 +21,7 @@ class ReminderAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val dataModel = getItem(position)
         with(holder.binding) {
+            txtReminderTime.text = dataModel.formattedDate
             icCross.setOnClickListener { onItemClick.invoke(dataModel) }
         }
     }

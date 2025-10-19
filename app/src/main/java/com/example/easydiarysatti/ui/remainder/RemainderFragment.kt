@@ -7,10 +7,11 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.databinding.FragmentRemainderBinding
 import com.example.easydiarysatti.setReminderEasyDiary
 import com.example.easydiarysatti.showDatePickerWithTime
-import com.example.easydiarysatti.showToast
+import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.toFormattedString
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -56,16 +57,46 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
                 txtAddNew.setOnClickListener {
                     showDatePickerWithTime { selectedCalendar ->
                         val uniqueId = UUID.randomUUID().hashCode()
-                        if (selectedCalendar.timeInMillis <= System.currentTimeMillis()) {
+                        val now = System.currentTimeMillis()
+                        if (selectedCalendar.timeInMillis > now) {
+                            val formattedDate =
+                                selectedCalendar.time.toFormattedString("dd-MM-yy | h:mm a")
+                            viewModel.insertReminder(
+                                ReminderEntity(
+                                    id = uniqueId,
+                                    description = "",
+                                    formattedDate = formattedDate,
+                                    scheduleAt = selectedCalendar.timeInMillis,
+                                    shouldPlay = true,
+                                    noteReminder = false
+                                )
+                            )
+                            binding?.parentLayout?.showSnackbar(
+                                getString(
+                                    R.string.reminder_set_for_time, formattedDate
+                                )
+                            )
+                        } else {
                             selectedCalendar.add(Calendar.DAY_OF_YEAR, 1)
+                            val formattedDate =
+                                selectedCalendar.time.toFormattedString("dd-MM-yy | h:mm a")
+                            viewModel.insertReminder(
+                                ReminderEntity(
+                                    id = uniqueId,
+                                    description = "",
+                                    formattedDate = formattedDate,
+                                    scheduleAt = selectedCalendar.timeInMillis,
+                                    shouldPlay = true,
+                                    noteReminder = false
+                                )
+                            )
+                            binding?.parentLayout?.showSnackbar(getString(R.string.reminder_set_for_future_date))
                         }
-
                         activity.setReminderEasyDiary(
-                            calendar = selectedCalendar, text = "Mudassir Here", uniqueId = uniqueId
+                            calendar = selectedCalendar,
+                            text = getString(R.string.its_time_to_log_your_day_diary),
+                            uniqueId = uniqueId
                         )
-                        val formattedDate =
-                            selectedCalendar.time.toFormattedString("dd/MM/yyyy hh:mm a")
-                        showToast(requireContext(), "Reminder set for $formattedDate")
                     }
                 }
             }

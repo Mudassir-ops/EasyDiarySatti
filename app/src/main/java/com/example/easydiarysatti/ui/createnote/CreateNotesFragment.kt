@@ -11,6 +11,7 @@ import android.view.View
 import androidx.core.app.AlarmManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -22,6 +23,7 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
+import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.getHeadingSize
@@ -36,8 +38,9 @@ import com.example.easydiarysatti.setStyledDateAlreadyTime
 import com.example.easydiarysatti.setStyledDateTime
 import com.example.easydiarysatti.setTextAlignmentByName
 import com.example.easydiarysatti.showDatePickerWithTime
-import com.example.easydiarysatti.showToast
+import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.toFormattedString
+import com.example.easydiarysatti.ui.remainder.RemainderViewModel
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
@@ -52,6 +55,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     private val binding by viewBinding(FragmentCreateNotesBinding::bind)
     private val viewModel: CreateNotesViewModel by activityViewModels()
+    private val reminderViewModel by viewModels<RemainderViewModel>()
     private var createNoteEntity: CreateNoteEntity? = null
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
         ImagesItemAdapter(
@@ -382,27 +386,68 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
         if (activity?.isNotificationEnabled() == true) {
             showDatePickerWithTime { selectedCalendar ->
-                val uniqueId = UUID.randomUUID().hashCode()
-                if (selectedCalendar.timeInMillis <= System.currentTimeMillis()) {
-                    selectedCalendar.add(Calendar.DAY_OF_YEAR, 1)
+                if (binding?.etHeader?.text.toString().isEmpty()) {
+                    binding?.parentLayout?.showSnackbar(getString(R.string.required_title))
+                    return@showDatePickerWithTime
                 }
-                createNoteEntity=createNoteEntity?.copy()
+                val uniqueId = UUID.randomUUID().hashCode()
+                val now = System.currentTimeMillis()
+                if (selectedCalendar.timeInMillis > now) {
+                    val formattedDate =
+                        selectedCalendar.time.toFormattedString("dd-MM-yy | h:mm a")
+                    reminderViewModel.insertReminder(
+                        ReminderEntity(
+                            id = uniqueId,
+                            description = getString(
+                                R.string.don_t_forget_your_note,
+                                binding?.etHeader?.text
+                            ),
+                            formattedDate = formattedDate,
+                            scheduleAt = selectedCalendar.timeInMillis,
+                            shouldPlay = false,
+                            noteReminder = true
+                        )
+                    )
+
+                    binding?.parentLayout?.showSnackbar(
+                        getString(
+                            R.string.reminder_set_for_time,
+                            formattedDate
+                        )
+                    )
+                    setStyledDateAlreadyTime(
+                        tvDate = binding?.tvDate ?: return@showDatePickerWithTime,
+                        colorId = R.color.black,
+                        formatted = formattedDate
+                    )
+                } else {
+                    selectedCalendar.add(Calendar.DAY_OF_YEAR, 1)
+                    val formattedDate =
+                        selectedCalendar.time.toFormattedString("dd-MM-yy | h:mm a")
+                    reminderViewModel.insertReminder(
+                        ReminderEntity(
+                            id = uniqueId,
+                            description = getString(
+                                R.string.don_t_forget_your_note,
+                                binding?.etHeader?.text
+                            ),
+                            formattedDate = formattedDate,
+                            scheduleAt = selectedCalendar.timeInMillis,
+                            shouldPlay = false,
+                            noteReminder = true
+                        )
+                    )
+                    setStyledDateAlreadyTime(
+                        tvDate = binding?.tvDate ?: return@showDatePickerWithTime,
+                        colorId = R.color.black,
+                        formatted = formattedDate
+                    )
+                    binding?.parentLayout?.showSnackbar(getString(R.string.reminder_set_for_future_date))
+                }
                 activity.setReminderEasyDiary(
                     calendar = selectedCalendar,
-                    text = "Mudassir Here",
+                    text = getString(R.string.don_t_forget_your_note, binding?.etHeader?.text),
                     uniqueId = uniqueId
-                )
-
-                val formattedDate =
-                    selectedCalendar.time.toFormattedString("dd-MM-yy | h:mm a")
-                setStyledDateAlreadyTime(
-                    tvDate = binding?.tvDate ?: return@showDatePickerWithTime,
-                    colorId = R.color.black,
-                    formatted = formattedDate
-                )
-                showToast(
-                    context ?: return@showDatePickerWithTime,
-                    getString(R.string.reminder_set_for, formattedDate)
                 )
             }
         } else {

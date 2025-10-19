@@ -98,7 +98,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     actionId = R.id.action_mainFragment_to_themesFragment
                 )
 
-                2 -> onRemainderClick()
+                2 -> {
+                    binding?.parentLayout?.closeDrawer(GravityCompat.START)
+                    onRemainderClick()
+                }
+
                 3 -> findNavController().safeNav(
                     currentDestId = R.id.mainFragment,
                     actionId = R.id.action_mainFragment_to_changePasswordFragment

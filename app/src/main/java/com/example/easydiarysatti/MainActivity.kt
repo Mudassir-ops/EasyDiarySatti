@@ -1,23 +1,100 @@
 package com.example.easydiarysatti
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.AlarmManagerCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
+import com.example.easydiarysatti.databinding.ActivityMainBinding
 import com.example.easydiarysatti.domain.model.DrawerItem
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.ui.onboarding.OnBoardingViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var binding: ActivityMainBinding
+
+    @Inject
+    lateinit var sessionManagerRepo: SessionManagerRepo
+
     private val viewModel by viewModels<OnBoardingViewModel>()
+
+    private val exactAlarmPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            sessionManagerRepo.bypassSecurityLogin(false)
+            val alarmManager =
+                getSystemService(ALARM_SERVICE) as? AlarmManager
+                    ?: return@registerForActivityResult
+            if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+                binding.main.showSnackbar(message = getString(R.string.you_must_allow_schedule_alarm_permission))
+            } else {
+                checkAndRequestNotificationPermission()
+            }
+        }
+
+    fun requestExactAlarmPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(ALARM_SERVICE) as? AlarmManager
+            if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager ?: return)) {
+                sessionManagerRepo.bypassSecurityLogin(true)
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                exactAlarmPermissionLauncher.launch(intent)
+            } else {
+                sessionManagerRepo.bypassSecurityLogin(false)
+            }
+        } else {
+            sessionManagerRepo.bypassSecurityLogin(false)
+        }
+    }
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            sessionManagerRepo.bypassSecurityLogin(false)
+            AppLogger.createLog("notificationPermissionLauncher", "Notification permission granted")
+            if (isGranted) {
+                AppLogger.createLog(
+                    "notificationPermissionLauncher",
+                    "Notification permission granted"
+                )
+                Log.d("Permission", "Notification permission granted")
+            } else {
+                AppLogger.createLog(
+                    "notificationPermissionLauncher",
+                    "Notification permission granted"
+                )
+                Log.d("Permission", "Notification permission denied")
+            }
+        }
+
+    fun checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val notificationManager = NotificationManagerCompat.from(this)
+            if (!notificationManager.areNotificationsEnabled()) {
+                sessionManagerRepo.bypassSecurityLogin(true)
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                sessionManagerRepo.bypassSecurityLogin(false)
+            }
+        } else {
+            sessionManagerRepo.bypassSecurityLogin(false)
+        }
+    }
 
     private val noteBgList: List<Int?> by lazy {
         listOf(
@@ -72,7 +149,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)

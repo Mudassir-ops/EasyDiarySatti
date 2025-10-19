@@ -30,7 +30,6 @@ import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.isNotificationEnabled
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.loadImage
-import com.example.easydiarysatti.notificationPermission
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
@@ -526,12 +525,13 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun onRemainderClick() {
         val alarmManager =
-            context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                startActivity(intent)
-            }
+            context?.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            !AlarmManagerCompat.canScheduleExactAlarms(alarmManager)
+        ) {
+            (activity as? MainActivity)?.sessionManagerRepo?.bypassSecurityLogin(true)
+            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+            startActivity(intent)
             return
         }
         if (activity?.isNotificationEnabled() == true) {
@@ -540,9 +540,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 actionId = R.id.action_homeFragment_to_remainderFragment
             )
         } else {
-            activity.notificationPermission()
+            (activity as? MainActivity)?.requestExactAlarmPermission()
         }
     }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

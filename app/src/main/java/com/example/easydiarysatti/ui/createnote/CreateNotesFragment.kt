@@ -18,6 +18,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.AppLogger
 import com.example.easydiarysatti.FROM_SCREEN
+import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
@@ -376,12 +377,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     fun onClickDateTimePick() {
         val alarmManager =
-            context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                startActivity(intent)
-            }
+            context?.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            !AlarmManagerCompat.canScheduleExactAlarms(alarmManager)
+        ) {
+            (activity as? MainActivity)?.sessionManagerRepo?.bypassSecurityLogin(true)
+            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+            startActivity(intent)
             return
         }
         if (activity?.isNotificationEnabled() == true) {
@@ -408,7 +410,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             noteReminder = true
                         )
                     )
-
                     binding?.parentLayout?.showSnackbar(
                         getString(
                             R.string.reminder_set_for_time,
@@ -451,7 +452,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 )
             }
         } else {
-            activity.notificationPermission()
+            (activity as? MainActivity)?.requestExactAlarmPermission()
         }
     }
 }

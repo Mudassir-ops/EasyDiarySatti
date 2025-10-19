@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.data.local
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -75,5 +76,19 @@ interface CreateNoteDao {
         noteId: Long,
         newImages: List<String>
     )
+
+    ////---------
+
+    @Insert
+    suspend fun insertReminder(reminderEntity: ReminderEntity): Long
+
+    @Delete
+    suspend fun deleteReminder(reminderEntity: ReminderEntity)
+
+    @Update
+    suspend fun updateReminder(reminderEntity: ReminderEntity)
+
+    @Query("SELECT * FROM reminder_table")
+    fun observeReminder(): Flow<List<ReminderEntity>?>
 
 }

@@ -57,6 +57,7 @@
         android:gravity="center"
         android:text="@string/other_reminder"
         android:textColor="@color/tag_txt_color"
+        android:textSize="@dimen/_15ssp"
         android:visibility="visible"
         app:layout_constraintStart_toStartOf="@+id/viewReminderAutoText"
         app:layout_constraintTop_toBottomOf="@+id/txtAddNew" />
@@ -76,6 +77,7 @@
         android:id="@+id/reminderRecyclerView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
         app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
@@ -83,25 +85,59 @@
         tools:itemCount="2"
         tools:listitem="@layout/item_reminder" />
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_no_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit"
+        android:text="@string/no_daily_reminder"
+        android:textAlignment="center"
+        android:textColor="@color/txt_color_gray"
+        android:textSize="@dimen/_12ssp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/tvLabelSecond"
+        app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
+        app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
+        app:layout_constraintTop_toBottomOf="@id/tvLabel" />
+
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/tvLabelSecond"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/_18sdp"
+        android:layout_marginTop="@dimen/_36sdp"
         android:drawableTint="@color/app_primary_color"
         android:fontFamily="@font/outfit"
         android:gravity="center"
         android:text="@string/note_reminders"
         android:textColor="@color/tag_txt_color"
+        android:textSize="@dimen/_15ssp"
         android:visibility="visible"
-        app:layout_constraintStart_toStartOf="@+id/reminderRecyclerView"
+        app:layout_constraintStart_toStartOf="@+id/tvLabel"
         app:layout_constraintTop_toBottomOf="@+id/reminderRecyclerView" />
+
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tv_no_notes_data"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:elevation="@dimen/_5sdp"
+        android:fontFamily="@font/outfit"
+        android:text="@string/no_note_reminder"
+        android:textAlignment="center"
+        android:textColor="@color/txt_color_gray"
+        android:textSize="@dimen/_12ssp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"
+        app:layout_constraintStart_toStartOf="@id/viewReminderAutoText"
+        app:layout_constraintTop_toBottomOf="@id/tvLabelSecond" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/reminderNotesRecyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:visibility="visible"
+        android:visibility="invisible"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@id/viewReminderAutoText"

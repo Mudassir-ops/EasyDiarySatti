@@ -3,6 +3,7 @@ package com.example.easydiarysatti.data.repo.impl
 import com.example.easydiarysatti.data.local.CreateNoteDao
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
+import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -73,5 +74,20 @@ class EasyDiaryLocalDataSourceImpl(
         dao.updateImageForNote(noteId = noteId, newImages = newImages)
     }
 
+    override suspend fun insertReminder(reminderEntity: ReminderEntity): Long {
+        return dao.insertReminder(reminderEntity)
+    }
+
+    override suspend fun deleteReminder(reminderEntity: ReminderEntity) {
+        dao.deleteReminder(reminderEntity)
+    }
+
+    override suspend fun updateReminder(reminderEntity: ReminderEntity) {
+        dao.updateReminder(reminderEntity)
+    }
+
+    override fun observeReminder(): Flow<List<ReminderEntity>?> {
+        return dao.observeReminder()
+    }
 
 }

@@ -3,6 +3,7 @@ package com.example.easydiarysatti.data.repo.impl
 import android.util.Log
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
+import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import kotlinx.coroutines.flow.Flow
@@ -107,5 +108,23 @@ class CreateNoteRepositoryImpl(
     ) {
         localDataSource.updateImageForNote(noteId = noteId, newImages = newImages)
     }
+
+
+    override suspend fun insertReminder(reminderEntity: ReminderEntity?): Long? {
+        return reminderEntity?.let { localDataSource.insertReminder(it) }
+    }
+
+    override suspend fun deleteReminder(reminderEntity: ReminderEntity?) {
+        reminderEntity?.let { localDataSource.deleteReminder(it) }
+    }
+
+    override suspend fun updateReminder(reminderEntity: ReminderEntity?) {
+        reminderEntity?.let { localDataSource.updateReminder(it) }
+    }
+
+    override fun observeReminder(): Flow<List<ReminderEntity>?>{
+        return localDataSource.observeReminder()
+    }
+
 
 }

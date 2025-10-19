@@ -1,20 +1,16 @@
 package com.example.easydiarysatti.ui.remainder
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.databinding.ItemReminderBinding
 
-
 class ReminderAdapter(
-    private var list: List<CreateNoteEntity>,
-    private val context: Context,
-    private val onItemClick: (CreateNoteEntity) -> Unit
-) : RecyclerView.Adapter<ReminderAdapter.ViewHolder>() {
-
+    private val onItemClick: (ReminderEntity) -> Unit
+) : ListAdapter<ReminderEntity, ReminderAdapter.ViewHolder>(DiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding =
@@ -22,33 +18,35 @@ class ReminderAdapter(
         return ViewHolder(binding)
     }
 
-    override fun getItemCount(): Int {
-        return list.size
-    }
-
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val dataModel = list[position]
-        // holder.binding.txtReminderTime.text = dataModel.remainderTime
-        holder.binding.icCross.setOnClickListener {
-            onItemClick.invoke(dataModel)
+        val dataModel = getItem(position)
+        with(holder.binding) {
+            icCross.setOnClickListener { onItemClick.invoke(dataModel) }
         }
-
     }
 
     class ViewHolder(val binding: ItemReminderBinding) : RecyclerView.ViewHolder(binding.root)
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun updateReminderList(newReminderList: List<CreateNoteEntity>) {
-        list = newReminderList
-        notifyDataSetChanged()
+    companion object {
+        private val DiffCallback = object : DiffUtil.ItemCallback<ReminderEntity>() {
+            override fun areItemsTheSame(
+                oldItem: ReminderEntity, newItem: ReminderEntity
+            ): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(
+                oldItem: ReminderEntity, newItem: ReminderEntity
+            ): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
-    fun removeItem(reminder: CreateNoteEntity) {
-        val updatedList = list.toMutableList()
-        updatedList.remove(reminder)
-        list = updatedList
-        notifyDataSetChanged()
+    fun removeItem(reminder: ReminderEntity) {
+        val updatedList = currentList.toMutableList().apply { remove(reminder) }
+        submitList(updatedList)
     }
 
 }
+

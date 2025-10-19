@@ -2,6 +2,7 @@ package com.example.easydiarysatti.data.repo
 
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
+import com.example.easydiarysatti.data.local.ReminderEntity
 import kotlinx.coroutines.flow.Flow
 
 interface EasyDiaryLocalDataSource {
@@ -25,8 +26,15 @@ interface EasyDiaryLocalDataSource {
         noteId: Long,
         newTags: List<CustomTagEntity>
     )
+
     suspend fun updateImageForNote(
         noteId: Long,
         newImages: List<String>
     )
+
+    suspend fun insertReminder(reminderEntity: ReminderEntity): Long
+    suspend fun deleteReminder(reminderEntity: ReminderEntity)
+    suspend fun updateReminder(reminderEntity: ReminderEntity)
+    fun observeReminder(): Flow<List<ReminderEntity>?>
+
 }

@@ -5,7 +5,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [CreateNoteEntity::class],
+    entities = [CreateNoteEntity::class, ReminderEntity::class],
     version = 1, exportSchema = false
 )
 @TypeConverters(ListStringConverter::class)

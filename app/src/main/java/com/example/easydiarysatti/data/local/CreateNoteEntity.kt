@@ -30,5 +30,6 @@ data class CreateNoteEntity(
     val images: List<String>? = null,
     val isAscending: Boolean = false,
     val remainderTime: Long = System.currentTimeMillis(),
-) : Parcelable
+
+    ) : Parcelable
 

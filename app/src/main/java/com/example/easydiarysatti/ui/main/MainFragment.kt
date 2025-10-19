@@ -12,7 +12,6 @@ import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
@@ -61,16 +60,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
     private var activeNavHost: NavHostFragment? = null
-    private val colorPalette by lazy {
-        listOf(
-            "#334155".toColorInt(), // black-ish
-            "#64748B".toColorInt(), // dark gray
-            "#8478BF".toColorInt(), // light gray
-            "#0F2A45".toColorInt(), // pink-ish
-            "#0F172A".toColorInt(), // greenish
-            "#4C0821".toColorInt()  // purple
-        )
-    }
 
     private val navHostListeners =
         mutableMapOf<NavHostFragment, NavController.OnDestinationChangedListener>()
@@ -209,7 +198,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             showEditTexDialog(
                                 closeDialog = {
                                     binding?.bottomNavCreateNote?.clearChecked()
-                                }, fontSelectionListener = {
+                                },
+                                fontSelectionListener = {
                                     createNotesViewModel.sendAction(CreateNotesState.FontAction(it))
                                 },
                                 textAlignmentListener = {
@@ -225,7 +215,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                 textColorListener = {
                                     Log.e("SelecetdColor", "setTextColor: SelecetdColor$it")
                                     createNotesViewModel.sendAction(CreateNotesState.TextColor(it))
-                                }, colorPalette = colorPalette
+                                },
+                                colorPalette = (activity as? MainActivity)?.getColorPalette()
+                                    ?: listOf()
                             )
                         }
                     }
@@ -399,7 +391,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
-
     private fun setClickListeners() {
         binding?.apply {
             ivMenu.setOnClickListener {
@@ -531,7 +522,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     private fun onRemainderClick() {
         val alarmManager =
-            requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+            context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)

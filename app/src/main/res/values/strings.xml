@@ -104,5 +104,8 @@
     <string name="note_preview">Note Preview</string>
     <string name="upload_picture">Upload Picture</string>
     <string name="upload_from_gallery">Upload From Gallery</string>
+    <string name="reminder_set_for">Reminder set for %1$s</string>
+    <string name="other_reminder">Daily Reminders</string>
+    <string name="note_reminders">Note Reminders</string>
 
 </resources>

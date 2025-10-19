@@ -85,7 +85,7 @@
             android:layout_width="@dimen/_45sdp"
             android:layout_height="@dimen/_45sdp"
             android:background="@drawable/bg_create_note"
-            android:padding="@dimen/_10sdp"
+            android:padding="@dimen/_12sdp"
             app:layout_constraintBottom_toBottomOf="@id/et_header"
             app:layout_constraintEnd_toEndOf="@+id/icSwitchRemainder"
             app:layout_constraintTop_toTopOf="@id/et_header"

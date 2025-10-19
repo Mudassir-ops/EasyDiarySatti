@@ -10,7 +10,6 @@ import com.example.easydiarysatti.databinding.ImageItemLayoutBinding
 import com.example.easydiarysatti.loadAdaptiveImage
 
 class ImagesItemAdapter(
-    private val onNoteItemClick: (String) -> Unit,
     private val onDeleteItemClick: (String) -> Unit,
     private val fromPreview: Boolean
 ) : ListAdapter<String, ImagesItemAdapter.ImagesItemViewHolder>(DiffCallback) {
@@ -23,9 +22,6 @@ class ImagesItemAdapter(
                 binding.viewEdit.visibility = View.GONE
                 binding.icEdit.visibility = View.GONE
                 binding.icDelete.visibility = View.GONE
-            }
-            binding.root.setOnClickListener {
-                onNoteItemClick.invoke(noteEntity)
             }
 
             binding.icDelete.setOnClickListener {

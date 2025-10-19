@@ -42,9 +42,10 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_happy"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
         android:layout_marginTop="@dimen/_25sdp"
+        android:scaleType="fitXY"
         app:layout_constraintHorizontal_bias="0"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="@+id/view_horizontal_line"
@@ -53,8 +54,9 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_calm"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="@+id/iv_emoji_happy"
         app:layout_constraintEnd_toStartOf="@+id/iv_emoji_sad"
         app:layout_constraintHorizontal_chainStyle="spread"
@@ -64,8 +66,9 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_sad"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="@+id/iv_emoji_calm"
         app:layout_constraintEnd_toStartOf="@+id/iv_emoji_excited"
         app:layout_constraintHorizontal_chainStyle="spread"
@@ -75,8 +78,9 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_excited"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="@+id/iv_emoji_sad"
         app:layout_constraintEnd_toEndOf="@+id/view_horizontal_line"
         app:layout_constraintHorizontal_chainStyle="spread"
@@ -85,9 +89,10 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_angry"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
         android:layout_marginVertical="@dimen/_30sdp"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/iv_emoji_happy"
         app:layout_constraintHorizontal_chainStyle="spread"
@@ -97,9 +102,10 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_playful"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
         android:layout_marginVertical="@dimen/_30sdp"
+        android:scaleType="fitXY"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/iv_emoji_calm"
         app:layout_constraintHorizontal_chainStyle="spread"

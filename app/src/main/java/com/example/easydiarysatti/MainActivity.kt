@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.fragment.NavHostFragment
@@ -29,6 +30,16 @@ class MainActivity : AppCompatActivity() {
         )
     }
 
+    private val colorPaletteSatti by lazy {
+        listOf(
+            "#334155".toColorInt(), // black-ish
+            "#64748B".toColorInt(), // dark gray
+            "#8478BF".toColorInt(), // light gray
+            "#0F2A45".toColorInt(), // pink-ish
+            "#0F172A".toColorInt(), // greenish
+            "#4C0821".toColorInt()  // purple
+        )
+    }
 
     private val mainDrawerItemList: List<DrawerItem> by lazy {
         listOf(
@@ -71,6 +82,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun getBgThemes(): List<Int?> = noteBgList
+    fun getColorPalette(): List<Int>? = colorPaletteSatti
     fun getDrawerItemList(): List<DrawerItem> = mainDrawerItemList
     private fun setupStartGraph() {
         val navHostFragment = supportFragmentManager

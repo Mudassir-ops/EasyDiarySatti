@@ -707,13 +707,15 @@ fun setStyledDateTime(tvDate: MaterialTextView, colorId: Int) {
     tvDate.text = spannable
 }
 
-
 fun setStyledDateAlreadyTime(tvDate: MaterialTextView, colorId: Int, formatted: String) {
+
     val parts = formatted.split("|")
     val datePart = parts.getOrNull(0)?.trim() ?: ""
     val timePart = parts.getOrNull(1)?.trim() ?: ""
     val separator = " | "
+
     val spannable = SpannableStringBuilder().apply {
+        // Date (bold)
         append(datePart)
         setSpan(
             StyleSpan(Typeface.BOLD),
@@ -721,30 +723,32 @@ fun setStyledDateAlreadyTime(tvDate: MaterialTextView, colorId: Int, formatted: 
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
 
+        // Separator (app color)
+        val separatorColor = ContextCompat.getColor(tvDate.context, R.color.app_primary_color)
         val startSeparator = length
         append(separator)
         setSpan(
-            ForegroundColorSpan(
-                ContextCompat.getColor(
-                    tvDate.context ?: return,
-                    R.color.app_primary_color
-                )
-            ),
+            ForegroundColorSpan(separatorColor),
             startSeparator,
             startSeparator + separator.length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
+
+        // Time (custom color)
+        val timeColor = ContextCompat.getColor(tvDate.context, colorId)
         val startTime = length
         append(timePart)
         setSpan(
-            ForegroundColorSpan(ContextCompat.getColor(tvDate.context, colorId)),
+            ForegroundColorSpan(timeColor),
             startTime,
             startTime + timePart.length,
             Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
         )
     }
+
     tvDate.text = spannable
 }
+
 
 fun setExclusiveSelection(
     vararg textViews: MaterialTextView,
@@ -922,5 +926,7 @@ fun Date.toFormattedString(pattern: String, locale: Locale = Locale.getDefault()
     val dateFormat = SimpleDateFormat(pattern, locale)
     return dateFormat.format(this)
 }
+
+
 
 

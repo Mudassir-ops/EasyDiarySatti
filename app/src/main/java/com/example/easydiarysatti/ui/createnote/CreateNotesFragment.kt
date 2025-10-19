@@ -1,8 +1,14 @@
 package com.example.easydiarysatti.ui.createnote
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.view.View
+import androidx.core.app.AlarmManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
@@ -19,6 +25,8 @@ import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.getHeadingSize
+import com.example.easydiarysatti.isNotificationEnabled
+import com.example.easydiarysatti.notificationPermission
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setHeadingSize
@@ -30,11 +38,9 @@ import com.example.easydiarysatti.setTextAlignmentByName
 import com.example.easydiarysatti.showDatePickerWithTime
 import com.example.easydiarysatti.showToast
 import com.example.easydiarysatti.toFormattedString
-import com.example.easydiarysatti.utills.showDatePicker
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
@@ -49,9 +55,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private var createNoteEntity: CreateNoteEntity? = null
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
         ImagesItemAdapter(
-            onNoteItemClick = { note ->
-                // Handle image click here if needed
-            },
             fromPreview = false,
             onDeleteItemClick = { imageToDelete ->
                 createNoteEntity = createNoteEntity?.copy(
@@ -118,7 +121,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
-    @OptIn(FlowPreview::class)
     fun clickListeners() {
         binding?.apply {
             ivEmoji.setOnClickListener {
@@ -133,26 +135,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 })
             }
             tvDate.setOnClickListener {
-                showDatePickerWithTime { selectedCalendar ->
-                    val uniqueId = UUID.randomUUID().hashCode()
-                    if (selectedCalendar.timeInMillis <= System.currentTimeMillis()) {
-                        selectedCalendar.add(Calendar.DAY_OF_YEAR, 1)
-                    }
-                    activity.setReminderEasyDiary(
-                        calendar = selectedCalendar, text = "Mudassir Here", uniqueId = uniqueId
-                    )
-                    val formattedDate =
-                        selectedCalendar.time.toFormattedString("dd/MM/yyyy hh:mm a")
-                    setStyledDateAlreadyTime(
-                        tvDate = tvDate, colorId = R.color.black, formatted = formattedDate
-                    )
-                    showToast(requireContext(), "Reminder set for $formattedDate")
-                }
+                onClickDateTimePick()
             }
             ivBottomArrow.setOnClickListener {
-                showDatePicker(selectedDateTime = {
-
-                })
+                onClickDateTimePick()
             }
         }
     }
@@ -384,4 +370,43 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
+    fun onClickDateTimePick() {
+        val alarmManager =
+            context?.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                startActivity(intent)
+            }
+            return
+        }
+        if (activity?.isNotificationEnabled() == true) {
+            showDatePickerWithTime { selectedCalendar ->
+                val uniqueId = UUID.randomUUID().hashCode()
+                if (selectedCalendar.timeInMillis <= System.currentTimeMillis()) {
+                    selectedCalendar.add(Calendar.DAY_OF_YEAR, 1)
+                }
+                createNoteEntity=createNoteEntity?.copy()
+                activity.setReminderEasyDiary(
+                    calendar = selectedCalendar,
+                    text = "Mudassir Here",
+                    uniqueId = uniqueId
+                )
+
+                val formattedDate =
+                    selectedCalendar.time.toFormattedString("dd-MM-yy | h:mm a")
+                setStyledDateAlreadyTime(
+                    tvDate = binding?.tvDate ?: return@showDatePickerWithTime,
+                    colorId = R.color.black,
+                    formatted = formattedDate
+                )
+                showToast(
+                    context ?: return@showDatePickerWithTime,
+                    getString(R.string.reminder_set_for, formattedDate)
+                )
+            }
+        } else {
+            activity.notificationPermission()
+        }
+    }
 }

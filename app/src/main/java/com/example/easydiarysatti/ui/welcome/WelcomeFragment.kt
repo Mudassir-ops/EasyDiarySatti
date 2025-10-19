@@ -1,7 +1,9 @@
 package com.example.easydiarysatti.ui.welcome
 
+import android.content.Context
 import android.os.Bundle
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
@@ -38,5 +40,14 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
             currentDestId = R.id.welcomeFragment,
             actionId = R.id.action_welcomeFragment_to_mainFragment
         )
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+            }
+        }
+        activity?.onBackPressedDispatcher?.addCallback(this, callback)
     }
 }

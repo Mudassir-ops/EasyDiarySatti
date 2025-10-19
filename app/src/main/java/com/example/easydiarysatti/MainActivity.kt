@@ -35,64 +35,66 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel by viewModels<OnBoardingViewModel>()
 
+    private var onAllPermissionsGranted: (() -> Unit)? = null
+
     private val exactAlarmPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             sessionManagerRepo.bypassSecurityLogin(false)
             val alarmManager =
-                getSystemService(ALARM_SERVICE) as? AlarmManager
-                    ?: return@registerForActivityResult
-            if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
-                binding.main.showSnackbar(message = getString(R.string.you_must_allow_schedule_alarm_permission))
+                getSystemService(ALARM_SERVICE) as? AlarmManager ?: return@registerForActivityResult
+            if (AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+                checkAndRequestNotificationPermission(onAllPermissionsGranted)
             } else {
-                checkAndRequestNotificationPermission()
+                binding.main.showSnackbar(getString(R.string.you_must_allow_schedule_alarm_permission))
             }
         }
-
-    fun requestExactAlarmPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val alarmManager = getSystemService(ALARM_SERVICE) as? AlarmManager
-            if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager ?: return)) {
-                sessionManagerRepo.bypassSecurityLogin(true)
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-                exactAlarmPermissionLauncher.launch(intent)
-            } else {
-                sessionManagerRepo.bypassSecurityLogin(false)
-            }
-        } else {
-            sessionManagerRepo.bypassSecurityLogin(false)
-        }
-    }
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
             sessionManagerRepo.bypassSecurityLogin(false)
-            AppLogger.createLog("notificationPermissionLauncher", "Notification permission granted")
+
             if (isGranted) {
-                AppLogger.createLog(
-                    "notificationPermissionLauncher",
-                    "Notification permission granted"
-                )
                 Log.d("Permission", "Notification permission granted")
+                onAllPermissionsGranted?.invoke()
+                onAllPermissionsGranted = null
             } else {
-                AppLogger.createLog(
-                    "notificationPermissionLauncher",
-                    "Notification permission granted"
-                )
-                Log.d("Permission", "Notification permission denied")
+                binding.main.showSnackbar(getString(R.string.you_must_allow_schedule_alarm_permission))
+                onAllPermissionsGranted = null
             }
         }
 
-    fun checkAndRequestNotificationPermission() {
+    fun requestExactAlarmPermission(onAllGranted: (() -> Unit)? = null) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            val alarmManager = getSystemService(ALARM_SERVICE) as? AlarmManager ?: return
+            if (!AlarmManagerCompat.canScheduleExactAlarms(alarmManager)) {
+                sessionManagerRepo.bypassSecurityLogin(true)
+                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                exactAlarmPermissionLauncher.launch(intent)
+                this.onAllPermissionsGranted = onAllGranted
+            } else {
+                sessionManagerRepo.bypassSecurityLogin(false)
+                checkAndRequestNotificationPermission(onAllGranted)
+            }
+        } else {
+            sessionManagerRepo.bypassSecurityLogin(false)
+            checkAndRequestNotificationPermission(onAllGranted)
+        }
+    }
+
+    fun checkAndRequestNotificationPermission(onAllGranted: (() -> Unit)? = null) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val notificationManager = NotificationManagerCompat.from(this)
             if (!notificationManager.areNotificationsEnabled()) {
                 sessionManagerRepo.bypassSecurityLogin(true)
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                this.onAllPermissionsGranted = onAllGranted
             } else {
                 sessionManagerRepo.bypassSecurityLogin(false)
+                onAllGranted?.invoke()
             }
         } else {
             sessionManagerRepo.bypassSecurityLogin(false)
+            onAllGranted?.invoke()
         }
     }
 
@@ -163,9 +165,9 @@ class MainActivity : AppCompatActivity() {
     fun getColorPalette(): List<Int>? = colorPaletteSatti
     fun getDrawerItemList(): List<DrawerItem> = mainDrawerItemList
     private fun setupStartGraph() {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
-            ?: return
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+                ?: return
 
         val navController = navHostFragment.navController
         val inflater = navController.navInflater
@@ -187,9 +189,9 @@ class MainActivity : AppCompatActivity() {
         Log.e("OnResumeApp-->", "onResume: $cameraCall")
         if (viewModel.shouldRequireLogin()) {
             viewModel.clearLogin()
-            val navHostFragment = supportFragmentManager
-                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
-                ?: return
+            val navHostFragment =
+                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+                    ?: return
             val navController = navHostFragment.navController
             if (navController.currentDestination?.id != R.id.loginFragment) {
                 navController.navigate(R.id.loginFragment)

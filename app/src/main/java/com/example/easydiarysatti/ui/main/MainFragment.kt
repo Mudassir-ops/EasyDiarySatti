@@ -1,16 +1,11 @@
 package com.example.easydiarysatti.ui.main
 
-import android.app.AlarmManager
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
-import androidx.core.app.AlarmManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.GravityCompat
@@ -27,7 +22,6 @@ import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
-import com.example.easydiarysatti.isNotificationEnabled
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.loadImage
 import com.example.easydiarysatti.safeNav
@@ -524,23 +518,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun onRemainderClick() {
-        val alarmManager =
-            context?.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            !AlarmManagerCompat.canScheduleExactAlarms(alarmManager)
-        ) {
-            (activity as? MainActivity)?.sessionManagerRepo?.bypassSecurityLogin(true)
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            startActivity(intent)
-            return
-        }
-        if (activity?.isNotificationEnabled() == true) {
+        (activity as? MainActivity)?.requestExactAlarmPermission {
             activeNavHost?.findNavController()?.safeNav(
                 currentDestId = R.id.homeFragment,
                 actionId = R.id.action_homeFragment_to_remainderFragment
             )
-        } else {
-            (activity as? MainActivity)?.requestExactAlarmPermission()
         }
     }
 

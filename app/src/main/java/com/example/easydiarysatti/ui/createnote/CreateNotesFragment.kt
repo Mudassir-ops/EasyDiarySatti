@@ -1,14 +1,8 @@
 package com.example.easydiarysatti.ui.createnote
 
-import android.app.AlarmManager
-import android.content.Context
-import android.content.Intent
-import android.os.Build
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.View
-import androidx.core.app.AlarmManagerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -28,8 +22,6 @@ import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.getHeadingSize
-import com.example.easydiarysatti.isNotificationEnabled
-import com.example.easydiarysatti.notificationPermission
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setFont
 import com.example.easydiarysatti.setHeadingSize
@@ -376,17 +368,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     }
 
     fun onClickDateTimePick() {
-        val alarmManager =
-            context?.getSystemService(Context.ALARM_SERVICE) as? AlarmManager ?: return
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
-            !AlarmManagerCompat.canScheduleExactAlarms(alarmManager)
-        ) {
-            (activity as? MainActivity)?.sessionManagerRepo?.bypassSecurityLogin(true)
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            startActivity(intent)
-            return
-        }
-        if (activity?.isNotificationEnabled() == true) {
+        (activity as? MainActivity)?.requestExactAlarmPermission {
             showDatePickerWithTime { selectedCalendar ->
                 if (binding?.etHeader?.text.toString().isEmpty()) {
                     binding?.parentLayout?.showSnackbar(getString(R.string.required_title))
@@ -451,8 +433,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     uniqueId = uniqueId
                 )
             }
-        } else {
-            (activity as? MainActivity)?.requestExactAlarmPermission()
         }
     }
 }

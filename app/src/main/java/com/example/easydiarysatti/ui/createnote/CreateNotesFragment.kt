@@ -42,7 +42,6 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.UUID
 
 @AndroidEntryPoint
 class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
@@ -380,7 +379,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     binding?.parentLayout?.showSnackbar(getString(R.string.required_title))
                     return@showDatePickerWithTime
                 }
-                val uniqueId = UUID.randomUUID().hashCode()
+                val uniqueId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
                 val now = System.currentTimeMillis()
                 if (selectedCalendar.timeInMillis > now) {
                     val formattedDate =

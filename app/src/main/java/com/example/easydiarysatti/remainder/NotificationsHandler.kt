@@ -6,11 +6,11 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import com.example.easydiarysatti.AppLogger
 import com.example.easydiarysatti.R
 
 class NotificationsHandler(private val context: Context?) {
@@ -36,14 +36,13 @@ class NotificationsHandler(private val context: Context?) {
             notificationManager.createNotificationChannel(notificationChannel)
         }
 
+        AppLogger.createLog("Loggersadass", "sadasds")
         val bigTextStyle = NotificationCompat.BigTextStyle().bigText(text)
-        val largeIcon = BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher)
         val notificationBuilder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.notification)
             .setContentTitle(contentTitle)
             .setContentText(text)
             .setStyle(bigTextStyle)
-            .setLargeIcon(largeIcon)
             .setDefaults(Notification.DEFAULT_SOUND)
             .setAutoCancel(true)
 

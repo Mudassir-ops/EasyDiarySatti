@@ -50,7 +50,7 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
     private fun setupClickListeners() {
         binding?.txtAddNew?.setOnClickListener {
             showDatePickerWithTime { selectedCalendar ->
-                val uniqueId = UUID.randomUUID().hashCode()
+                val uniqueId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
                 val now = System.currentTimeMillis()
                 val futureCalendar = if (selectedCalendar.timeInMillis > now) {
                     selectedCalendar

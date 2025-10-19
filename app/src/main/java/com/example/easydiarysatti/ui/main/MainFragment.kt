@@ -382,6 +382,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     ivMenu.visibility = View.INVISIBLE
                     ivBack.visibility = View.VISIBLE
                     icAddNotes.visibility = View.GONE
+                    binding?.ivKabab?.visibility = View.GONE
                 }
 
                 else -> {

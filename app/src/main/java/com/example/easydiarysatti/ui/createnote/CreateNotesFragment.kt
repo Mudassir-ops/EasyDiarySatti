@@ -134,10 +134,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             noteId = 999
                         )
                         remainingTags.add(personalTag)
-                        val tagsList = viewModel.addTag(tag = personalTag.tagName, noteId = 999)
-                        Log.e("RemaningTagsSatti-->", "setupFlexBoxAfter: $tagsList")
                         post {
-                            remainingTags.setupFlexBox()
+                            remainingTags.distinct().setupFlexBox()
                         }
                     } else {
                         if (remainingTags.size == 1 && remainingTags.first().tagName.equals(
@@ -146,11 +144,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             )
                         ) {
                             post {
-                                remainingTags.setupFlexBox()
+                                remainingTags.distinct().setupFlexBox()
                             }
                             Log.d("TagCheck", "Only Personal tag remains")
                         }
                     }
+                    createNoteEntity=createNoteEntity?.copy(tags = remainingTags)
                     if (createNoteEntity?.noteId != 0L) {
                         val updatedTags = viewModel.allTags().filter { existingTag ->
                             existingTag.tagName != tag.tagName

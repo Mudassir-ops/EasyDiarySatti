@@ -7,6 +7,8 @@ plugins {
     id("kotlin-kapt")
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
+    alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 android {
@@ -14,11 +16,11 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.easydiarysatti"
+        applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 13
+        versionName = "13.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")
@@ -101,9 +103,17 @@ dependencies {
 
     implementation(libs.image.cropper)
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
 
     implementation(libs.colorpickerview)
+
+    //-Firebase
+    implementation(libs.firebase.crashlytics)
+    implementation(libs.firebase.analytics)
+    //in app update
+    implementation(libs.play.app.update)
+    implementation(libs.app.update.ktx)
+
 }
 
 kapt {

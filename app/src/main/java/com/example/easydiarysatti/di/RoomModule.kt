@@ -20,7 +20,7 @@ object RoomModule {
         return Room.databaseBuilder(
             context.applicationContext,
             EasyDiaryDatabase::class.java,
-            "auto_car_inspection_database"
+            "easy_diary_database"
         ).fallbackToDestructiveMigration(true).build()
     }
 

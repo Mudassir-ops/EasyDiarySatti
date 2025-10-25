@@ -16,18 +16,23 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import com.example.easydiarysatti.data.repo.UpdateState
 import com.example.easydiarysatti.databinding.ActivityMainBinding
 import com.example.easydiarysatti.domain.model.DrawerItem
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.ui.onboarding.OnBoardingViewModel
+import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val updateViewModel: UpdateViewModel by viewModels()
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
@@ -156,6 +161,7 @@ class MainActivity : AppCompatActivity() {
             insets
         }
         setupStartGraph()
+        checkAutoUpdate()
     }
 
     fun getBgThemes(): List<Int?> = noteBgList
@@ -194,6 +200,39 @@ class MainActivity : AppCompatActivity() {
                 navController.navigate(R.id.loginFragment)
             }
         }
+        updateViewModel.checkDownloadedOnResume()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        updateViewModel.unregisterListener()
+    }
+
+    private fun checkAutoUpdate() {
+        updateViewModel.init(this)
+        updateViewModel.checkForUpdates()
+        lifecycleScope.launch {
+            updateViewModel.updateState.collect {
+                when (it) {
+                    is UpdateState.Downloaded -> {
+                        showRestartSnackBar()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun showRestartSnackBar() {
+        Snackbar.make(
+            findViewById(android.R.id.content),
+            "Update ready",
+            Snackbar.LENGTH_INDEFINITE
+        )
+            .setAction("Restart") {
+                updateViewModel.completeUpdate()
+            }.show()
     }
 
 }

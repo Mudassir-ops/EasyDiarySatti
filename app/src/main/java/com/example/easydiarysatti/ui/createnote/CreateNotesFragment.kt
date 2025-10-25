@@ -107,18 +107,49 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             visibility = View.VISIBLE
             addTags(
                 fromPreview = false,
-                this@setupFlexBox as MutableList<CustomTagEntity>,
+                this@setupFlexBox.toMutableList(),
                 onTagClick = {},
                 onRemoveTagClick = { tag ->
                     val remainingTags = viewModel.removeTag(tag = tag)
-                    if (remainingTags.isEmpty() && tag.tagName != "Personal") {
+                    val filteredTags = remainingTags.let { tags ->
+                        val hasRealPersonal =
+                            tags.any { it.tagName.equals("Personal", true) && it.noteId != 999 }
+                        if (hasRealPersonal) {
+                            tags.filterNot {
+                                it.tagName.equals(
+                                    "Personal",
+                                    true
+                                ) && it.noteId == 999
+                            }
+                        } else {
+                            tags
+                        }
+                    }
+                    remainingTags.clear()
+                    remainingTags.addAll(filteredTags)
+                    Log.e("RemaningTagsSatti-->", "setupFlexBoxBefore: $remainingTags")
+                    if (remainingTags.isEmpty()) {
                         val personalTag = CustomTagEntity(
                             tagName = "Personal",
                             noteId = 999
                         )
                         remainingTags.add(personalTag)
-                        viewModel.addTag(tag = personalTag.tagName, noteId = 999)
-                        remainingTags.setupFlexBox()
+                        val tagsList = viewModel.addTag(tag = personalTag.tagName, noteId = 999)
+                        Log.e("RemaningTagsSatti-->", "setupFlexBoxAfter: $tagsList")
+                        post {
+                            remainingTags.setupFlexBox()
+                        }
+                    } else {
+                        if (remainingTags.size == 1 && remainingTags.first().tagName.equals(
+                                "Personal",
+                                ignoreCase = true
+                            )
+                        ) {
+                            post {
+                                remainingTags.setupFlexBox()
+                            }
+                            Log.d("TagCheck", "Only Personal tag remains")
+                        }
                     }
                     if (createNoteEntity?.noteId != 0L) {
                         val updatedTags = viewModel.allTags().filter { existingTag ->
@@ -344,24 +375,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             etHeader.setText(createNoteEntity?.title)
             etDescription.setText(createNoteEntity?.description)
             imagesItemAdapter.submitList(createNoteEntity?.images ?: emptyList())
-            if (!createNoteEntity?.tags.isNullOrEmpty()) {
-                val tags = createNoteEntity?.tags?.toMutableList()
-                if (tags.isNullOrEmpty()) {
-                    val hasPersonal = tags?.any { it.tagName.equals("Personal", ignoreCase = true) }
-                    if (hasPersonal == false) {
-                        tags.add(
-                            CustomTagEntity(
-                                tagName = "Personal",
-                                noteId = createNoteEntity?.noteId?.toInt() ?: 0
-                            )
-                        )
-                    }
-                }
-                createNoteEntity = createNoteEntity?.copy(tags = tags)
-                createNoteEntity?.tags?.setupFlexBox()
-            } else {
-                listOf(CustomTagEntity(tagName = "Personal", noteId = 999)).setupFlexBox()
-            }
+            addDefaultTags()
             ivEmoji.setImageResource(createNoteEntity?.feelingEmojiRes ?: return@apply)
             createNoteEntity?.textColor?.let { etHeader.setTextColor(it) }
             createNoteEntity?.textColor?.let { etDescription.setTextColor(it) }
@@ -460,4 +474,31 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
+    fun addDefaultTags() {
+        val tags = createNoteEntity?.tags?.toMutableList() ?: mutableListOf()
+        if (tags.isEmpty()) {
+            tags.add(
+                CustomTagEntity(
+                    tagName = "Personal",
+                    noteId = createNoteEntity?.noteId?.toInt() ?: 0
+                )
+            )
+        } else {
+            val updatedTags = tags.filterNot { it.tagName.equals("Personal", ignoreCase = true) }
+            tags.clear()
+            tags.addAll(updatedTags)
+        }
+
+        if (tags.isEmpty()) {
+            tags.add(
+                CustomTagEntity(
+                    tagName = "Personal",
+                    noteId = createNoteEntity?.noteId?.toInt() ?: 999
+                )
+            )
+        }
+        viewModel.addTags(tags)
+        createNoteEntity = createNoteEntity?.copy(tags = tags)
+        createNoteEntity?.tags?.setupFlexBox()
+    }
 }

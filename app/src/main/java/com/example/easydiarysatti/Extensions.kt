@@ -488,6 +488,8 @@ fun FlexboxLayout.addTags(
     onTagClick: ((CustomTagEntity) -> Unit)? = null,
     onRemoveTagClick: ((CustomTagEntity) -> Unit)? = null,
 ) {
+
+    Log.e("RemaningTagsSatti-->", "setupFlexBoxInner: $tagList", )
     if (tagList.isEmpty()) {
         this.visibility = View.GONE
         return

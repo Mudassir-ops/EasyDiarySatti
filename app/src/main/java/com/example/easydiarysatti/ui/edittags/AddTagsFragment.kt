@@ -120,22 +120,35 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
                 findNavController().navigateUp()
             }
             btnNext.setOnClickListener {
-                if (etTags.text.toString().isEmpty()) {
+                val currentNote = viewModel.noteState.value
+                val enteredTag = etTags.text.toString().trim()
+
+                // Check if note already has tags
+                val hasExistingTags = !currentNote?.tags.isNullOrEmpty()
+
+                if (enteredTag.isEmpty()) {
+                    if (!hasExistingTags) {
+                        // Only add "Personal" if no tags exist
+                        viewModel.sendAction(
+                            action = CreateNotesState.AddTag(
+                                tag = "Personal",
+                                createNoteEntity = currentNote
+                            )
+                        )
+                    }
+                } else {
+                    // Add user-entered tag
                     viewModel.sendAction(
                         action = CreateNotesState.AddTag(
-                            tag = "Personal", createNoteEntity = viewModel.noteState.value
+                            tag = enteredTag,
+                            createNoteEntity = currentNote
                         )
                     )
-                    findNavController().navigateUp()
-                    return@setOnClickListener
                 }
-                viewModel.sendAction(
-                    action = CreateNotesState.AddTag(
-                        tag = etTags.text.toString(), createNoteEntity = viewModel.noteState.value
-                    )
-                )
+
                 findNavController().navigateUp()
             }
+
             ivBack.setOnClickListener {
                 findNavController().navigateUp()
             }

@@ -110,13 +110,30 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 this@setupFlexBox as MutableList<CustomTagEntity>,
                 onTagClick = {},
                 onRemoveTagClick = { tag ->
-                    if (createNoteEntity?.noteId != 0L) {
-                        //remove from db also
+                    val remainingTags = viewModel.removeTag(tag = tag)
+                    if (remainingTags.isEmpty() && tag.tagName != "Personal") {
+                        val personalTag = CustomTagEntity(
+                            tagName = "Personal",
+                            noteId = 999
+                        )
+                        remainingTags.add(personalTag)
+                        viewModel.addTag(tag = personalTag.tagName, noteId = 999)
+                        remainingTags.setupFlexBox()
                     }
-                    viewModel.removeTag(tag = tag)
-                })
+                    if (createNoteEntity?.noteId != 0L) {
+                        val updatedTags = viewModel.allTags().filter { existingTag ->
+                            existingTag.tagName != tag.tagName
+                        }
+                        viewModel.updateTagsForNote(
+                            noteId = createNoteEntity?.noteId ?: return@addTags,
+                            newTags = updatedTags
+                        )
+                    }
+                }
+            )
         }
     }
+
 
     @SuppressLint("ClickableViewAccessibility")
     fun clickListeners() {

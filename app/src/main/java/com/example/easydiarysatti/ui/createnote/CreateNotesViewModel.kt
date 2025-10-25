@@ -89,8 +89,9 @@ class CreateNotesViewModel @Inject constructor(
     }
 
 
-    fun removeTag(tag: CustomTagEntity) {
+    fun removeTag(tag: CustomTagEntity): MutableList<CustomTagEntity> {
         tagList.remove(tag)
+        return tagList
     }
 
     fun removeImage(image: String): List<String>? {
@@ -98,6 +99,10 @@ class CreateNotesViewModel @Inject constructor(
             this?.remove(image)
         }
         return imagesList?.toList()
+    }
+
+    fun allTags(): MutableList<CustomTagEntity> {
+        return tagList
     }
 
     fun removeImageDb(noteId: Long, imagesList: List<String>) {

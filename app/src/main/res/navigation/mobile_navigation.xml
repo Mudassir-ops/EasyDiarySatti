@@ -24,15 +24,16 @@
             app:destination="@id/nameFragment" />
     </fragment>
 
-    <fragment
-        android:id="@+id/languageFragment"
-        android:name="com.example.easydiarysatti.ui.language.LanguageFragment"
-        android:label="LanguageFragment"
-        tools:layout="@layout/fragment_language">
-        <action
-            android:id="@+id/action_languageFragment_to_themesFragment"
-            app:destination="@id/themesFragment" />
-    </fragment>
+    <!--Coming Soon-->
+    <!--    <fragment-->
+    <!--        android:id="@+id/languageFragment"-->
+    <!--        android:name="com.example.easydiarysatti.ui.language.LanguageFragment"-->
+    <!--        android:label="LanguageFragment"-->
+    <!--        tools:layout="@layout/fragment_language">-->
+    <!--        <action-->
+    <!--            android:id="@+id/action_languageFragment_to_themesFragment"-->
+    <!--            app:destination="@id/themesFragment" />-->
+    <!--    </fragment>-->
 
     <fragment
         android:id="@+id/signUpFragment"
@@ -40,8 +41,11 @@
         android:label="fragment_sign_up"
         tools:layout="@layout/fragment_sign_up">
         <action
-            android:id="@+id/action_signUpFragment_to_languageFragment"
-            app:destination="@id/languageFragment" />
+            android:id="@+id/action_signUpFragment_to_themesFragment"
+            app:destination="@id/themesFragment" />
+        <!--        <action-->
+        <!--            android:id="@+id/action_signUpFragment_to_languageFragment"-->
+        <!--            app:destination="@id/languageFragment" />-->
     </fragment>
     <fragment
         android:id="@+id/nameFragment"
@@ -76,9 +80,10 @@
         <action
             android:id="@+id/action_mainFragment_to_themesFragment"
             app:destination="@id/themesFragment" />
-        <action
-            android:id="@+id/action_mainFragment_to_languageFragment"
-            app:destination="@id/languageFragment" />
+        <!--Coming Soon-->
+        <!--        <action-->
+        <!--            android:id="@+id/action_mainFragment_to_languageFragment"-->
+        <!--            app:destination="@id/languageFragment" />-->
         <action
             android:id="@+id/action_mainFragment_to_changePasswordFragment"
             app:destination="@id/changePasswordFragment" />
@@ -124,7 +129,7 @@
         android:id="@+id/addTagsFragment2"
         android:name="com.example.easydiarysatti.ui.edittags.AddTagsFragment"
         android:label="fragment_add_tags"
-        tools:layout="@layout/fragment_add_tags" >
+        tools:layout="@layout/fragment_add_tags">
         <action
             android:id="@+id/action_addTagsFragment2_to_createNotesFragment2"
             app:destination="@id/createNotesFragment2" />

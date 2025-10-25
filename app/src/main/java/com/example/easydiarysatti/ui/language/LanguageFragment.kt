@@ -49,13 +49,10 @@ class LanguageFragment : Fragment(R.layout.fragment_language) {
     }
 
     fun moveToNextScreen() {
-        val bundle = Bundle().apply {
-            putBoolean(FROM_ONBOARDING, true)
-        }
-        findNavController().safeNav(
-            currentDestId = R.id.languageFragment,
-            actionId = R.id.action_languageFragment_to_themesFragment,
-            bundle = bundle
-        )
+//        findNavController().safeNav(
+//            currentDestId = R.id.languageFragment,
+//            actionId = R.id.action_languageFragment_to_themesFragment,
+//            bundle = bundle
+//        )
     }
 }

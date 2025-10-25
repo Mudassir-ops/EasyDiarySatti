@@ -29,6 +29,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
@@ -190,6 +191,8 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
         val formatter = dateFormatter()
         val formattedDate = today.format(formatter)
         binding?.tvOnGoingItemLabel1?.text = formattedDate
+        val monthName = today.format(DateTimeFormatter.ofPattern("MMMM", Locale.getDefault()))
+        binding?.tvMonth?.text = monthName
     }
 
     private fun CalendarDay.onDayClick() {

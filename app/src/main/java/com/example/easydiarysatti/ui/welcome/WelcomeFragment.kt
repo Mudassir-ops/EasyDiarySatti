@@ -22,6 +22,7 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding?.apply {
+            txtWelcomeBack.text = getString(R.string.welcome_back, viewModel.getName())
             imgIntroOne.loadImage(resourceId = R.drawable.name_pic)
             clickListeners()
         }

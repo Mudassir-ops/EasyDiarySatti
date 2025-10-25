@@ -7,6 +7,7 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentSignUpBinding
 import com.example.easydiarysatti.hideKeyboard
@@ -46,10 +47,15 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
                     if (text?.length == 1 && index < editTexts.lastIndex) {
                         editTexts[index + 1].requestFocus()
                     }
+                    if (isPinConfirmed && editTexts.any { it.text?.isEmpty() == true }) {
+                        resetButtonState()
+                        isPinConfirmed = false
+                    }
                     if (editTexts.all { it.text?.length == 1 }) {
                         val enteredPin = editTexts.joinToString("") { it.text.toString() }
                         handlePinEntry(enteredPin)
                     }
+
                 }
 
                 editText.setOnKeyListener { _, keyCode, event ->
@@ -126,9 +132,13 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     }
 
     private fun moveToNextScreen() {
+        val bundle = Bundle().apply {
+            putBoolean(FROM_ONBOARDING, true)
+        }
         findNavController().safeNav(
             currentDestId = R.id.signUpFragment,
-            actionId = R.id.action_signUpFragment_to_languageFragment
+            actionId = R.id.action_signUpFragment_to_themesFragment,
+            bundle=bundle
         )
     }
 

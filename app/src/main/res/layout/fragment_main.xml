@@ -247,7 +247,7 @@
                     android:textColor="@color/selector_nav_text"
                     android:textSize="@dimen/_11ssp"
                     app:backgroundTint="@color/selector_nav_background"
-                    app:icon="@drawable/home_menu"
+                    app:icon="@drawable/date"
                     app:iconGravity="textStart"
                     app:iconPadding="8dp"
                     app:iconTint="@color/selector_nav_text"

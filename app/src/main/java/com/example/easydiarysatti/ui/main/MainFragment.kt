@@ -25,6 +25,7 @@ import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.loadImage
 import com.example.easydiarysatti.safeNav
+import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.name.NameViewModel
@@ -101,10 +102,15 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     actionId = R.id.action_mainFragment_to_changePasswordFragment
                 )
 
-                4 -> findNavController().safeNav(
-                    currentDestId = R.id.mainFragment,
-                    actionId = R.id.action_mainFragment_to_languageFragment
-                )
+                4 ->{
+                    binding?.parentLayout?.showSnackbar(message = getString(R.string.coming_soon))
+                    binding?.parentLayout?.closeDrawer(GravityCompat.START)
+                    return@DrawerItemAdapter
+                }
+//                4 -> findNavController().safeNav(
+//                    currentDestId = R.id.mainFragment,
+//                    actionId = R.id.action_mainFragment_to_languageFragment
+//                )
 
                 5 -> Unit
             }

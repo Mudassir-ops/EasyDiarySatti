@@ -14,7 +14,8 @@ object AppEventLogger {
     }
 
     fun CoroutineScope.logEventWithScope(
-        name: String, params: Map<String, Any> = emptyMap()
+        name: String,
+        params: Map<String, Any> = emptyMap()
     ) {
         loggerUseCase?.invoke(
             FirebaseEvent(name, params)

@@ -114,6 +114,7 @@ dependencies {
     implementation(libs.play.app.update)
     implementation(libs.app.update.ktx)
 
+    implementation(libs.play.services.ads)
 }
 
 kapt {

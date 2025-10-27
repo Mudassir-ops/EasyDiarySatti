@@ -50,6 +50,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.toColorInt
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
@@ -489,7 +490,7 @@ fun FlexboxLayout.addTags(
     onRemoveTagClick: ((CustomTagEntity) -> Unit)? = null,
 ) {
 
-    Log.e("RemaningTagsSatti-->", "setupFlexBoxInner: $tagList", )
+    Log.e("RemaningTagsSatti-->", "setupFlexBoxInner: $tagList")
     if (tagList.isEmpty()) {
         this.visibility = View.GONE
         return
@@ -946,3 +947,15 @@ fun Activity?.appName(): String {
         .toString()
 }
 
+fun Activity.privacyPolicyUrl() {
+    try {
+        this.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                this.getString(R.string.privacy_policy_link).toUri()
+            )
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}

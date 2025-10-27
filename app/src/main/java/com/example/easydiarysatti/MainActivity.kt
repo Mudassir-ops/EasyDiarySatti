@@ -144,8 +144,8 @@ class MainActivity : AppCompatActivity() {
                 title = getString(R.string.langauge)
             ), DrawerItem(
                 bgTint = "#FFAC81",
-                imgRes = R.drawable.share_icon,
-                title = getString(R.string.share_app)
+                imgRes = R.drawable.ic_privacy_policy,
+                title = getString(R.string.privacy_policy)
             )
         )
     }

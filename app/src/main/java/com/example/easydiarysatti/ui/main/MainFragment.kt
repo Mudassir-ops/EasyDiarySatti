@@ -24,6 +24,7 @@ import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.loadImage
+import com.example.easydiarysatti.privacyPolicyUrl
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.ui.createnote.CreateNotesState
@@ -102,7 +103,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     actionId = R.id.action_mainFragment_to_changePasswordFragment
                 )
 
-                4 ->{
+                4 -> {
                     binding?.parentLayout?.showSnackbar(message = getString(R.string.coming_soon))
                     binding?.parentLayout?.closeDrawer(GravityCompat.START)
                     return@DrawerItemAdapter
@@ -112,7 +113,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 //                    actionId = R.id.action_mainFragment_to_languageFragment
 //                )
 
-                5 -> Unit
+                5 -> {
+                    activity?.privacyPolicyUrl()
+                    // binding?.parentLayout?.showSnackbar(message = getString(R.string.coming_soon))
+                    binding?.parentLayout?.closeDrawer(GravityCompat.START)
+                    return@DrawerItemAdapter
+                }
             }
         })
     }

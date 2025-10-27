@@ -72,6 +72,7 @@
     <string name="dairy_lock">Dairy Lock</string>
     <string name="langauge">Language</string>
     <string name="share_app">Share App</string>
+    <string name="privacy_policy">Privacy Policy</string>
     <string name="enter_name">Enter Name</string>
     <string name="enter_email">Enter Email</string>
     <string name="dreame488_yahoo_com">dreame488@yahoo.com</string>
@@ -120,5 +121,5 @@
     <string name="daily_reminder">Daily Reminder</string>
     <string name="welcome_back">Welcome Back,%1$s</string>
     <string name="coming_soon">Coming Soon</string>
-
+    <string name="privacy_policy_link">https://sites.google.com/view/easy-diary-journal-with-lock/home</string>
 </resources>

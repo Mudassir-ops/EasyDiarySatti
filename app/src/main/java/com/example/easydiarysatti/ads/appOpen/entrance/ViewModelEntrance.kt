@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
 @HiltViewModel
-class ViewModelEntrance @Inject constructor(): ViewModel() {
+class ViewModelEntrance @Inject constructor() : ViewModel() {
 
     /* ----------------------------------- Remote Config ----------------------------------- */
 

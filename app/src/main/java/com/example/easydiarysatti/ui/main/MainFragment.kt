@@ -191,7 +191,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
                         R.id.btn_media -> {
                             val noteImageSize = createNotesViewModel.imagesCount
-                            if (noteImageSize <= 2) {
+                            if (noteImageSize <= 1) {
                                 pickImage()
                             } else {
                                 showReward()
@@ -201,8 +201,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         R.id.btn_text -> {
                             showEditTexDialog(
                                 closeDialog = {
-                                binding?.bottomNavCreateNote?.clearChecked()
-                            },
+                                    binding?.bottomNavCreateNote?.clearChecked()
+                                },
                                 fontSelectionListener = {
                                     createNotesViewModel.sendAction(CreateNotesState.FontAction(it))
                                 },

@@ -22,4 +22,7 @@
     <color name="drawer_color">#323C4B</color>
     <color name="opacity_color">#1D2939</color>
 
+    <color name="adsColor">#F1F0FF</color>
+    <color name="adsTextColor">#475569</color>
+
 </resources>

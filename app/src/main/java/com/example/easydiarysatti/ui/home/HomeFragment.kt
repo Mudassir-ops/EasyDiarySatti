@@ -62,6 +62,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupTodayDate()
         observeSortOrder()
         setStyledDateTime(binding?.tvDate ?: return, R.color.track_color)
+
     }
 
     private fun clickListener() {

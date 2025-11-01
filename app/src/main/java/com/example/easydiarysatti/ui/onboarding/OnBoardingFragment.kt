@@ -8,18 +8,23 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.databinding.FragmentOnBoardingBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.uimodels.OnGoingScreenUiModel
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import java.lang.ref.WeakReference
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
     private var pagerAdapterRef: WeakReference<OnGoingPagerAdapter>? = null
     private val viewModel by viewModels<OnBoardingViewModel>()
+
+    @Inject
+    lateinit var sharedPreferenceUtils: SharedPreferenceUtils
     private val binding by viewBinding(FragmentOnBoardingBinding::bind)
     private val onGoingPagesList: Array<OnGoingScreenUiModel> by lazy {
         arrayOf(
@@ -45,6 +50,7 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
         binding?.viewModel = viewModel
         setupOnGoingPagerAdapter()
         clickListeners()
+        sharedPreferenceUtils.rcAppOpen = 1
     }
 
     private fun setupOnGoingPagerAdapter() {

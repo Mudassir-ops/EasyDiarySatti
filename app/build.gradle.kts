@@ -27,14 +27,99 @@ android {
     }
 
     buildTypes {
-        release {
+        debug {
+            // App Ad Id - Satti
+            resValue(
+                type = "string",
+                name = "admob_app_id",
+                value = "ca-app-pub-6929888913467755~1203974256"
+            )
+
+// App Open Ad - Satti
+            resValue(
+                type = "string",
+                name = "admob_app_open_id",
+                value = "ca-app-pub-3940256099942544/9257395921"
+            )
+
+// Banner Ad - Satti
+            resValue(
+                type = "string",
+                name = "admob_banner_home_id",
+                value = "ca-app-pub-3940256099942544/2014213617"
+            )
+
+// Rewarded Ads - Satti
+            resValue(
+                type = "string",
+                name = "admob_rewarded_ai_feature_id",
+                value = "ca-app-pub-3940256099942544/5224354917"
+            )
+            resValue(
+                type = "string",
+                name = "admob_rewarded_inter_ai_feature_id",
+                value = "ca-app-pub-3940256099942544/5354046379"
+            )
+
+// Interstitial Ads - Satti
+            resValue(
+                type = "string",
+                name = "admob_inter_splash_id",
+                value = "ca-app-pub-3940256099942544/1033173712"
+            )
+            resValue(
+                type = "string",
+                name = "admob_inter_on_boarding_id",
+                value = "ca-app-pub-3940256099942544/1033173712"
+            )
+
+// Native Ads - Satti
+            resValue(
+                type = "string",
+                name = "admob_native_language_id",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_on_boarding_id",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_home_id",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_full_screen_id",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_settings_id",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+
             isMinifyEnabled = false
+            isShrinkResources = false
+            isDebuggable=true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+        release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable=false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
         }
     }
+
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
@@ -108,8 +193,11 @@ dependencies {
     implementation(libs.colorpickerview)
 
     //-Firebase
-    implementation(libs.firebase.crashlytics)
-    implementation(libs.firebase.analytics)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.config)
+    implementation(libs.google.firebase.analytics)
+    implementation(libs.google.firebase.crashlytics)
+
     //in app update
     implementation(libs.play.app.update)
     implementation(libs.app.update.ktx)

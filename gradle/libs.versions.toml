@@ -1,8 +1,8 @@
 [versions]
 agp = "8.12.3"
-ambilwarna = "2.0.1"
 colorpickerview = "2.3.0"
 desugar_jdk_libs = "2.1.5"
+firebaseBom = "34.5.0"
 gsonVersion = "2.11.0"
 kotlin = "2.2.20"
 coreKtx = "1.17.0"
@@ -41,6 +41,10 @@ androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = 
 
 colorpickerview = { module = "com.github.skydoves:colorpickerview", version.ref = "colorpickerview" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
+firebase-config = { module = "com.google.firebase:firebase-config" }
+google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 gson-v2110 = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

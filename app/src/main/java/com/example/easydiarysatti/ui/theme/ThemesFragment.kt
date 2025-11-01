@@ -38,7 +38,6 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
-
     @Inject
     lateinit var appOpenAdsConfig: AppOpenAdsConfig
 

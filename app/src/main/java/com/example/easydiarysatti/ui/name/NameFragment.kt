@@ -44,7 +44,9 @@ class NameFragment : Fragment(R.layout.fragment_name) {
                 edTextName.setText(savedName)
             }
         }
+
         loadAppOpen()
+        observeAdd()
     }
 
     private fun adjustScreenKeyboard() {
@@ -80,7 +82,6 @@ class NameFragment : Fragment(R.layout.fragment_name) {
                     moveToNextScreen()
                 }
             }
-
             edTextName.doOnTextChanged { text, _, _, _ ->
                 val isValid = !text.isNullOrEmpty()
                 binding.apply {
@@ -88,7 +89,12 @@ class NameFragment : Fragment(R.layout.fragment_name) {
                     btnNext.alpha = if (isValid) 1f else 0.6f
                 }
             }
+        }
+    }
 
+    private fun observeAdd() {
+        viewModelEntrance.navigateLiveData.observe(viewLifecycleOwner) {
+            true.enableButton()
         }
     }
 

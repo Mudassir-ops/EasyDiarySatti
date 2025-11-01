@@ -60,7 +60,7 @@ android {
             resValue(
                 type = "string",
                 name = "admob_rewarded_ai_feature_id",
-                value = "ca-app-pub-3940256099942544/5224354917"
+                value = "ca-app-pub-3940256099942544/1712485313"
             )
 
             isMinifyEnabled = false

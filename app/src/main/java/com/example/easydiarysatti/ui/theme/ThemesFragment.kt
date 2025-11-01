@@ -14,6 +14,7 @@ import com.example.easydiarysatti.ads.appOpen.screen.AppOpenAdsConfig
 import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnLoadCallBack
 import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnShowCallBack
 import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.databinding.FragmentThemesBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.safeNav
@@ -43,6 +44,7 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
 
     @Inject
     lateinit var appOpenAdsConfig: AppOpenAdsConfig
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

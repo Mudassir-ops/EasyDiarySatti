@@ -20,6 +20,7 @@ import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
 import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowCallBack
 import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.local.ReminderEntity
@@ -74,12 +75,15 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     noteId = noteId,
                     imagesList = currentImages
                 )
+            }, imagesCount = {
+                viewModel.imagesCount = it
             }
         )
     }
 
     @Inject
     lateinit var interstitialAdsConfig: InterstitialAdsConfig
+
 
     private var isNoteInitialized = false
 

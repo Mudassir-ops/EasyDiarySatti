@@ -30,6 +30,7 @@ class CreateNotesViewModel @Inject constructor(
     private var imagesList: MutableList<String>? = mutableListOf()
     private var tagList = mutableListOf<CustomTagEntity>()
 
+    var imagesCount = 0
     fun sendAction(action: CreateNotesState) {
         viewModelScope.launch {
             Log.e("headerSave", "setClickListeners:$action ")

@@ -35,6 +35,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val mainViewModel by activityViewModels<MainViewModel>()
     private val viewModelBanner by viewModels<ViewModelBanner>()
+
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(onNoteItemClick = { note ->
             createNotesViewModel.clearTags()
@@ -67,8 +68,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupTodayDate()
         observeSortOrder()
         setStyledDateTime(binding?.tvDate ?: return, R.color.track_color)
+
         loadBanner()
         initObservers()
+
     }
 
     private fun clickListener() {

@@ -11,7 +11,8 @@ import com.example.easydiarysatti.loadAdaptiveImage
 
 class ImagesItemAdapter(
     private val onDeleteItemClick: (String) -> Unit,
-    private val fromPreview: Boolean
+    private val fromPreview: Boolean,
+    private val imagesCount: (Int) -> Unit,
 ) : ListAdapter<String, ImagesItemAdapter.ImagesItemViewHolder>(DiffCallback) {
 
     inner class ImagesItemViewHolder(private val binding: ImageItemLayoutBinding) :
@@ -57,6 +58,11 @@ class ImagesItemAdapter(
             ): Boolean = oldItem == newItem
 
         }
+    }
+
+    override fun submitList(list: List<String>?) {
+        super.submitList(list)
+        imagesCount.invoke(list?.size ?: 0)
     }
 }
 

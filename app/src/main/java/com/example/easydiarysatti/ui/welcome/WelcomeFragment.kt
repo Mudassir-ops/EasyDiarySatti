@@ -15,6 +15,7 @@ import com.example.easydiarysatti.ads.appOpen.screen.AppOpenAdsConfig
 import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnLoadCallBack
 import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnShowCallBack
 import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.databinding.FragmentWelcomeBinding
 import com.example.easydiarysatti.loadImage
 import com.example.easydiarysatti.safeNav
@@ -31,6 +32,9 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
 
     @Inject
     lateinit var appOpenAdsConfig: AppOpenAdsConfig
+
+    @Inject
+    lateinit var internetManager: InternetManager
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding?.apply {
@@ -38,8 +42,10 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
             imgIntroOne.loadImage(resourceId = R.drawable.name_pic)
             clickListeners()
         }
-        loadAppOpen()
-        observeAdd()
+        if (internetManager.isInternetConnected) {
+            loadAppOpen()
+            observeAdd()
+        }
     }
 
     private fun clickListeners() {

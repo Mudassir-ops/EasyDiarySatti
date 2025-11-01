@@ -201,7 +201,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
                         R.id.btn_media -> {
                             val noteImageSize =
-                                createNotesViewModel.getImageSize() ?: 0
+                                createNotesViewModel.imagesCount
                             if (noteImageSize <= 2) {
                                 pickImage()
                             } else {

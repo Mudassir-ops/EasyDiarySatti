@@ -3,8 +3,11 @@ package com.example.easydiarysatti.ads.manager
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import com.example.easydiarysatti.ads.firebase.FirebaseUtils.recordException
+import javax.inject.Inject
 
-class InternetManager(private val connectivityManager: ConnectivityManager) {
+class InternetManager(
+    private val connectivityManager: ConnectivityManager
+) {
 
     val isInternetConnected: Boolean
         get() {

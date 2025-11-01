@@ -14,8 +14,9 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigException
 import com.google.firebase.remoteconfig.get
 import com.google.firebase.remoteconfig.remoteConfig
 import com.google.firebase.remoteconfig.remoteConfigSettings
+import javax.inject.Inject
 
-class RemoteConfiguration(
+class RemoteConfiguration @Inject constructor(
     private val internetManager: InternetManager,
     private val sharedPreferenceUtils: SharedPreferenceUtils
 ) {

@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.appOpen.entrance.ViewModelEntrance
+import com.example.easydiarysatti.ads.firebase.RemoteConfiguration
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.databinding.FragmentOnBoardingBinding
 import com.example.easydiarysatti.safeNav
@@ -23,8 +25,14 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
     private var pagerAdapterRef: WeakReference<OnGoingPagerAdapter>? = null
     private val viewModel by viewModels<OnBoardingViewModel>()
 
+    private val viewModelEntrance by viewModels<ViewModelEntrance>()
+
     @Inject
     lateinit var sharedPreferenceUtils: SharedPreferenceUtils
+
+    @Inject
+    lateinit var remoteConfiguration: RemoteConfiguration
+
     private val binding by viewBinding(FragmentOnBoardingBinding::bind)
     private val onGoingPagesList: Array<OnGoingScreenUiModel> by lazy {
         arrayOf(
@@ -50,14 +58,8 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
         binding?.viewModel = viewModel
         setupOnGoingPagerAdapter()
         clickListeners()
-        // val appOpen = "appOpen"
-        //val bannerHome = "bannerHome"
-        //val interFeature = "interFeature"
-        //val rewardedInterAiFeature = "rewardedInterAiFeature"
-        sharedPreferenceUtils.rcAppOpen = 1
-        sharedPreferenceUtils.rcBannerHome = 1
-        sharedPreferenceUtils.rcInterFeature = 1
-        sharedPreferenceUtils.rcRewardedInterAiFeature = 1
+        initRemoteConfigs()
+        initObservers()
     }
 
     private fun setupOnGoingPagerAdapter() {
@@ -101,6 +103,23 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
             }
         }
         activity?.onBackPressedDispatcher?.addCallback(this, callback)
+    }
+
+    private fun initRemoteConfigs() {
+        remoteConfiguration.checkRemoteConfig { viewModelEntrance.onRemoteConfigResponse() }
+    }
+
+    private fun initObservers() {
+        viewModelEntrance.remoteConfigResponseLiveData.observe(viewLifecycleOwner) {
+            // val appOpen = "appOpen"
+            //val bannerHome = "bannerHome"
+            //val interFeature = "interFeature"
+            //val rewardedInterAiFeature = "rewardedInterAiFeature"
+            sharedPreferenceUtils.rcAppOpen = 1
+            sharedPreferenceUtils.rcBannerHome = 1
+            sharedPreferenceUtils.rcInterFeature = 1
+            sharedPreferenceUtils.rcRewardedInterAiFeature = 1
+        }
     }
 
 }

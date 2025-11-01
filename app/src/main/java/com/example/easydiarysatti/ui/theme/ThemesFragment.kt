@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
@@ -17,6 +19,7 @@ import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -50,7 +53,9 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         super.onViewCreated(view, savedInstanceState)
         clickListener()
         observeAdd()
-        loadAppOpen()
+        if (arguments?.getBoolean(FROM_ONBOARDING) == true) {
+            loadAppOpen()
+        }
         binding?.apply {
             themeViewPager.adapter = themeAdapter
             themeViewPager.offscreenPageLimit = 4
@@ -62,8 +67,12 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
     }
 
     private fun observeAdd() {
-        viewModelEntrance.navigateLiveData.observe(viewLifecycleOwner) {
-            true.enableButton()
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModelEntrance.openAddState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
+                if (it) {
+                    true.enableButton()
+                }
+            }
         }
     }
 

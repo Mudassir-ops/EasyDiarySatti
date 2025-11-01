@@ -8,6 +8,8 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -31,8 +33,12 @@ class ViewModelEntrance : ViewModel() {
     private val _loadAdsLiveData = MutableLiveData<Unit>()
     val loadAdsLiveData: LiveData<Unit> get() = _loadAdsLiveData
 
-    private val _navigateLiveData = MutableLiveData<Unit>()
-    val navigateLiveData: LiveData<Unit> get() = _navigateLiveData
+    private val _navigateLiveData = MutableLiveData<Boolean>()
+    val navigateLiveData: LiveData<Boolean> get() = _navigateLiveData
+
+
+    private val _openAddState = MutableStateFlow(false)
+    val openAddState: StateFlow<Boolean> = _openAddState
 
     private var jobCMP = Job()
     private var jobAds = Job()
@@ -59,7 +65,7 @@ class ViewModelEntrance : ViewModel() {
         _loadAdsLiveData.postValue(Unit)
 
         delay(adsTimeout)
-        _navigateLiveData.postValue(Unit)
+        // _navigateLiveData.postValue(Unit)
     }
 
 
@@ -79,13 +85,14 @@ class ViewModelEntrance : ViewModel() {
 
     /* ----------------------------------- Ads Responses ----------------------------------- */
 
-    private val totalAds = 2
+    private val totalAds = 1
     private val loadedAdsCounter = AtomicInteger(0)
-
     fun onAdResponse() {
         if (loadedAdsCounter.incrementAndGet() >= totalAds) {
             cancelAdsJob()
-            _navigateLiveData.postValue(Unit)
+            viewModelScope.launch {
+                _openAddState.emit(true)
+            }
         }
     }
 }

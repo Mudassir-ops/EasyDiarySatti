@@ -32,11 +32,11 @@ class SharedPreferenceUtils(private val sharedPreferences: SharedPreferences) {
     /* ---------------------------------------- Ads ---------------------------------------- */
 
     val appOpen = "appOpen"
-    val appOpenSplash = "appOpenSplash"
     val bannerHome = "bannerHome"
-    val interOnBoarding = "interOnBoarding"
-    val interFeature = "interFeature"
-    val rewardedAiFeature = "rewardedAiFeature"
+    val interSaveNoteFeature = "interSaveNoteFeature"
+    val rewardedImagesOnNoteFeature = "rewardedImagesOnNoteFeature"
+
+
     val rewardedInterAiFeature = "rewardedInterAiFeature"
     val nativeLanguage = "nativeLanguage"
     val nativeOnBoarding = "nativeOnBoarding"
@@ -55,14 +55,6 @@ class SharedPreferenceUtils(private val sharedPreferences: SharedPreferences) {
             }
         }
 
-    var rcAppOpenSplash: Int
-        get() = sharedPreferences.getInt(appOpenSplash, 1)
-        set(value) {
-            sharedPreferences.edit().apply {
-                putInt(appOpenSplash, value)
-                apply()
-            }
-        }
 
     /* ----- Banner Ads ----- */
 
@@ -77,31 +69,22 @@ class SharedPreferenceUtils(private val sharedPreferences: SharedPreferences) {
 
     /* ----- Interstitial Ads ----- */
 
-    var rcInterFeature: Int
-        get() = sharedPreferences.getInt(interFeature, 1)
+    var rcInterFeatureSaveNote: Int
+        get() = sharedPreferences.getInt(interSaveNoteFeature, 1)
         set(value) {
             sharedPreferences.edit().apply {
-                putInt(interFeature, value)
-                apply()
-            }
-        }
-
-    var rcInterOnBoarding: Int
-        get() = sharedPreferences.getInt(interOnBoarding, 0)
-        set(value) {
-            sharedPreferences.edit().apply {
-                putInt(interOnBoarding, value)
+                putInt(interSaveNoteFeature, value)
                 apply()
             }
         }
 
     /* ----- Rewarded Ads ----- */
 
-    var rcRewardedAiFeature: Int
-        get() = sharedPreferences.getInt(rewardedAiFeature, 1)
+    var rcRewardedImageAddFeature: Int
+        get() = sharedPreferences.getInt(rewardedImagesOnNoteFeature, 1)
         set(value) {
             sharedPreferences.edit().apply {
-                putInt(rewardedAiFeature, value)
+                putInt(rewardedImagesOnNoteFeature, value)
                 apply()
             }
         }

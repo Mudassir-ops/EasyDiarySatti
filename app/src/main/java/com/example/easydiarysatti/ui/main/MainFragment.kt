@@ -20,9 +20,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.R
-import com.example.easydiarysatti.ads.rewarded.RewardedInterAdsConfig
+import com.example.easydiarysatti.ads.rewarded.RewardedAdsConfig
 import com.example.easydiarysatti.ads.rewarded.callbacks.RewardedOnShowCallBack
-import com.example.easydiarysatti.ads.rewarded.enums.RewardedInterAdKey
+import com.example.easydiarysatti.ads.rewarded.enums.RewardedAdKey
 import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
@@ -66,21 +66,22 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     lateinit var sessionManagerRepo: SessionManagerRepo
 
     @Inject
-    lateinit var rewardedInterAdsConfig: RewardedInterAdsConfig
+    lateinit var rewardedAdsConfig: RewardedAdsConfig
 
     private val multiImageAdapter: MultiImageAdapter by lazy {
-        MultiImageAdapter(items = (activity as MainActivity).getBgThemes(), onUploadClick = {
-        }, onImageClick = {
-            binding?.ivCreateNote?.loadImage(
-                resourceId = it,
-                placeholder = 0
-            )
-            createNotesViewModel.sendAction(
-                CreateNotesState.ChangeBg(
-                    bgImageRes = it ?: return@MultiImageAdapter
+        MultiImageAdapter(
+            items = (activity as MainActivity).getBgThemes(),
+            onUploadClick = {},
+            onImageClick = {
+                binding?.ivCreateNote?.loadImage(
+                    resourceId = it, placeholder = 0
                 )
-            )
-        })
+                createNotesViewModel.sendAction(
+                    CreateNotesState.ChangeBg(
+                        bgImageRes = it ?: return@MultiImageAdapter
+                    )
+                )
+            })
     }
 
     private val drawerItemAdapter: DrawerItemAdapter by lazy {
@@ -91,8 +92,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     actionId = R.id.action_mainFragment_to_addTagsFragment2,
                     bundle = Bundle().apply {
                         putBoolean(FROM_SCREEN, true)
-                    }
-                )
+                    })
 
                 1 -> findNavController().safeNav(
                     currentDestId = R.id.mainFragment,
@@ -131,27 +131,21 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        imagePicker = ImagePickerDelegate(
-            this,
-            onPickerClosed = {
-                sessionManagerRepo.bypassSecurityLogin(false)
+        imagePicker = ImagePickerDelegate(this, onPickerClosed = {
+            sessionManagerRepo.bypassSecurityLogin(false)
+            binding?.bottomNavCreateNote?.clearChecked()
+        }, onImagePicked = { uri: Uri?, file: File? ->
+            sessionManagerRepo.bypassSecurityLogin(false)
+            showImageCropDialog(imagePath = file?.path ?: return@ImagePickerDelegate, btnDone = {
+                createNotesViewModel.sendAction(
+                    action = CreateNotesState.ImagePicked(
+                        imageUri = it
+                    )
+                )
+            }, closeDialog = {
                 binding?.bottomNavCreateNote?.clearChecked()
-            },
-            onImagePicked = { uri: Uri?, file: File? ->
-                sessionManagerRepo.bypassSecurityLogin(false)
-                showImageCropDialog(
-                    imagePath = file?.path ?: return@ImagePickerDelegate,
-                    btnDone = {
-                        createNotesViewModel.sendAction(
-                            action = CreateNotesState.ImagePicked(
-                                imageUri = it
-                            )
-                        )
-                    },
-                    closeDialog = {
-                        binding?.bottomNavCreateNote?.clearChecked()
-                    })
             })
+        })
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -161,10 +155,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             childFragmentManager.findFragmentById(R.id.nav_host_library) as NavHostFragment
         calendarHost =
             childFragmentManager.findFragmentById(R.id.nav_host_calendar) as NavHostFragment
-        childFragmentManager.beginTransaction()
-            .hide(libraryHost)
-            .hide(calendarHost)
-            .show(homeHost)
+        childFragmentManager.beginTransaction().hide(libraryHost).hide(calendarHost).show(homeHost)
             .commitNow()
         activeNavHost = homeHost
         binding?.bottomNav?.clearChecked()
@@ -185,8 +176,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     when (checkedId) {
                         R.id.btnBackground -> {
                             showBackgroundDialog(
-                                adapterMultiImageAdapter = multiImageAdapter,
-                                closeDialog = {
+                                adapterMultiImageAdapter = multiImageAdapter, closeDialog = {
                                     binding?.bottomNavCreateNote?.clearChecked()
                                 })
                         }
@@ -200,20 +190,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
 
                         R.id.btn_media -> {
-                            val noteImageSize =
-                                createNotesViewModel.imagesCount
+                            val noteImageSize = createNotesViewModel.imagesCount
                             if (noteImageSize <= 2) {
                                 pickImage()
                             } else {
-                                checkReward()
+                                showReward()
                             }
                         }
 
                         R.id.btn_text -> {
                             showEditTexDialog(
                                 closeDialog = {
-                                    binding?.bottomNavCreateNote?.clearChecked()
-                                },
+                                binding?.bottomNavCreateNote?.clearChecked()
+                            },
                                 fontSelectionListener = {
                                     createNotesViewModel.sendAction(CreateNotesState.FontAction(it))
                                 },
@@ -280,8 +269,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 return@addOnButtonCheckedListener
             }
             childFragmentManager.beginTransaction()
-                .hide(activeNavHost ?: return@addOnButtonCheckedListener)
-                .show(targetHost)
+                .hide(activeNavHost ?: return@addOnButtonCheckedListener).show(targetHost)
                 .commitNowAllowingStateLoss()
             activeNavHost = targetHost
             setupNavControllerListener()
@@ -446,9 +434,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             return@setOnClickListener
                         }
                         val homeNavController = homeHost.navController
-                        if (homeNavController.currentDestination?.id != R.id.homeFragment &&
-                            homeNavController.popBackStack()
-                        ) {
+                        if (homeNavController.currentDestination?.id != R.id.homeFragment && homeNavController.popBackStack()) {
                             return@setOnClickListener
                         }
                     }
@@ -470,16 +456,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     actionId = R.id.action_homeFragment_to_createNotesFragment2,
                     Bundle().apply {
                         putBoolean(FROM_SCREEN, true)
-                    }
-                )
+                    })
             }
         }
     }
 
     private fun setupBgTheme() {
         binding?.parentLayout?.loadBackground(
-            resourceId = sessionManagerRepo.getBgTheme(),
-            placeholder = R.drawable.theme_1
+            resourceId = sessionManagerRepo.getBgTheme(), placeholder = R.drawable.theme_1
         )
     }
 
@@ -512,8 +496,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         viewLifecycleOwner.lifecycleScope.launch {
             createNotesViewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
                 binding?.ivCreateNote?.loadImage(
-                    resourceId = it?.backgroundRes,
-                    placeholder = 0
+                    resourceId = it?.backgroundRes, placeholder = 0
                 )
             }
         }
@@ -529,9 +512,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     return
                 }
                 val homeNavController = homeHost.navController
-                if (homeNavController.currentDestination?.id != R.id.homeFragment &&
-                    homeNavController.popBackStack()
-                ) {
+                if (homeNavController.currentDestination?.id != R.id.homeFragment && homeNavController.popBackStack()) {
                     return
                 }
                 if (binding?.parentLayout?.isDrawerOpen(GravityCompat.START) == true) {
@@ -566,20 +547,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
 
     private fun loadRewardedAdd() {
-        rewardedInterAdsConfig.loadRewardedInterAd(adType = RewardedInterAdKey.IMAGE_MORE_THAN_ONE)
+        rewardedAdsConfig.loadRewardedAd(adType = RewardedAdKey.IMAGE_MORE_THAN_ONE)
     }
 
-    private fun checkReward() {
-        when (rewardedInterAdsConfig.isRewardedInterLoaded()) {
-            true -> showReward()
-            false -> pickImage()
-        }
-    }
 
     private fun showReward() {
-        rewardedInterAdsConfig.showRewardedInterAd(
+        rewardedAdsConfig.showRewardedAd(
             activity,
-            adType = RewardedInterAdKey.IMAGE_MORE_THAN_ONE,
+            adType = RewardedAdKey.IMAGE_MORE_THAN_ONE,
             listener = object : RewardedOnShowCallBack {
                 override fun onAdFailedToShow() = pickImage()
                 override fun onUserEarnedReward() {

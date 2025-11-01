@@ -52,14 +52,14 @@ android {
             // Interstitial Ads - Satti
             resValue(
                 type = "string",
-                name = "admob_inter_splash_id",
+                name = "admob_inter_before_main_id",
                 value = "ca-app-pub-3940256099942544/1033173712"
             )
 
             // Rewarded Ads Image Adding - Satti
             resValue(
                 type = "string",
-                name = "admob_rewarded_ai_feature_id",
+                name = "admob_rewarded_images_more_than_two",
                 value = "ca-app-pub-3940256099942544/1712485313"
             )
 
@@ -87,34 +87,33 @@ android {
                 value = "ca-app-pub-6929888913467755~1203974256"
             )
 
-            // App Open Ad - Satti
-            resValue(
-                type = "string",
-                name = "admob_app_open_id",
-                value = "ca-app-pub-6929888913467755/8279156051"
-            )
+            //-->Real ads Ids Uncomment When Needed
+            /*   // App Open Ad - Satti
+               resValue(
+                   type = "string",
+                   name = "admob_app_open_id",
+                   value = "ca-app-pub-6929888913467755/8279156051"
+               )
 
-            // Banner Ad - Satti
-            resValue(
-                type = "string",
-                name = "admob_banner_home_id",
-                value = "ca-app-pub-6929888913467755/3876876618"
-            )
+               // Banner Ad - Satti
+               resValue(
+                   type = "string",
+                   name = "admob_banner_home_id",
+                   value = "ca-app-pub-6929888913467755/3876876618"
+               )
 
-
-            // Interstitial Ads - Satti
-            resValue(
-                type = "string",
-                name = "admob_inter_splash_id",
-                value = "ca-app-pub-6929888913467755/1142851070"
-            )
-            // Rewarded Ads Image Adding - Satti
-            resValue(
-                type = "string",
-                name = "admob_rewarded_ai_feature_id",
-                value = "ca-app-pub-6929888913467755/2643619090"
-            )
-
+               // Interstitial Ads - Satti
+               resValue(
+                   type = "string",
+                   name = "admob_inter_before_main_id",
+                   value = "ca-app-pub-6929888913467755/1142851070"
+               )
+               // Rewarded Ads Image Adding - Satti
+               resValue(
+                   type = "string",
+                   name = "admob_rewarded_images_more_than_two",
+                   value = "ca-app-pub-6929888913467755/2643619090"
+               )*/
         }
     }
 

@@ -31,8 +31,8 @@ class InterstitialAdsConfig @Inject constructor(
 
         when (adType) {
             InterAdKey.FEATURE_SAVE_NOTE -> {
-                interAdId = getResString(R.string.admob_inter_splash_id)
-                isRemoteEnable = sharedPreferenceUtils.rcInterFeature != 0
+                interAdId = getResString(R.string.admob_inter_before_main_id)
+                isRemoteEnable = sharedPreferenceUtils.rcInterFeatureSaveNote != 0
             }
         }
 

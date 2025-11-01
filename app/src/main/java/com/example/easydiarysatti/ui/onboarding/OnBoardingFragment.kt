@@ -115,10 +115,6 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
             //val bannerHome = "bannerHome"
             //val interFeature = "interFeature"
             //val rewardedInterAiFeature = "rewardedInterAiFeature"
-            sharedPreferenceUtils.rcAppOpen = 1
-            sharedPreferenceUtils.rcBannerHome = 1
-            sharedPreferenceUtils.rcInterFeature = 1
-            sharedPreferenceUtils.rcRewardedInterAiFeature = 1
         }
     }
 

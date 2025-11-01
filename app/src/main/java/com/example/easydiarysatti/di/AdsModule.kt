@@ -13,8 +13,7 @@ import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.natives.data.dataSources.local.DataSourceLocalNative
 import com.example.easydiarysatti.ads.natives.data.dataSources.remote.DataSourceRemoteNative
 import com.example.easydiarysatti.ads.natives.data.repositories.RepositoryNativeImpl
-import com.example.easydiarysatti.ads.rewarded.RewardedInterAdsConfig
-
+import com.example.easydiarysatti.ads.rewarded.RewardedAdsConfig
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -135,12 +134,11 @@ object AdsModule {
         @ApplicationContext context: Context,
         internetManager: InternetManager,
         sharedPreferenceUtils: SharedPreferenceUtils
-    ): RewardedInterAdsConfig {
-        return RewardedInterAdsConfig(
+    ): RewardedAdsConfig {
+        return RewardedAdsConfig(
             context,
             sharedPreferenceUtils = sharedPreferenceUtils,
             internetManager = internetManager
         )
     }
-
 }

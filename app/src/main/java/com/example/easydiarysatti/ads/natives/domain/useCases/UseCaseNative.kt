@@ -2,16 +2,16 @@ package com.example.easydiarysatti.ads.natives.domain.useCases
 
 import android.content.Context
 import android.util.Log
-import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.natives.data.entities.ItemNativeAd
-import com.example.easydiarysatti.ads.utils.Constants.TAG_ADS
 import com.example.easydiarysatti.ads.natives.data.repositories.RepositoryNativeImpl
 import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.utils.Constants.TAG_ADS
+import javax.inject.Inject
 
 
-class UseCaseNative(
+class UseCaseNative @Inject constructor(
     private val repositoryNativeImpl: RepositoryNativeImpl,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
     private val internetManager: InternetManager,
@@ -32,15 +32,16 @@ class UseCaseNative(
     }
 
     private fun getAdId(nativeAdKey: NativeAdKey): String {
-        return when (nativeAdKey) {
-            NativeAdKey.LANGUAGE -> context.getString(R.string.admob_native_language_id).trim()
-            NativeAdKey.ON_BOARDING -> context.getString(R.string.admob_native_on_boarding_id)
-                .trim()
-
-            NativeAdKey.HOME -> context.getString(R.string.admob_native_home_id).trim()
-            NativeAdKey.FEATURE -> context.getString(R.string.admob_native_full_screen_id).trim()
-            NativeAdKey.Settings -> context.getString(R.string.admob_native_settings_id).trim()
-        }
+//        return when (nativeAdKey) {
+//            NativeAdKey.LANGUAGE -> context.getString(R.string.admob_native_language_id).trim()
+//            NativeAdKey.ON_BOARDING -> context.getString(R.string.admob_native_on_boarding_id)
+//                .trim()
+//
+//            NativeAdKey.HOME -> context.getString(R.string.admob_native_home_id).trim()
+//            NativeAdKey.FEATURE -> context.getString(R.string.admob_native_full_screen_id).trim()
+//            NativeAdKey.Settings -> context.getString(R.string.admob_native_settings_id).trim()
+//        }
+        return ""
     }
 
     fun loadNativeAd(nativeAdKey: NativeAdKey, callback: (ItemNativeAd?) -> Unit) {

@@ -13,6 +13,7 @@ import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.natives.data.dataSources.local.DataSourceLocalNative
 import com.example.easydiarysatti.ads.natives.data.dataSources.remote.DataSourceRemoteNative
 import com.example.easydiarysatti.ads.natives.data.repositories.RepositoryNativeImpl
+import com.example.easydiarysatti.ads.rewarded.RewardedInterAdsConfig
 
 import dagger.Module
 import dagger.Provides
@@ -97,11 +98,6 @@ object AdsModule {
 
     @Provides
     @Singleton
-    fun provideDataSourceRemoteBanner(context: Context): DataSourceRemoteBanner =
-        DataSourceRemoteBanner(context)
-
-    @Provides
-    @Singleton
     fun provideRepositoryBannerImpl(
         local: DataSourceLocalBanner,
         remote: DataSourceRemoteBanner
@@ -114,7 +110,7 @@ object AdsModule {
 
     @Provides
     @Singleton
-    fun provideDataSourceRemoteNative(context: Context): DataSourceRemoteNative =
+    fun provideDataSourceRemoteNative(@ApplicationContext context: Context): DataSourceRemoteNative =
         DataSourceRemoteNative(context)
 
     @Provides
@@ -123,4 +119,28 @@ object AdsModule {
         local: DataSourceLocalNative,
         remote: DataSourceRemoteNative
     ): RepositoryNativeImpl = RepositoryNativeImpl(local, remote)
+
+
+    @Provides
+    @Singleton
+    fun provideDataSourceRemoteBanner(
+        @ApplicationContext context: Context
+    ): DataSourceRemoteBanner {
+        return DataSourceRemoteBanner(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideRewardedAdsConfig(
+        @ApplicationContext context: Context,
+        internetManager: InternetManager,
+        sharedPreferenceUtils: SharedPreferenceUtils
+    ): RewardedInterAdsConfig {
+        return RewardedInterAdsConfig(
+            context,
+            sharedPreferenceUtils = sharedPreferenceUtils,
+            internetManager = internetManager
+        )
+    }
+
 }

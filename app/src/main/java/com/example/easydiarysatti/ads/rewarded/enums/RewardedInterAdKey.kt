@@ -1,5 +1,5 @@
 package com.example.easydiarysatti.ads.rewarded.enums
 
 enum class RewardedInterAdKey(val value: String) {
-    AI_FEATURE("ai_feature"),
+    IMAGE_MORE_THAN_ONE("image_more_than_one"),
 }

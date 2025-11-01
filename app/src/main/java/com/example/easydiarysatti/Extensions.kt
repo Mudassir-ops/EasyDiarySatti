@@ -562,8 +562,8 @@ fun FlexboxLayout.addTags(
 
 fun FragmentHomeBinding?.visible(hasNotes: Boolean) {
     this?.apply {
-        rvNotes.visibility = if (hasNotes) View.VISIBLE else View.GONE
-        noNotesLayout.visibility = if (hasNotes) View.GONE else View.VISIBLE
+        rvNotes.visibility = if (hasNotes) View.VISIBLE else View.INVISIBLE
+        noNotesLayout.visibility = if (hasNotes) View.INVISIBLE else View.VISIBLE
     }
 }
 

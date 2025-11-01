@@ -5,18 +5,18 @@ import android.util.Log
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.banner.data.entities.ItemBannerAd
 import com.example.easydiarysatti.ads.banner.data.repositories.RepositoryBannerImpl
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdType
 import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.utils.Constants.TAG_ADS
 import com.google.android.gms.ads.AdView
-import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
-import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdType
+import javax.inject.Inject
 
-class UseCaseBanner(
+class UseCaseBanner @Inject constructor(
     private val repositoryBannerImpl: RepositoryBannerImpl,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
     private val internetManager: InternetManager,
-    private val context: Context
 ) {
 
     @Volatile
@@ -28,7 +28,7 @@ class UseCaseBanner(
         }
     }
 
-    private fun getAdId(bannerAdKey: BannerAdKey): String {
+    private fun getAdId(bannerAdKey: BannerAdKey, context: Context): String {
         return when (bannerAdKey) {
             BannerAdKey.HOME -> context.getString(R.string.admob_banner_home_id).trim()
         }
@@ -40,20 +40,35 @@ class UseCaseBanner(
         }
     }
 
-    fun loadBannerAd(adView: AdView, bannerAdKey: BannerAdKey, callback: (ItemBannerAd?) -> Unit) {
+    fun loadBannerAd(
+        adView: AdView,
+        context: Context,
+        bannerAdKey: BannerAdKey,
+        callback: (ItemBannerAd?) -> Unit
+    ) {
         val bannerAdType = getAdType(bannerAdKey)
-        validateAndLoadAd(bannerAdKey, callback) { adId ->
+        validateAndLoadAd(bannerAdKey, context, callback) { adId ->
             isAdLoading = true
-            repositoryBannerImpl.fetchBannerAd(adKey = bannerAdKey.value, adId = adId, bannerAdType = bannerAdType, adView = adView) {
+            repositoryBannerImpl.fetchBannerAd(
+                adKey = bannerAdKey.value,
+                adId = adId,
+                bannerAdType = bannerAdType,
+                adView = adView
+            ) {
                 isAdLoading = false
                 callback.invoke(it)
             }
         }
     }
 
-    private fun validateAndLoadAd(bannerAdKey: BannerAdKey, callback: (ItemBannerAd?) -> Unit, loadAdAction: (adId: String) -> Unit) {
+    private fun validateAndLoadAd(
+        bannerAdKey: BannerAdKey,
+        context: Context,
+        callback: (ItemBannerAd?) -> Unit,
+        loadAdAction: (adId: String) -> Unit
+    ) {
         val isRemoteEnable = checkRemoteConfig(bannerAdKey)
-        val adId = getAdId(bannerAdKey)
+        val adId = getAdId(bannerAdKey, context)
 
         when {
             sharedPreferenceUtils.isAppPurchased -> {

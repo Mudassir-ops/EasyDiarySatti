@@ -20,6 +20,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.rewarded.RewardedInterAdsConfig
+import com.example.easydiarysatti.ads.rewarded.callbacks.RewardedOnShowCallBack
+import com.example.easydiarysatti.ads.rewarded.enums.RewardedInterAdKey
 import com.example.easydiarysatti.databinding.FragmentMainBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
@@ -61,6 +64,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
+
+    @Inject
+    lateinit var rewardedInterAdsConfig: RewardedInterAdsConfig
 
     private val multiImageAdapter: MultiImageAdapter by lazy {
         MultiImageAdapter(items = (activity as MainActivity).getBgThemes(), onUploadClick = {
@@ -169,6 +175,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         setClickListeners()
         setupDrawer()
         observeMainState()
+        loadRewardedAdd()
     }
 
     private fun setupBottomNavBar() {
@@ -193,14 +200,13 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
 
                         R.id.btn_media -> {
-                            pickPhotDialog(cameraCallBack = {
-                                sessionManagerRepo.bypassSecurityLogin(true)
-                                imagePicker.pickFromCameraWithPermission()
-                            }, galleryCallBack = {
-                                imagePicker.pickFromGalleryWithPermission()
-                            }, onDismiss = {
-                                binding?.bottomNavCreateNote?.clearChecked()
-                            })
+                            val noteImageSize =
+                                createNotesViewModel.getImageSize() ?: 0
+                            if (noteImageSize <= 2) {
+                                pickImage()
+                            } else {
+                                checkReward()
+                            }
                         }
 
                         R.id.btn_text -> {
@@ -558,4 +564,38 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         navHostListeners.clear()
     }
 
+
+    private fun loadRewardedAdd() {
+        rewardedInterAdsConfig.loadRewardedInterAd(adType = RewardedInterAdKey.IMAGE_MORE_THAN_ONE)
+    }
+
+    private fun checkReward() {
+        when (rewardedInterAdsConfig.isRewardedInterLoaded()) {
+            true -> showReward()
+            false -> pickImage()
+        }
+    }
+
+    private fun showReward() {
+        rewardedInterAdsConfig.showRewardedInterAd(
+            activity,
+            adType = RewardedInterAdKey.IMAGE_MORE_THAN_ONE,
+            listener = object : RewardedOnShowCallBack {
+                override fun onAdFailedToShow() = pickImage()
+                override fun onUserEarnedReward() {
+                    pickImage()
+                }
+            })
+    }
+
+    private fun pickImage() {
+        pickPhotDialog(cameraCallBack = {
+            sessionManagerRepo.bypassSecurityLogin(true)
+            imagePicker.pickFromCameraWithPermission()
+        }, galleryCallBack = {
+            imagePicker.pickFromGalleryWithPermission()
+        }, onDismiss = {
+            binding?.bottomNavCreateNote?.clearChecked()
+        })
+    }
 }

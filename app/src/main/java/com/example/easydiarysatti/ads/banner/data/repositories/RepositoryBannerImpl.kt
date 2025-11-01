@@ -21,8 +21,6 @@ class RepositoryBannerImpl(
         bannerAdType: BannerAdType,
         callback: (ItemBannerAd?) -> Unit
     ) {
-
-        // Check cache resource
         dataSourceLocalBanner.getCachedBannerAd(adKey)?.let { cachedAd ->
             Log.d(Constants.TAG_ADS, "$adKey -> fetchBannerAd: Reshowing Ad")
             callback.invoke(cachedAd)

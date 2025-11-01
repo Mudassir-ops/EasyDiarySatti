@@ -10,12 +10,13 @@ import com.example.easydiarysatti.ads.rewarded.callbacks.RewardedOnLoadCallBack
 import com.example.easydiarysatti.ads.rewarded.callbacks.RewardedOnShowCallBack
 import com.example.easydiarysatti.ads.rewarded.enums.RewardedInterAdKey
 import com.example.easydiarysatti.ads.rewarded.managers.RewardedInterManager
+import javax.inject.Inject
 
 
 /**
  * @param context: Can be of application class
  */
-class RewardedInterAdsConfig(
+class RewardedInterAdsConfig @Inject constructor(
     private val context: Context?,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
     private val internetManager: InternetManager
@@ -26,8 +27,8 @@ class RewardedInterAdsConfig(
         var isRemoteEnable = false
 
         when (adType) {
-            RewardedInterAdKey.AI_FEATURE -> {
-                rewardedInterAdId = getResString(R.string.admob_rewarded_inter_ai_feature_id)
+            RewardedInterAdKey.IMAGE_MORE_THAN_ONE -> {
+                rewardedInterAdId = getResString(R.string.admob_rewarded_ai_feature_id)
                 isRemoteEnable = sharedPreferenceUtils.rcRewardedInterAiFeature != 0
             }
         }

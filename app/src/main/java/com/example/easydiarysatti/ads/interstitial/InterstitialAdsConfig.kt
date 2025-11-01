@@ -12,11 +12,12 @@ import com.example.easydiarysatti.ads.interstitial.manager.InterstitialManager
 import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.utils.Constants.TAG_ADS
+import javax.inject.Inject
 
 /**
  * @param context: Can be of application class
  */
-class InterstitialAdsConfig(
+class InterstitialAdsConfig @Inject constructor(
     private val context: Context?,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
     private val internetManager: InternetManager
@@ -29,12 +30,7 @@ class InterstitialAdsConfig(
         var isRemoteEnable = false
 
         when (adType) {
-            InterAdKey.ON_BOARDING -> {
-                interAdId = getResString(R.string.admob_inter_on_boarding_id)
-                isRemoteEnable = sharedPreferenceUtils.rcInterOnBoarding != 0
-            }
-
-            InterAdKey.FEATURE -> {
+            InterAdKey.FEATURE_SAVE_NOTE -> {
                 interAdId = getResString(R.string.admob_inter_splash_id)
                 isRemoteEnable = sharedPreferenceUtils.rcInterFeature != 0
             }

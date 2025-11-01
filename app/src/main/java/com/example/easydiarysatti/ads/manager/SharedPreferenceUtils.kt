@@ -33,15 +33,11 @@ class SharedPreferenceUtils(private val sharedPreferences: SharedPreferences) {
 
     val appOpen = "appOpen"
     val appOpenSplash = "appOpenSplash"
-
     val bannerHome = "bannerHome"
-
     val interOnBoarding = "interOnBoarding"
     val interFeature = "interFeature"
-
     val rewardedAiFeature = "rewardedAiFeature"
     val rewardedInterAiFeature = "rewardedInterAiFeature"
-
     val nativeLanguage = "nativeLanguage"
     val nativeOnBoarding = "nativeOnBoarding"
     val nativeFeature = "nativeFeature"

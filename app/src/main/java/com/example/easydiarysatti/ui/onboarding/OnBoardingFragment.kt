@@ -50,7 +50,14 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
         binding?.viewModel = viewModel
         setupOnGoingPagerAdapter()
         clickListeners()
+        // val appOpen = "appOpen"
+        //val bannerHome = "bannerHome"
+        //val interFeature = "interFeature"
+        //val rewardedInterAiFeature = "rewardedInterAiFeature"
         sharedPreferenceUtils.rcAppOpen = 1
+        sharedPreferenceUtils.rcBannerHome = 1
+        sharedPreferenceUtils.rcInterFeature = 1
+        sharedPreferenceUtils.rcRewardedInterAiFeature = 1
     }
 
     private fun setupOnGoingPagerAdapter() {

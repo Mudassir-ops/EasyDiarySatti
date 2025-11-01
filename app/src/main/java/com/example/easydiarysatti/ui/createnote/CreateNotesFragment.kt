@@ -17,6 +17,9 @@ import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
+import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
+import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowCallBack
+import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.local.ReminderEntity
@@ -42,6 +45,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
@@ -74,6 +78,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         )
     }
 
+    @Inject
+    lateinit var interstitialAdsConfig: InterstitialAdsConfig
+
     private var isNoteInitialized = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,6 +106,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             )
         ).setupFlexBox()
         setStyledDateTime(binding?.tvDate ?: return, R.color.black)
+        loadInterstitial()
     }
 
     fun List<CustomTagEntity>.setupFlexBox() {
@@ -149,7 +157,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             Log.d("TagCheck", "Only Personal tag remains")
                         }
                     }
-                    createNoteEntity=createNoteEntity?.copy(tags = remainingTags)
+                    createNoteEntity = createNoteEntity?.copy(tags = remainingTags)
                     if (createNoteEntity?.noteId != 0L) {
                         val updatedTags = viewModel.allTags().filter { existingTag ->
                             existingTag.tagName != tag.tagName
@@ -288,11 +296,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             title = binding?.etHeader?.text?.toString().orEmpty(),
             description = binding?.etDescription?.text?.toString().orEmpty()
         )
-
         createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) } ?: run {
             Log.e("headerSaveSatti", "setClickListeners:$createNoteEntity is Null ")
         }
-        findNavController().navigateUp()
+        checkInterstitial()
     }
 
     private fun setupImagesRecyclerview() {
@@ -499,5 +506,30 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         viewModel.addTags(tags)
         createNoteEntity = createNoteEntity?.copy(tags = tags)
         createNoteEntity?.tags?.setupFlexBox()
+    }
+
+    private fun loadInterstitial() {
+        interstitialAdsConfig.loadInterstitialAd(InterAdKey.FEATURE_SAVE_NOTE)
+    }
+
+    private fun checkInterstitial() {
+        when (interstitialAdsConfig.isInterstitialLoaded()) {
+            true -> showInterstitial()
+            false -> navigateScreen()
+        }
+    }
+
+    private fun showInterstitial() {
+        interstitialAdsConfig.showInterstitialAd(
+            activity,
+            InterAdKey.FEATURE_SAVE_NOTE,
+            object : InterstitialOnShowCallBack {
+                override fun onAdFailedToShow() = navigateScreen()
+                override fun onAdImpressionDelayed() = navigateScreen()
+            })
+    }
+
+    private fun navigateScreen() {
+        findNavController().navigateUp()
     }
 }

@@ -11,6 +11,9 @@ import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.monthlyFormatDate
 import com.example.easydiarysatti.safeNav
@@ -21,6 +24,7 @@ import com.example.easydiarysatti.ui.main.MainState
 import com.example.easydiarysatti.ui.main.MainViewModel
 import com.example.easydiarysatti.viewBinding
 import com.example.easydiarysatti.visible
+import com.google.android.gms.ads.AdView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -30,6 +34,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val viewModel by viewModels<HomeViewModel>()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val mainViewModel by activityViewModels<MainViewModel>()
+    private val viewModelBanner by viewModels<ViewModelBanner>()
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(onNoteItemClick = { note ->
             createNotesViewModel.clearTags()
@@ -62,7 +67,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupTodayDate()
         observeSortOrder()
         setStyledDateTime(binding?.tvDate ?: return, R.color.track_color)
-
+        loadBanner()
+        initObservers()
     }
 
     private fun clickListener() {
@@ -137,4 +143,25 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 }
         }
     }
+
+
+    private fun loadBanner() {
+        context?.let {
+            val adView = AdView(it)
+            viewModelBanner.loadBannerAd(adView, BannerAdKey.HOME, context ?: return@let)
+        }
+    }
+
+    private fun initObservers() {
+        viewModelBanner.adViewLiveData.observe(viewLifecycleOwner) {
+            binding?.bannerAdViewHome?.addCleanView(it)
+        }
+        viewModelBanner.loadFailedLiveData.observe(viewLifecycleOwner) {
+            binding?.bannerAdViewHome?.visibility = View.GONE
+        }
+        viewModelBanner.clearViewLiveData.observe(viewLifecycleOwner) {
+            binding?.bannerAdViewHome?.removeAllViews()
+        }
+    }
+
 }

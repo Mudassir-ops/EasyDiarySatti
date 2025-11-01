@@ -54,6 +54,10 @@ class CreateNotesViewModel @Inject constructor(
         imagesList?.addAll(imagePath)
     }
 
+    fun getImageSize(): Int? {
+        return imagesList?.size
+    }
+
     fun addImage(imagePath: String): List<String> {
         imagesList?.add(imagePath)
         return imagesList?.toList() ?: listOf()

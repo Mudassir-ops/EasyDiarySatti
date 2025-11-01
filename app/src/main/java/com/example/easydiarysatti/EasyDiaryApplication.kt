@@ -23,18 +23,18 @@ class MyApp : Application(), DefaultLifecycleObserver {
         super<Application>.onCreate()
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
         // ✅ Step 1: Initialize AdMob FIRST
-        MobileAds.initialize(this) { status ->
-            Log.d("MyApp", "AdMob initialized successfully: $status")
-
-            // ✅ Step 2: Set test device IDs safely
-//            val config = RequestConfiguration.Builder()
-//                .setTestDeviceIds(listOf("E13FEE4C2083A31575BFEFD22146CE76"))
-//                .build()
-//            MobileAds.setRequestConfiguration(config)
-
-            // ✅ Step 3: Now attach lifecycle observer
-            ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-        }
+//        MobileAds.initialize(this) { status ->
+//            Log.d("MyApp", "AdMob initialized successfully: $status")
+//
+//            // ✅ Step 2: Set test device IDs safely
+////            val config = RequestConfiguration.Builder()
+////                .setTestDeviceIds(listOf("E13FEE4C2083A31575BFEFD22146CE76"))
+////                .build()
+////            MobileAds.setRequestConfiguration(config)
+//
+//            // ✅ Step 3: Now attach lifecycle observer
+//            ProcessLifecycleOwner.get().lifecycle.addObserver(this)
+//        }
 
         // to get test ads on this device."
 //        val testDeviceId = AdRequest.Builder().build().requestAgent

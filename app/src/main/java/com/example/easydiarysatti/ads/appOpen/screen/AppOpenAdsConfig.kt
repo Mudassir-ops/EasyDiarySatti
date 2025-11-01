@@ -25,6 +25,11 @@ class AppOpenAdsConfig(
                 interAdId = context.getString(R.string.admob_app_open_id)
                 isRemoteEnable = sharedPreferenceUtils.rcAppOpen != 0
             }
+
+            AppOpenAdKey.NAME_SCREEN ->{
+                interAdId = context.getString(R.string.admob_app_open_id)
+                isRemoteEnable = sharedPreferenceUtils.rcAppOpen != 0
+            }
         }
 
         loadAppOpen(

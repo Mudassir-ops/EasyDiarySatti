@@ -124,7 +124,6 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         viewModelEntrance.onAdResponse()
     }
 
-
     private fun Boolean.enableButton() {
         binding?.apply {
             btnSelect.isEnabled = this@enableButton

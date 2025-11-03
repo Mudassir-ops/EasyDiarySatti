@@ -15,6 +15,15 @@ android {
     namespace = "com.example.easydiarysatti"
     compileSdk = 36
 
+    signingConfigs {
+        create("release") {
+            storeFile = file("/Users/mudassirsatti/AndroidStudioProjects/EasyDiarySatti/easydairy123.jks")
+            storePassword = "easydairy123"
+            keyAlias = "key0"
+            keyPassword = "easydairy123"
+        }
+    }
+
     defaultConfig {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
@@ -27,7 +36,7 @@ android {
     }
 
     buildTypes {
-        debug {
+        getByName("debug") {
             // App Ad Id - Satti
             resValue(
                 type = "string",
@@ -71,7 +80,7 @@ android {
                 "proguard-rules.pro"
             )
         }
-        release {
+        getByName("release") {
             isMinifyEnabled = true
             isShrinkResources = true
             isDebuggable = false
@@ -88,32 +97,34 @@ android {
             )
 
             //-->Real ads Ids Uncomment When Needed
-            /*   // App Open Ad - Satti
-               resValue(
-                   type = "string",
-                   name = "admob_app_open_id",
-                   value = "ca-app-pub-6929888913467755/8279156051"
-               )
+            // App Open Ad - Satti
+            resValue(
+                type = "string",
+                name = "admob_app_open_id",
+                value = "ca-app-pub-6929888913467755/8279156051"
+            )
 
-               // Banner Ad - Satti
-               resValue(
-                   type = "string",
-                   name = "admob_banner_home_id",
-                   value = "ca-app-pub-6929888913467755/3876876618"
-               )
+            // Banner Ad - Satti
+            resValue(
+                type = "string",
+                name = "admob_banner_home_id",
+                value = "ca-app-pub-6929888913467755/3876876618"
+            )
 
-               // Interstitial Ads - Satti
-               resValue(
-                   type = "string",
-                   name = "admob_inter_before_main_id",
-                   value = "ca-app-pub-6929888913467755/1142851070"
-               )
-               // Rewarded Ads Image Adding - Satti
-               resValue(
-                   type = "string",
-                   name = "admob_rewarded_images_more_than_two",
-                   value = "ca-app-pub-6929888913467755/2643619090"
-               )*/
+            // Interstitial Ads - Satti
+            resValue(
+                type = "string",
+                name = "admob_inter_before_main_id",
+                value = "ca-app-pub-6929888913467755/1142851070"
+            )
+            // Rewarded Ads Image Adding - Satti
+            resValue(
+                type = "string",
+                name = "admob_rewarded_images_more_than_two",
+                value = "ca-app-pub-6929888913467755/2643619090"
+            )
+            signingConfig = signingConfigs.getByName("release")
+
         }
     }
 
@@ -152,10 +163,8 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.navigation.fragment.ktx)
-
 
     // Hilt
     implementation(libs.hilt.android)

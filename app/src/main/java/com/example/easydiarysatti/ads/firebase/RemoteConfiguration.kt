@@ -81,12 +81,6 @@ class RemoteConfiguration @Inject constructor(
                 rcInterFeatureSaveNote = remoteConfig[interSaveNoteFeature].asLong().toInt()
                 rcRewardedImageAddFeature =
                     remoteConfig[rewardedImagesOnNoteFeature].asLong().toInt()
-
-                rcAppOpen = 1
-                rcBannerHome = 1
-                rcInterFeatureSaveNote = 1
-                rcRewardedImageAddFeature = 1
-
                 Log.i(
                     TAG_REMOTE,
                     "RemoteConfiguration: rcAppOpen -> ${remoteConfig[appOpen].asLong().toInt()}"
@@ -99,14 +93,14 @@ class RemoteConfiguration @Inject constructor(
                 )
                 Log.i(
                     TAG_REMOTE,
-                    "RemoteConfiguration: rcInterFeature -> ${
+                    "RemoteConfiguration: interSaveNoteFeature -> ${
                         remoteConfig[interSaveNoteFeature].asLong().toInt()
                     }"
                 )
                 Log.i(
                     TAG_REMOTE,
-                    "RemoteConfiguration: rcRewardedInterAiFeature -> ${
-                        remoteConfig[rewardedInterAiFeature].asLong().toInt()
+                    "RemoteConfiguration: rewardedImagesOnNoteFeature -> ${
+                        remoteConfig[rewardedImagesOnNoteFeature].asLong().toInt()
                     }"
                 )
             } catch (ex: Exception) {

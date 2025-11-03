@@ -31,10 +31,10 @@ class SharedPreferenceUtils(private val sharedPreferences: SharedPreferences) {
 
     /* ---------------------------------------- Ads ---------------------------------------- */
 
-    val appOpen = "appOpen"
-    val bannerHome = "bannerHome"
-    val interSaveNoteFeature = "interSaveNoteFeature"
-    val rewardedImagesOnNoteFeature = "rewardedImagesOnNoteFeature"
+    val appOpen = "app_open"
+    val bannerHome = "banner_home"
+    val interSaveNoteFeature = "inter_save_note_feature"
+    val rewardedImagesOnNoteFeature = "rewarded_images_on_note_feature"
 
 
     val rewardedInterAiFeature = "rewardedInterAiFeature"

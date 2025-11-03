@@ -22,7 +22,6 @@ class MyApp : Application(), DefaultLifecycleObserver {
     override fun onCreate() {
         super<Application>.onCreate()
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
-        initAdsTestDevice()
     }
 
     override fun onStop(owner: LifecycleOwner) {
@@ -37,11 +36,11 @@ class MyApp : Application(), DefaultLifecycleObserver {
         }
     }
 
-    private fun initAdsTestDevice() {
-        val config = RequestConfiguration.Builder()
-            .setTestDeviceIds(listOf("604a11f5-4775-46c6-a947-75ea36c8a0ab"))
-            .build()
-        MobileAds.setRequestConfiguration(config)
-    }
+//    private fun initAdsTestDevice() {
+//        val config = RequestConfiguration.Builder()
+//            .setTestDeviceIds(listOf("604a11f5-4775-46c6-a947-75ea36c8a0ab"))
+//            .build()
+//        MobileAds.setRequestConfiguration(config)
+//    }
 }
 

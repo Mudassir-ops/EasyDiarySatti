@@ -22,7 +22,14 @@ class OnGoingItemFragment : Fragment(R.layout.fragment_on_going_item) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
-            onGoingScreenUiModel = arguments?.parcelable(ON_GOING_DATA_MODEL)
+            try {
+                val loader = OnGoingScreenUiModel::class.java.classLoader
+                arguments?.classLoader = loader
+                savedInstanceState?.classLoader = loader
+                onGoingScreenUiModel = arguments?.parcelable(ON_GOING_DATA_MODEL)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
 

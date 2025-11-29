@@ -20,7 +20,6 @@ import com.example.easydiarysatti.addTags
 import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
 import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowCallBack
 import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
-import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.local.ReminderEntity
@@ -315,6 +314,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     private fun adjustScreenKeyboard() {
         setKeyboardVisibilityListenerCreateNote { isVisible ->
+            if (!isAdded || view == null || viewLifecycleOwner.lifecycle.currentState < Lifecycle.State.STARTED) {
+                return@setKeyboardVisibilityListenerCreateNote
+            }
             viewLifecycleOwner.lifecycleScope.launch {
                 if (isVisible) {
                     enableResize(true)
@@ -416,6 +418,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     fun onClickDateTimePick() {
         (activity as? MainActivity)?.requestExactAlarmPermission {
             showDatePickerWithTime { selectedCalendar ->
+                if (!isAdded || view == null ||
+                    viewLifecycleOwner.lifecycle.currentState < Lifecycle.State.STARTED
+                ) return@showDatePickerWithTime
                 if (binding?.etHeader?.text.toString().isEmpty()) {
                     binding?.parentLayout?.showSnackbar(getString(R.string.required_title))
                     return@showDatePickerWithTime

@@ -1,5 +1,5 @@
 [versions]
-agp = "8.12.3"
+agp = "8.10.0"
 colorpickerview = "2.3.0"
 desugar_jdk_libs = "2.1.5"
 firebaseBom = "34.5.0"

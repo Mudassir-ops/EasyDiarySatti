@@ -49,6 +49,7 @@ import java.io.File
 import javax.inject.Inject
 
 @AndroidEntryPoint
+
 class MainFragment : Fragment(R.layout.fragment_main) {
     private lateinit var calendarHost: NavHostFragment
     private lateinit var libraryHost: NavHostFragment
@@ -73,9 +74,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             items = (activity as MainActivity).getBgThemes(),
             onUploadClick = {},
             onImageClick = {
-                binding?.ivCreateNote?.loadImage(
-                    resourceId = it, placeholder = 0
-                )
+                // Safeguard against view being null during theme selection
+                if (view != null) {
+                    binding?.ivCreateNote?.loadImage(
+                        resourceId = it, placeholder = 0
+                    )
+                }
                 createNotesViewModel.sendAction(
                     CreateNotesState.ChangeBg(
                         bgImageRes = it ?: return@MultiImageAdapter
@@ -100,7 +104,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 )
 
                 2 -> {
-                    binding?.parentLayout?.closeDrawer(GravityCompat.START)
+                    if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START)
                     onRemainderClick()
                 }
 
@@ -110,19 +114,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 )
 
                 4 -> {
-                    binding?.parentLayout?.showSnackbar(message = getString(R.string.coming_soon))
-                    binding?.parentLayout?.closeDrawer(GravityCompat.START)
+                    if (view != null) {
+                        binding?.parentLayout?.showSnackbar(message = getString(R.string.coming_soon))
+                        binding?.parentLayout?.closeDrawer(GravityCompat.START)
+                    }
                     return@DrawerItemAdapter
                 }
-//                4 -> findNavController().safeNav(
-//                    currentDestId = R.id.mainFragment,
-//                    actionId = R.id.action_mainFragment_to_languageFragment
-//                )
 
                 5 -> {
                     activity?.privacyPolicyUrl()
-                    // binding?.parentLayout?.showSnackbar(message = getString(R.string.coming_soon))
-                    binding?.parentLayout?.closeDrawer(GravityCompat.START)
+                    if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START)
                     return@DrawerItemAdapter
                 }
             }
@@ -133,7 +134,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         super.onCreate(savedInstanceState)
         imagePicker = ImagePickerDelegate(this, onPickerClosed = {
             sessionManagerRepo.bypassSecurityLogin(false)
-            binding?.bottomNavCreateNote?.clearChecked()
+            // Fix: Check view existence before clearing checked state
+            if (view != null) {
+                binding?.bottomNavCreateNote?.clearChecked()
+            }
         }, onImagePicked = { uri: Uri?, file: File? ->
             sessionManagerRepo.bypassSecurityLogin(false)
             showImageCropDialog(imagePath = file?.path ?: return@ImagePickerDelegate, btnDone = {
@@ -143,7 +147,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     )
                 )
             }, closeDialog = {
-                binding?.bottomNavCreateNote?.clearChecked()
+                // Fix: Check view existence before clearing checked state
+                if (view != null) {
+                    binding?.bottomNavCreateNote?.clearChecked()
+                }
             })
         })
     }
@@ -177,7 +184,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         R.id.btnBackground -> {
                             showBackgroundDialog(
                                 adapterMultiImageAdapter = multiImageAdapter, closeDialog = {
-                                    binding?.bottomNavCreateNote?.clearChecked()
+                                    // Fix: Safeguard against IllegalStateException when dialog closes
+                                    if (view != null) {
+                                        binding?.bottomNavCreateNote?.clearChecked()
+                                    }
                                 })
                         }
 
@@ -185,7 +195,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             createNotesViewModel.sendAction(CreateNotesState.TagAction)
                             viewLifecycleOwner.lifecycleScope.launch {
                                 delay(50)
-                                group.clearChecked()
+                                // Standard check for safety
+                                if (view != null) group.clearChecked()
                             }
                         }
 
@@ -196,7 +207,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         R.id.btn_text -> {
                             showEditTexDialog(
                                 closeDialog = {
-                                    binding?.bottomNavCreateNote?.clearChecked()
+                                    // Fix: Safeguard for the text dialog callback
+                                    if (view != null) {
+                                        binding?.bottomNavCreateNote?.clearChecked()
+                                    }
                                 },
                                 fontSelectionListener = {
                                     createNotesViewModel.sendAction(CreateNotesState.FontAction(it))
@@ -255,12 +269,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 R.id.btn_calendar -> calendarHost
                 else -> return@addOnButtonCheckedListener
             }
-            Log.e("Machood", "setupBottomNav: ${activeNavHost?.id}-->${targetHost.id}")
             if (targetHost == activeNavHost) {
                 val navController = targetHost.navController
                 val startDestinationId = navController.graph.startDestinationId
                 navController.popBackStack(startDestinationId, false)
-                Log.e("Machood", "setupBottomNav: ${targetHost.id}")
                 return@addOnButtonCheckedListener
             }
             childFragmentManager.beginTransaction()
@@ -319,9 +331,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             navController.removeOnDestinationChangedListener(oldListener)
         }
         val newListener = NavController.OnDestinationChangedListener { _, destination, _ ->
-            Log.e("OnCHangeNaju", "setupBottomNavBar: ${destination.label}")
-            binding?.headerTitle?.text = destination.label
-            handleDestinationChange(destination.id)
+            if (view != null) {
+                binding?.headerTitle?.text = destination.label
+                handleDestinationChange(destination.id)
+            }
         }
         navController.addOnDestinationChangedListener(newListener)
         navHostListeners[navHost] = newListener
@@ -407,10 +420,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
             ivBack.setOnClickListener {
                 val currentDestId = activeNavHost?.findNavController()?.currentDestination?.id
-                Log.d(
-                    "CurrentDest",
-                    "Current destination ID: $currentDestId--${activeNavHost?.findNavController()?.currentDestination?.label}"
-                )
                 when (currentDestId) {
                     R.id.addTagsFragment -> {
                         createNotesViewModel.sendAction(
@@ -436,7 +445,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 }
             }
             headerSave.setOnClickListener {
-                Log.e("headerSave", "setClickListeners: ")
                 createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
             }
             ivRemainder.setOnClickListener {
@@ -490,9 +498,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     fun observeMainState() {
         viewLifecycleOwner.lifecycleScope.launch {
             createNotesViewModel.noteState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
-                binding?.ivCreateNote?.loadImage(
-                    resourceId = it?.backgroundRes, placeholder = 0
-                )
+                if (view != null) {
+                    binding?.ivCreateNote?.loadImage(
+                        resourceId = it?.backgroundRes, placeholder = 0
+                    )
+                }
             }
         }
     }
@@ -503,14 +513,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             override fun handleOnBackPressed() {
                 val currentHost = activeNavHost ?: return
                 if (currentHost != homeHost) {
-                    binding?.bottomNav?.check(R.id.btnHome)
+                    if (view != null) binding?.bottomNav?.check(R.id.btnHome)
                     return
                 }
                 val homeNavController = homeHost.navController
                 if (homeNavController.currentDestination?.id != R.id.homeFragment && homeNavController.popBackStack()) {
                     return
                 }
-                if (binding?.parentLayout?.isDrawerOpen(GravityCompat.START) == true) {
+                if (view != null && binding?.parentLayout?.isDrawerOpen(GravityCompat.START) == true) {
                     binding?.parentLayout?.closeDrawer(GravityCompat.START)
                     return
                 }
@@ -565,7 +575,10 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }, galleryCallBack = {
             imagePicker.pickFromGalleryWithPermission()
         }, onDismiss = {
-            binding?.bottomNavCreateNote?.clearChecked()
+            // Fix: Check view existence on dialog dismiss
+            if (view != null) {
+                binding?.bottomNavCreateNote?.clearChecked()
+            }
         })
     }
 }

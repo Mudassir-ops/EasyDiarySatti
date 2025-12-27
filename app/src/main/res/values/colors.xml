@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="app_color">#C4E5F0</color>
+    <color name="app_primary_color">#42ABD0</color>
+    <color name="txt_color_gray">#6C7787</color>
+    <color name="border_color">#E2E8F0</color>
+
+    <color name="switch_track_color">#42ABD0</color>
+    <color name="switch_thumb_color">#E2E8F0</color>
+    <color name="track_color">#848D9B</color>
+    <color name="stroke_color">#C6CAD1</color>
+    <color name="stroke_selected_color">#ECF7FA</color>
+    <color name="pin_bg">#EDEEF0</color>
+    <color name="pin_border">#AAB1BA</color>
+    <color name="unselected_color">#CCCCCC33</color>
+    <color name="red_color">#EB0050</color>
+    <color name="calender_bg_color">#A8D8E9</color>
+    <color name="tag_bg_color">#F5F5F5</color>
+    <color name="tag_txt_color">#475569</color>
+    <color name="drawer_color">#323C4B</color>
+    <color name="opacity_color">#1D2939</color>
+
+    <color name="adsColor">#F1F0FF</color>
+    <color name="adsTextColor">#475569</color>
+
+</resources>

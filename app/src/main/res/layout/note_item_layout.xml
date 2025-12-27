@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="noteEntity"
+            type="com.example.easydiarysatti.data.local.CreateNoteEntity" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/_5sdp"
+        android:background="@drawable/bg_note_item_full"
+        android:paddingHorizontal="@dimen/_20sdp"
+        android:paddingVertical="@dimen/_10sdp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_note_header"
+            capitalizeFirst="@{noteEntity.title}"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/outfit_bold"
+            android:textAlignment="viewStart"
+            android:textAllCaps="false"
+            android:textSize="@dimen/_14ssp"
+            app:layout_constraintEnd_toStartOf="@+id/tv_not_time"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:textColorHex="@{noteEntity.selectedEmojiColor}" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_note_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_5sdp"
+            android:fontFamily="@font/outfit"
+            android:maxLines="2"
+            android:text="@{noteEntity.description}"
+            android:textAlignment="viewStart"
+            android:textColor="@color/tag_txt_color"
+            android:textSize="@dimen/_12ssp"
+            app:layout_constraintEnd_toStartOf="@+id/tv_not_time"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_note_header" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_not_time"
+            formattedTime="@{noteEntity.creationTime}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:elevation="@dimen/_5sdp"
+            android:fontFamily="@font/outfit"
+            android:textAlignment="center"
+            android:textColor="@color/tag_txt_color"
+            android:textSize="@dimen/_12ssp"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_note_header"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/tv_note_header"
+            app:layout_constraintTop_toTopOf="@+id/tv_note_header" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_tag"
+            firstTagText="@{noteEntity.tags}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:background="@drawable/bg_note_item"
+            android:drawablePadding="@dimen/_5sdp"
+            android:fontFamily="@font/outfit_medium"
+            android:gravity="center"
+            android:paddingVertical="@dimen/_6sdp"
+            android:paddingStart="@dimen/_10sdp"
+            android:paddingEnd="@dimen/_15sdp"
+            android:textColor="@color/tag_txt_color"
+            android:textSize="@dimen/_11ssp"
+            app:drawableStartCompat="@drawable/ic_person_svg"
+            app:layout_constraintStart_toStartOf="@+id/tv_note_description"
+            app:layout_constraintTop_toBottomOf="@+id/tv_note_description"
+            app:noteBgFillColor="@{noteEntity.tagColor}"
+            app:noteBgStrokeColor="@{noteEntity.tagColor}" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tv_feeling"
+            drawableStartCompat="@{noteEntity.feelingEmojiRes}"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/_5sdp"
+            android:background="@drawable/bg_note_item"
+            android:drawablePadding="@dimen/_5sdp"
+            android:fontFamily="@font/outfit_medium"
+            android:gravity="center"
+            android:paddingVertical="@dimen/_6sdp"
+            android:paddingStart="@dimen/_10sdp"
+            android:paddingEnd="@dimen/_15sdp"
+            android:text="@{noteEntity.feelingTitle}"
+            android:textColor="@color/tag_txt_color"
+            android:textSize="@dimen/_11ssp"
+            app:drawableHeightDp="@{18f}"
+            app:drawableTint="@{@color/tag_txt_color}"
+            app:drawableWidthDp="@{18f}"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_tag"
+            app:layout_constraintStart_toEndOf="@+id/tv_tag"
+            app:layout_constraintTop_toTopOf="@+id/tv_tag"
+            app:noteBgFillColor="@{noteEntity.selectedEmojiColor}"
+            app:noteBgStrokeColor="@{noteEntity.selectedEmojiColor}" />
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/iv_gallery"
+            android:layout_width="@dimen/_15sdp"
+            android:layout_height="@dimen/_15sdp"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_tag"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/tv_tag"
+            app:showIfHasImages="@{noteEntity.images}"
+            app:srcCompat="@drawable/create_note_media_icon"
+            app:tint="@color/tag_txt_color" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

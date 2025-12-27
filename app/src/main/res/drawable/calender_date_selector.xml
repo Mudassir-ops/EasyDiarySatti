@@ -1,0 +1,10 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Selected date -->
+    <item android:color="@color/white" android:state_activated="true" />
+
+    <!-- Disabled / past dates -->
+    <item android:color="@color/txt_color_gray" android:state_enabled="false" />
+
+    <!-- Default date color -->
+    <item android:color="@color/black" />
+</selector>

@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parentView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.signup.SignUpFragment">
+
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txChooseYourTheme"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:fontFamily="@font/outfit_bold"
+        android:text="@string/access_your_diary"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_18ssp"
+        app:layout_constraintBottom_toTopOf="@id/txtSetPasswordDescription"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtSetPasswordDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_10sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:fontFamily="@font/outfit"
+        android:gravity="start"
+        android:text="@string/protect_your_thoughts_and_memories_with_a_nsecure_4_digit_pin_for_quick_and_easy_naccess"
+        android:textSize="@dimen/_12sdp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txChooseYourTheme"
+        app:layout_constraintWidth_percent="0.8" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/edText_one"
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="@dimen/_50sdp"
+        android:layout_marginTop="@dimen/_50sdp"
+        android:background="@drawable/bg_pin"
+        android:fontFamily="@font/outfit"
+        android:gravity="center"
+        android:inputType="numberDecimal"
+        android:maxLength="1"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_16sdp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@id/edText_two"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtSetPasswordDescription" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/edText_two"
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_pin"
+        android:fontFamily="@font/outfit"
+        android:gravity="center"
+        android:inputType="numberDecimal"
+        android:maxLength="1"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_16sdp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/edText_one"
+        app:layout_constraintEnd_toStartOf="@id/edText_three"
+        app:layout_constraintStart_toEndOf="@id/edText_one"
+        app:layout_constraintTop_toTopOf="@id/edText_one" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/edText_three"
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_pin"
+        android:fontFamily="@font/outfit"
+        android:gravity="center"
+        android:inputType="numberDecimal"
+        android:maxLength="1"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_16sdp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/edText_one"
+        app:layout_constraintEnd_toStartOf="@id/edText_four"
+        app:layout_constraintStart_toEndOf="@id/edText_two"
+        app:layout_constraintTop_toTopOf="@id/edText_one" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/edText_four"
+        android:layout_width="@dimen/_50sdp"
+        android:layout_height="0dp"
+        android:background="@drawable/bg_pin"
+        android:fontFamily="@font/outfit"
+        android:gravity="center"
+        android:inputType="numberDecimal"
+        android:maxLength="1"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_16sdp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/edText_one"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/edText_three"
+        app:layout_constraintTop_toTopOf="@id/edText_one" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/_40sdp"
+        android:background="@drawable/btn_bg"
+        android:fontFamily="@font/outfit_medium"
+        android:text="@string/setup_pin"
+        android:textSize="@dimen/_14ssp"
+        app:backgroundTint="@color/app_primary_color"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintWidth_percent="0.85" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

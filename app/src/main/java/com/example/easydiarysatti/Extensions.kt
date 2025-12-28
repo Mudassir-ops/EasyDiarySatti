@@ -41,6 +41,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
@@ -58,6 +59,9 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.remainder.AlarmHandler
@@ -371,16 +375,29 @@ private fun resizeToFitView(
 
 
 fun View.loadBackground(
-    resourceId: Int?,
-    placeholder: Int? = null
+    @DrawableRes resourceId: Int?,
+    @DrawableRes placeholder: Int? = null
 ) {
-    val request = Glide.with(context)
+    if (resourceId == null) return
+
+    val metrics = resources.displayMetrics
+    val targetWidth = metrics.widthPixels
+    val targetHeight = metrics.heightPixels
+
+    val request = Glide.with(this)
         .load(resourceId)
+        .override(targetWidth, targetHeight)      // ✅ CRITICAL
+        .centerCrop()
+        .format(DecodeFormat.PREFER_RGB_565)      // ✅ 50% less memory
+        .dontAnimate()
+
     placeholder?.let { request.placeholder(it) }
-    request.into(object : com.bumptech.glide.request.target.CustomTarget<Drawable>() {
+
+    request.into(object : CustomTarget<Drawable>() {
+
         override fun onResourceReady(
             resource: Drawable,
-            transition: com.bumptech.glide.request.transition.Transition<in Drawable>?
+            transition: Transition<in Drawable>?
         ) {
             background = resource
         }
@@ -402,6 +419,7 @@ fun Fragment.setKeyboardVisibilityListener(onVisibilityChanged: (Boolean) -> Uni
         val keypadHeight = screenHeight - r.bottom
         onVisibilityChanged(keypadHeight > screenHeight * 0.15)
     }
+
     contentView.viewTreeObserver.addOnGlobalLayoutListener(listener)
     viewLifecycleOwner.lifecycle.addObserver(object : DefaultLifecycleObserver {
         override fun onDestroy(owner: LifecycleOwner) {

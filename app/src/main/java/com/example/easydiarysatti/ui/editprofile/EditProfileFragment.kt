@@ -20,6 +20,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
+
     private val binding by viewBinding(FragmentEditProfileBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
     private var profilePic = ""
@@ -28,64 +29,57 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        imagePicker = ImagePickerDelegate(this) { uri, file ->
-            showImageCropDialog(imagePath = file?.path ?: return@ImagePickerDelegate, btnDone = {
-                profilePic = it.toString()
-                binding?.ivProfile?.setImage(drawable = it)
-            }, closeDialog = {
-
-            })
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        imagePicker = ImagePickerDelegate(this) { uri, file ->
+            showImageCropDialog(
+                imagePath = file?.path ?: return@ImagePickerDelegate,
+                btnDone = { drawable ->
+                    profilePic = drawable.toString()
+                    binding?.ivProfile?.setImage(drawable = drawable) // ✅ SAFE
+                },
+                closeDialog = {}
+            )
+        }
+
         setupClickListeners()
         setupDefaultValues()
     }
 
-    private fun setupClickListeners() {
-        binding?.apply {
-            ivEditProfile.setOnClickListener {
-                imagePicker.pickFromGalleryWithPermission()
-            }
+    private fun setupClickListeners()  {
+        binding?.apply { ivEditProfile.setOnClickListener {
+            imagePicker.pickFromGalleryWithPermission()
+        }
+
             ivProfile.setOnClickListener {
                 imagePicker.pickFromGalleryWithPermission()
             }
-            etPname.doOnTextChanged { text, _, _, _ ->
 
-            }
-            etPmail.doOnTextChanged { text, _, _, _ ->
-
-            }
+            etPname.doOnTextChanged { _, _, _, _ -> }
+            etPmail.doOnTextChanged { _, _, _, _ -> }
 
             btnNext.setOnClickListener {
-                sessionManagerRepo.setProfilePic(profilePic = profilePic)
-                viewModel.saveName(name = etPname.text.toString())
-                viewModel.saveEmail(mail = etPmail.text.toString())
+                sessionManagerRepo.setProfilePic(profilePic)
+                viewModel.saveName(etPname.text.toString())
+                viewModel.saveEmail(etPmail.text.toString())
                 findNavController().navigateUp()
-            }
-        }
+            } }
+
     }
 
+    private fun setupDefaultValues() = with(binding) {
+        sessionManagerRepo.getprofilePic()?.takeIf { it.isNotEmpty() }?.let {
+            profilePic = it
+            binding?.ivProfile?.setImage(drawable = it.toUri())
+        }
 
-    private fun setupDefaultValues() {
-        binding?.apply {
-            val profilePic = sessionManagerRepo.getprofilePic().orEmpty()
-            if (!profilePic.isEmpty()) {
-                this@EditProfileFragment.profilePic = profilePic
-                ivProfile.setImage(drawable = profilePic.toUri())
-            }
-            val savedName = viewModel.getName()
-            if (savedName?.isNotEmpty() == true) {
-                etPname.setText(savedName)
-            }
-            val savedEmail = viewModel.getEmail()
-            if (savedEmail?.isNotEmpty() == true) {
-                etPmail.setText(savedEmail)
-            }
+        viewModel.getName()?.takeIf { it.isNotEmpty() }?.let {
+            binding?.etPname?.setText(it)
+        }
+
+        viewModel.getEmail()?.takeIf { it.isNotEmpty() }?.let {
+            binding?.etPmail?.setText(it)
         }
     }
 }

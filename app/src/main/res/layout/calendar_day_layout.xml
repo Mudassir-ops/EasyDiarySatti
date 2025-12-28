@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/parentLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:padding="@dimen/_2sdp">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/calendarDayText"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:background="@drawable/bg_rounded_day"
+        android:gravity="center"
+        android:textSize="@dimen/_12ssp"
+        android:visibility="visible" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/calendarDayIcon"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:layout_gravity="center"
+        android:background="@drawable/bg_rounded_day"
+        android:gravity="center"
+        android:padding="@dimen/_8sdp"
+        android:scaleType="centerInside"
+        android:src="@drawable/upset"
+        android:visibility="gone"
+        app:tint="@color/black" />
+
+</FrameLayout>
+

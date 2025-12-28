@@ -1,0 +1,166 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Base.Theme.EasyDiarySatti" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowSplashScreenAnimatedIcon" tools:targetApi="s">
+            @mipmap/ic_launcher
+        </item>
+        <item name="colorPrimary">@color/app_primary_color</item>
+
+    </style>
+    <style name="KeypadButtonStyle">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">@dimen/_60sdp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">@dimen/_24ssp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:fontFamily">@font/outfit_medium</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="layout_constraintWidth_percent">0.33</item>
+    </style>
+    <style name="Widget.App.NavButton" parent="Widget.MaterialComponents.Button">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearance.Pill</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:stateListAnimator">@null
+        </item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:minWidth">0dp</item>
+    </style>
+
+    <style name="ShapeAppearance.Pill" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearanceOverlay.RoundedRect" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
+    <style name="CustomFab" parent="Widget.MaterialComponents.FloatingActionButton">
+        <item name="shapeAppearanceOverlay">@style/FabShape</item>
+    </style>
+
+    <style name="FabShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">10dp</item>
+    </style>
+
+    <style name="RoundedImage" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/_6sdp</item>
+    </style>
+
+    <style name="FullCircleShape">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+
+    <!-- Shape for individual calendar days -->
+    <style name="ShapeAppearance.CalendarDay" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item> <!-- Circle -->
+    </style>
+
+    <style name="CalendarWeekDayText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">#475569</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:fontFamily">@font/outfit_semibold</item>
+    </style>
+
+    <style name="ShapeAppearance.MaterialComponents.Capsule" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="ShapeAppearance.MaterialComponents.CapsuleGroup">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="HintTextStyle" parent="TextAppearance.MaterialComponents.Body2">
+        <item name="android:textColor">@color/tag_txt_color</item>
+    </style>
+
+    <!-- res/values/styles.xml -->
+    <style name="OnlyTopRoundedImageShape" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerRadius">@dimen/_60sdp</item>
+    </style>
+
+    <style name="OnlyTopRoundedImageShapeMain" parent="ShapeAppearance.Material3.SmallComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">@dimen/_20sdp</item>
+        <item name="cornerSizeTopRight">@dimen/_20sdp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+
+    <style name="CalenderViewWeekCustomText" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@color/app_primary_color</item>
+    </style>
+
+    <style name="CalenderViewCustom" parent="Theme.AppCompat">
+        <item name="colorControlActivated">@color/tag_txt_color</item>
+        <item name="android:textColorPrimary">@color/app_primary_color</item>
+    </style>
+
+    <style name="CalenderViewDateCustomText" parent="android:TextAppearance.DeviceDefault.Small">
+        <item name="android:textColor">@drawable/calender_date_selector</item>
+    </style>
+
+    <style name="CustomRatingBar" parent="Widget.AppCompat.RatingBar">
+        <item name="android:progressDrawable">@drawable/custom_rating</item>
+        <item name="android:minHeight">24dp</item>
+        <item name="android:maxHeight">24dp</item>
+    </style>
+
+    <style name="Theme.EasyDiarySatti" parent="Base.Theme.EasyDiarySatti" />
+
+    <style name="TimePickerDialogTheme" parent="Theme.MaterialComponents.Light.Dialog">
+        <item name="colorPrimary">@color/app_primary_color</item>
+        <item name="colorOnPrimary">@color/black</item>
+        <item name="colorAccent">@color/app_primary_color</item>
+    </style>
+
+
+    <!--    Ads Theme Style-->
+    <style name="Theme.AdmobAds" parent="Base.Theme.EasyDiarySatti" />
+
+    <style name="Theme.AdmobAds.AdTheme">
+        <item name="android:background">@color/black</item>
+        <item name="android:windowBackground">@color/black</item>
+        <item name="android:windowExitAnimation">@null</item>
+        <item name="android:windowEnterAnimation">@null</item>
+        <item name="android:statusBarColor">@color/black</item>
+    </style>
+
+    <style name="AdsButtonStyle" parent="Widget.MaterialComponents.Button">
+        <item name="android:textSize">@dimen/_13ssp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="backgroundTint">?attr/colorPrimary</item>
+        <item name="rippleColor">?attr/colorPrimaryVariant</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="shapeAppearance">@style/AdsButtonShapeAppearance</item>
+        <item name="android:letterSpacing">0</item>
+    </style>
+
+    <style name="AdsButtonShapeAppearance">
+        <item name="cornerSizeTopLeft">32dp</item>
+        <item name="cornerSizeTopRight">32dp</item>
+        <item name="cornerSizeBottomLeft">32dp</item>
+        <item name="cornerSizeBottomRight">32dp</item>
+    </style>
+
+</resources>

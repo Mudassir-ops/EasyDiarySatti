@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <View
+        android:id="@+id/topView"
+        android:layout_width="0dp"
+        android:layout_height="?actionBarSize"
+        android:layout_marginVertical="@dimen/_5sdp"
+        android:background="@drawable/bg_tag"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icReminder"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/_15sdp"
+        app:layout_constraintBottom_toBottomOf="@id/txtReminderTime"
+        app:layout_constraintEnd_toStartOf="@id/txtReminderTime"
+        app:layout_constraintStart_toStartOf="@id/topView"
+        app:layout_constraintTop_toTopOf="@id/txtReminderTime"
+        app:srcCompat="@drawable/ic_reminder_note" />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtReminderTime"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/roboto_regular"
+        android:paddingHorizontal="@dimen/_15sdp"
+        android:text="Personal"
+        android:textSize="@dimen/_15sdp"
+        app:layout_constraintBottom_toBottomOf="@id/topView"
+        app:layout_constraintEnd_toStartOf="@id/icCross"
+        app:layout_constraintStart_toEndOf="@id/icReminder"
+        app:layout_constraintTop_toTopOf="@id/topView" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/icCross"
+        android:layout_width="35dp"
+        android:layout_height="35dp"
+        android:layout_marginHorizontal="@dimen/_10sdp"
+        android:padding="@dimen/_7sdp"
+        app:layout_constraintBottom_toBottomOf="@id/txtReminderTime"
+        app:layout_constraintEnd_toEndOf="@id/topView"
+        app:layout_constraintStart_toEndOf="@id/txtReminderTime"
+        app:layout_constraintTop_toTopOf="@id/txtReminderTime"
+        app:srcCompat="@drawable/ic_close" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

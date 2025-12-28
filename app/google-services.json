@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1056157605517",
+    "project_id": "easy-diary-journal-with-lock",
+    "storage_bucket": "easy-diary-journal-with-lock.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1056157605517:android:c3818c5b610d4519028cc4",
+        "android_client_info": {
+          "package_name": "com.dailydiary.privatejournal.lockednotes"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyADWIobZz2vGhLVrwHCLDyMrk3PexFxPlU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

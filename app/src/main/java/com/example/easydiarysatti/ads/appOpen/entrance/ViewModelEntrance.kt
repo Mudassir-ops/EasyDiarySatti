@@ -1,0 +1,100 @@
+package com.example.easydiarysatti.ads.appOpen.entrance
+
+import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicInteger
+import javax.inject.Inject
+
+@HiltViewModel
+class ViewModelEntrance @Inject constructor() : ViewModel() {
+
+    /* ----------------------------------- Remote Config ----------------------------------- */
+
+    private val _remoteConfigResponseLiveData = MutableLiveData<Unit>()
+    val remoteConfigResponseLiveData: LiveData<Unit> get() = _remoteConfigResponseLiveData
+
+    fun onRemoteConfigResponse() {
+        _remoteConfigResponseLiveData.value = Unit
+    }
+
+    /* ----------------------------------- Consent & Ads ----------------------------------- */
+
+    private val _cmpTimerLiveData = MutableLiveData<Unit>()
+    val cmpTimerLiveData: LiveData<Unit> get() = _cmpTimerLiveData
+
+    private val _loadAdsLiveData = MutableLiveData<Unit>()
+    val loadAdsLiveData: LiveData<Unit> get() = _loadAdsLiveData
+
+    private val _navigateLiveData = MutableLiveData<Boolean>()
+    val navigateLiveData: LiveData<Boolean> get() = _navigateLiveData
+
+
+    private val _openAddState = MutableStateFlow(false)
+    val openAddState: StateFlow<Boolean> = _openAddState
+
+    private var jobCMP = Job()
+    private var jobAds = Job()
+
+    private var isAdTimerStarted = false
+    private val consentTimeout = 8000L
+    private val adsTimeout = 8000L
+
+    init {
+        startCMPTimer()
+    }
+
+    private fun startCMPTimer() = viewModelScope.launch(Dispatchers.Default + jobCMP) {
+        Log.i("AdsInformation", "CMP -> startCMPTimer: Started 8 seconds")
+        delay(consentTimeout)
+        _cmpTimerLiveData.postValue(Unit)
+    }
+
+    fun startAdTimer() = viewModelScope.launch(Dispatchers.Default + jobAds) {
+        if (isAdTimerStarted) return@launch
+        Log.i("AdsInformation", "Ads -> startAdTimer: Started 8 seconds for Ads")
+
+        isAdTimerStarted = true
+        _loadAdsLiveData.postValue(Unit)
+
+        delay(adsTimeout)
+        // _navigateLiveData.postValue(Unit)
+    }
+
+
+    fun cancelCMPJob() {
+        if (jobCMP.isActive) {
+            Log.e("AdsInformation", "CMP -> cancelCMPJob: Cancelled 8 seconds")
+            jobCMP.cancel()
+        }
+    }
+
+    fun cancelAdsJob() {
+        if (jobAds.isActive) {
+            Log.e("AdsInformation", "Ads -> cancelAdsJob: Cancelled 8 seconds for Ads")
+            jobAds.cancel()
+        }
+    }
+
+    /* ----------------------------------- Ads Responses ----------------------------------- */
+
+    private val totalAds = 1
+    private val loadedAdsCounter = AtomicInteger(0)
+    fun onAdResponse() {
+        if (loadedAdsCounter.incrementAndGet() >= totalAds) {
+            cancelAdsJob()
+            viewModelScope.launch {
+                _openAddState.emit(true)
+            }
+        }
+    }
+}

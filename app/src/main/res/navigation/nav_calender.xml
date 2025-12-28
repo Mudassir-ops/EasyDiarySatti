@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_home"
+    app:startDestination="@id/calenderFragment">
+    <fragment
+        android:id="@+id/calenderFragment"
+        android:name="com.example.easydiarysatti.ui.notifications.CalenderFragment"
+        android:label="@string/calender"
+        tools:layout="@layout/fragment_calender">
+
+        <action
+            android:id="@+id/action_calenderFragment_to_previewFragment2"
+            app:destination="@id/previewFragment2" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/previewFragment2"
+        android:name="com.example.easydiarysatti.ui.previewnote.PreviewFragment"
+        android:label="Preview Notes"
+        tools:layout="@layout/fragment_preview" />
+</navigation>

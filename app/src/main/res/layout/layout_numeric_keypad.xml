@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:paddingVertical="@dimen/_20sdp"
+    android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/btnKey1"
+            style="@style/KeypadButtonStyle"
+            android:text="1"
+            app:layout_constraintEnd_toStartOf="@id/btnKey2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btnKey2"
+            style="@style/KeypadButtonStyle"
+            android:text="2"
+            app:layout_constraintEnd_toStartOf="@id/btnKey3"
+            app:layout_constraintStart_toEndOf="@id/btnKey1"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btnKey3"
+            style="@style/KeypadButtonStyle"
+            android:text="3"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btnKey2"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/btnKey4"
+            style="@style/KeypadButtonStyle"
+            android:text="4"
+            app:layout_constraintEnd_toStartOf="@id/btnKey5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnKey1" />
+
+        <TextView
+            android:id="@+id/btnKey5"
+            style="@style/KeypadButtonStyle"
+            android:text="5"
+            app:layout_constraintEnd_toStartOf="@id/btnKey6"
+            app:layout_constraintStart_toEndOf="@id/btnKey4"
+            app:layout_constraintTop_toBottomOf="@id/btnKey2" />
+
+        <TextView
+            android:id="@+id/btnKey6"
+            style="@style/KeypadButtonStyle"
+            android:text="6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btnKey5"
+            app:layout_constraintTop_toBottomOf="@id/btnKey3" />
+
+        <TextView
+            android:id="@+id/btnKey7"
+            style="@style/KeypadButtonStyle"
+            android:text="7"
+            app:layout_constraintEnd_toStartOf="@id/btnKey8"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnKey4" />
+
+        <TextView
+            android:id="@+id/btnKey8"
+            style="@style/KeypadButtonStyle"
+            android:text="8"
+            app:layout_constraintEnd_toStartOf="@id/btnKey9"
+            app:layout_constraintStart_toEndOf="@id/btnKey7"
+            app:layout_constraintTop_toBottomOf="@id/btnKey5" />
+
+        <TextView
+            android:id="@+id/btnKey9"
+            style="@style/KeypadButtonStyle"
+            android:text="9"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btnKey8"
+            app:layout_constraintTop_toBottomOf="@id/btnKey6" />
+
+        <ImageView
+            android:id="@+id/btnBiometric"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_60sdp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_biometric"
+            app:layout_constraintEnd_toStartOf="@id/btnKey0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnKey7"
+            app:layout_constraintWidth_percent="0.33" />
+
+        <TextView
+            android:id="@+id/btnKey0"
+            style="@style/KeypadButtonStyle"
+            android:text="0"
+            app:layout_constraintEnd_toStartOf="@id/btnBackspace"
+            app:layout_constraintStart_toEndOf="@id/btnBiometric"
+            app:layout_constraintTop_toBottomOf="@id/btnKey8" />
+
+        <ImageView
+            android:id="@+id/btnBackspace"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/_60sdp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_backspace"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/btnKey0"
+            app:layout_constraintTop_toBottomOf="@id/btnKey9"
+            app:layout_constraintWidth_percent="0.33" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

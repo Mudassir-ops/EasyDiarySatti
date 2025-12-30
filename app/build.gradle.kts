@@ -28,8 +28,8 @@ android {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 17
-        versionName = "17.0"
+        versionCode = 20
+        versionName = "20.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")

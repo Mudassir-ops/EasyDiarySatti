@@ -17,11 +17,11 @@ import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
-
 @AndroidEntryPoint
 class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
-    private val binding by viewBinding(FragmentEditProfileBinding::bind)
+    private var _binding: FragmentEditProfileBinding? = null
+    private val binding get() = _binding!!
     private lateinit var imagePicker: ImagePickerDelegate
     private var profilePic = ""
     private val viewModel by viewModels<NameViewModel>()
@@ -31,24 +31,25 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Initializing the ImagePicker with safety checks in the callback
+        _binding = FragmentEditProfileBinding.bind(view)
+        // Initializing the ImagePicker with safety checks
         imagePicker = ImagePickerDelegate(this) { uri, file ->
             val path = file?.path ?: return@ImagePickerDelegate
 
             showImageCropDialog(
                 imagePath = path,
                 btnDone = { drawable ->
-                    // FIX: Ensure fragment is attached and view exists before accessing binding
-                    if (isAdded && getView() != null) {
+                    _binding?.let {
                         profilePic = drawable.toString()
-                        binding?.ivProfile?.setImage(drawable = drawable)
+                        it.ivProfile.setImage(drawable)
                     }
-                },
+                }
+                ,
                 closeDialog = {
-                    // Safety check if you add logic here later
-                    if (isAdded && getView() != null) {
-                        // Handle dialog close if needed
+                    // Safety check for dialog closure
+                    if (view != null) {
+
+                        // Handle logic if needed
                     }
                 }
             )
@@ -59,6 +60,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     }
 
     private fun setupClickListeners() {
+        // Using binding?.apply is safe here as it's called directly in onViewCreated
         binding?.apply {
             ivEditProfile.setOnClickListener {
                 imagePicker.pickFromGalleryWithPermission()
@@ -68,6 +70,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
                 imagePicker.pickFromGalleryWithPermission()
             }
 
+            // Note: If these are empty, ensure you aren't missing logic inside
             etPname.doOnTextChanged { _, _, _, _ -> }
             etPmail.doOnTextChanged { _, _, _, _ -> }
 
@@ -81,6 +84,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     }
 
     private fun setupDefaultValues() {
+        // Create a local reference to binding to ensure null-safety throughout the function
         val currentBinding = binding ?: return
 
         sessionManagerRepo.getprofilePic()?.takeIf { it.isNotEmpty() }?.let {
@@ -95,5 +99,9 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         viewModel.getEmail()?.takeIf { it.isNotEmpty() }?.let {
             currentBinding.etPmail.setText(it)
         }
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

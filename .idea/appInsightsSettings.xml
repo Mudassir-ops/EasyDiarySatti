@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AppInsightsSettings">
+    <option name="selectedTabId" value="Firebase Crashlytics" />
+    <option name="tabSettings">
+      <map>
+        <entry key="Firebase Crashlytics">
+          <value>
+            <InsightsFilterSettings>
+              <option name="connection">
+                <ConnectionSetting>
+                  <option name="appId" value="com.dailydiary.privatejournal.lockednotes" />
+                  <option name="mobileSdkAppId" value="1:1056157605517:android:c3818c5b610d4519028cc4" />
+                  <option name="projectId" value="easy-diary-journal-with-lock" />
+                  <option name="projectNumber" value="1056157605517" />
+                </ConnectionSetting>
+              </option>
+              <option name="signal" value="SIGNAL_UNSPECIFIED" />
+              <option name="timeIntervalDays" value="THIRTY_DAYS" />
+              <option name="versions">
+                <list>
+                  <VersionSetting>
+                    <option name="buildVersion" value="19" />
+                    <option name="displayName" value="19.0 (19)" />
+                    <option name="displayVersion" value="19.0" />
+                    <option name="tracks">
+                      <list>
+                        <option value="PRODUCTION" />
+                      </list>
+                    </option>
+                  </VersionSetting>
+                </list>
+              </option>
+              <option name="visibilityType" value="ALL" />
+            </InsightsFilterSettings>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

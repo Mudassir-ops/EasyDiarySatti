@@ -59,6 +59,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private lateinit var imagePicker: ImagePickerDelegate
     private var activeNavHost: NavHostFragment? = null
 
+
     private val navHostListeners =
         mutableMapOf<NavHostFragment, NavController.OnDestinationChangedListener>()
 

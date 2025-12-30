@@ -303,47 +303,39 @@ fun AppCompatImageView.loadImage(
     resourceId: Int?,
     placeholder: Int = R.drawable.image_placeholder
 ) {
-    Glide.with(this.context)
+    if (resourceId == null) {
+        setImageResource(placeholder)
+        return
+    }
+
+    Glide.with(this)
         .load(resourceId)
+        .placeholder(placeholder)
+        .error(placeholder)
+        .fitCenter() // 👈 prevents full-size decode
         .into(this)
 }
 
 
 fun AppCompatImageView.loadAdaptiveImage(
     imagePath: String?,
-    placeholder: Int = R.drawable.image_placeholder,
+    placeholder: Int = R.drawable.image_placeholder
 ) {
-    Glide.with(this.context)
-        .load(imagePath)
-        .thumbnail(0.1f)
-        .centerCrop()
-        .into(this)
+    if (imagePath.isNullOrEmpty()) {
+        setImageResource(placeholder)
+        return
+    }
 
-//    Glide.with(this.context)
-//        .asBitmap()
-//        .load(imagePath ?: placeholder)
-//        .placeholder(placeholder)
-//        .error(placeholder)
-//        .into(object : CustomTarget<Bitmap>() {
-//            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-//                val targetWidth = width
-//                val targetHeight = height
-//
-//                if (targetWidth <= 0 || targetHeight <= 0) {
-//                    // View not measured yet; reload later
-//                    post { loadAdaptiveImage(imagePath, placeholder) }
-//                    return
-//                }
-//
-//                val resizedBitmap = resizeToFitView(resource, targetWidth, targetHeight)
-//                setImageBitmap(resizedBitmap)
-//            }
-//
-//            override fun onLoadCleared(placeholder: Drawable?) {
-//                setImageDrawable(placeholder)
-//            }
-//        })
+    Glide.with(this)
+        .load(imagePath)
+        .placeholder(placeholder)
+        .error(placeholder)
+        .fitCenter() // 👈 critical
+        .format(DecodeFormat.PREFER_RGB_565) // 👈 50% less memory
+        .disallowHardwareConfig()
+        .into(this)
 }
+
 
 /**
  * Resize the image to fit nicely inside the target view without distortion.
@@ -386,9 +378,9 @@ fun View.loadBackground(
 
     val request = Glide.with(this)
         .load(resourceId)
-        .override(targetWidth, targetHeight)      // ✅ CRITICAL
+        .override(targetWidth, targetHeight)
         .centerCrop()
-        .format(DecodeFormat.PREFER_RGB_565)      // ✅ 50% less memory
+        .format(DecodeFormat.PREFER_RGB_565)
         .dontAnimate()
 
     placeholder?.let { request.placeholder(it) }

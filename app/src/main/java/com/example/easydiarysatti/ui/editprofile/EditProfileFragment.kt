@@ -32,14 +32,25 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initializing the ImagePicker with safety checks in the callback
         imagePicker = ImagePickerDelegate(this) { uri, file ->
+            val path = file?.path ?: return@ImagePickerDelegate
+
             showImageCropDialog(
-                imagePath = file?.path ?: return@ImagePickerDelegate,
+                imagePath = path,
                 btnDone = { drawable ->
-                    profilePic = drawable.toString()
-                    binding?.ivProfile?.setImage(drawable = drawable) // ✅ SAFE
+                    // FIX: Ensure fragment is attached and view exists before accessing binding
+                    if (isAdded && getView() != null) {
+                        profilePic = drawable.toString()
+                        binding?.ivProfile?.setImage(drawable = drawable)
+                    }
                 },
-                closeDialog = {}
+                closeDialog = {
+                    // Safety check if you add logic here later
+                    if (isAdded && getView() != null) {
+                        // Handle dialog close if needed
+                    }
+                }
             )
         }
 
@@ -47,10 +58,11 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         setupDefaultValues()
     }
 
-    private fun setupClickListeners()  {
-        binding?.apply { ivEditProfile.setOnClickListener {
-            imagePicker.pickFromGalleryWithPermission()
-        }
+    private fun setupClickListeners() {
+        binding?.apply {
+            ivEditProfile.setOnClickListener {
+                imagePicker.pickFromGalleryWithPermission()
+            }
 
             ivProfile.setOnClickListener {
                 imagePicker.pickFromGalleryWithPermission()
@@ -64,22 +76,24 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
                 viewModel.saveName(etPname.text.toString())
                 viewModel.saveEmail(etPmail.text.toString())
                 findNavController().navigateUp()
-            } }
-
+            }
+        }
     }
 
-    private fun setupDefaultValues() = with(binding) {
+    private fun setupDefaultValues() {
+        val currentBinding = binding ?: return
+
         sessionManagerRepo.getprofilePic()?.takeIf { it.isNotEmpty() }?.let {
             profilePic = it
-            binding?.ivProfile?.setImage(drawable = it.toUri())
+            currentBinding.ivProfile.setImage(drawable = it.toUri())
         }
 
         viewModel.getName()?.takeIf { it.isNotEmpty() }?.let {
-            binding?.etPname?.setText(it)
+            currentBinding.etPname.setText(it)
         }
 
         viewModel.getEmail()?.takeIf { it.isNotEmpty() }?.let {
-            binding?.etPmail?.setText(it)
+            currentBinding.etPmail.setText(it)
         }
     }
 }

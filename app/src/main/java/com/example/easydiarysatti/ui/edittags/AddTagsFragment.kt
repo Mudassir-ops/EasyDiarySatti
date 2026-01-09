@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.ui.edittags
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import androidx.activity.addCallback
@@ -23,6 +24,7 @@ import com.example.easydiarysatti.ui.edittags.TagsAdapter.Companion.ITEM_CLICK
 import com.example.easydiarysatti.ui.home.HomeNotesState
 import com.example.easydiarysatti.ui.home.HomeViewModel
 import com.example.easydiarysatti.utills.editTagDialog
+import com.example.easydiarysatti.utills.getCurrentThemeColor
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -34,6 +36,7 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
     private var selectedNoteId = -1L
+
     private var allNotes: List<CreateNoteEntity>? = null
     private val tagsAdapter: TagsAdapter by lazy {
         TagsAdapter(onItemClick = {
@@ -107,6 +110,8 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding?.apply {
+            val themeColor=getCurrentThemeColor(sessionManagerRepo)
+            btnNext.backgroundTintList = ColorStateList.valueOf(themeColor)
             activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
                 if (arguments?.getBoolean(FROM_SCREEN) == false) {
                     findNavController().navigateUp()

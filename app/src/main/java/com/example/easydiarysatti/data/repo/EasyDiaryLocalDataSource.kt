@@ -32,6 +32,7 @@ interface EasyDiaryLocalDataSource {
         newImages: List<String>
     )
 
+    suspend fun deleteNote(note: CreateNoteEntity)
     suspend fun insertReminder(reminderEntity: ReminderEntity): Long
     suspend fun deleteReminder(reminderEntity: ReminderEntity)
     suspend fun updateReminder(reminderEntity: ReminderEntity)

@@ -7,6 +7,8 @@
         <item name="colorPrimary">@color/app_primary_color</item>
 
     </style>
+
+
     <style name="KeypadButtonStyle">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">@dimen/_60sdp</item>
@@ -85,7 +87,7 @@
     </style>
 
     <style name="HintTextStyle" parent="TextAppearance.MaterialComponents.Body2">
-        <item name="android:textColor">@color/tag_txt_color</item>
+        <item name="android:textColor">@color/pin_border</item>
     </style>
 
     <!-- res/values/styles.xml -->

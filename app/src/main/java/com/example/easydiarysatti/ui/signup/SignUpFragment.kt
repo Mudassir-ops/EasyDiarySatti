@@ -14,6 +14,7 @@ import com.example.easydiarysatti.databinding.FragmentSignUpBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.viewBinding
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -25,9 +26,13 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     private var currentPin = StringBuilder()
     private val dotsIds = listOf(R.id.dot1, R.id.dot2, R.id.dot3, R.id.dot4)
     private var canUseBiometrics = false
-
+    lateinit var mFirebaseAnalytics : FirebaseAnalytics
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
+        val eventParams = Bundle()
+        eventParams.putString("onBoardingSignup", "open_screen")
+        mFirebaseAnalytics.logEvent("On_Boarding_Access_Your_Diary_Login", eventParams)
         checkBiometricAvailability()
         setupKeypadListeners()
         clickListener()
@@ -61,7 +66,13 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             }
         }
     }
-
+    private fun logAnalyticsEvent(eventName: String, label: String) {
+        if (eventName.isEmpty()) return
+        val params = Bundle().apply {
+            putString("action_label", label)
+        }
+        mFirebaseAnalytics.logEvent(eventName, params)
+    }
     private fun setupInitialButtonState() {
         binding?.btnNext?.apply {
             isEnabled = false

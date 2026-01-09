@@ -28,8 +28,8 @@ android {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 19
-        versionName = "19.0"
+        versionCode = 21
+        versionName = "21.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")
@@ -136,6 +136,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
     kotlin {
         compilerOptions {
@@ -210,7 +211,8 @@ dependencies {
 
     implementation(libs.play.services.ads)
     implementation(libs.androidx.biometric)
-
+    implementation(libs.play.review)
+    implementation(libs.play.review.ktx)
 }
 
 kapt {

@@ -35,14 +35,15 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_edit_profile"
-        android:layout_width="@dimen/_40sdp"
-        android:layout_height="@dimen/_40sdp"
+        android:layout_width="@dimen/_35sdp"
+        android:layout_height="@dimen/_35sdp"
         android:layout_marginEnd="-15dp"
         android:elevation="@dimen/_5sdp"
         android:scaleType="fitXY"
+        android:background="@drawable/circle_bg"
         app:layout_constraintEnd_toEndOf="@id/profile_layout"
         app:layout_constraintTop_toTopOf="@id/profile_layout"
-        app:srcCompat="@drawable/edit_profile" />
+        app:srcCompat="@drawable/edit_icon" />
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ivProfile"
@@ -57,7 +58,7 @@
         app:layout_constraintTop_toTopOf="@+id/profile_layout"
         app:shapeAppearanceOverlay="@style/FullCircleShape"
         app:srcCompat="@drawable/theme_1"
-        app:strokeColor="@color/app_primary_color" />
+        />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/profile_layout"
@@ -81,7 +82,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_person_svg"
-            app:tint="#A8D8E9" />
+           />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -94,7 +95,6 @@
         android:fontFamily="@font/outfit_semibold"
         android:text="@string/satti"
         android:textAlignment="center"
-        android:textColor="@color/app_primary_color"
         android:textSize="@dimen/_15ssp"
         app:layout_constraintEnd_toEndOf="@id/profile_layout"
         app:layout_constraintStart_toStartOf="@id/profile_layout"

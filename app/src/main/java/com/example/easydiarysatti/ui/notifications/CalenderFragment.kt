@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -15,7 +16,9 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCalenderBinding
 import com.example.easydiarysatti.dateFormatter
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.getShortDisplayNameCompat
+import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setCustomDayEmojiBackground
 import com.example.easydiarysatti.ui.model.DayViewContainer
@@ -36,6 +39,7 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class CalenderFragment : Fragment(R.layout.fragment_calender) {
@@ -43,27 +47,55 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
     private val viewModel by viewModels<CalenderViewModel>()
     private var shimmerAdapter: ShimmerCalenderAdapter? = null
     private var shimmerAdapterNotes: ShimmerAdapter? = null
+
+    @Inject
+    lateinit var sessionManagerRepo: SessionManagerRepo
+
     // Inside CalenderFragment.kt
     private val calenderItemAdapter: CalenderItemAdapter by lazy {
         CalenderItemAdapter(onNoteItemClick = { note ->
-            findNavController().safeNav(
-                currentDestId = R.id.calenderFragment,
-                actionId = R.id.action_calenderFragment_to_previewFragment2,
-                bundle = Bundle().apply {
-                    // Change this line to pass the ID as a Long
-                    putLong(NOTE_ID, note.noteId.toLong())
+            findNavController().navigate(
+                R.id.previewFragment2,
+                Bundle().apply {
+                    putLong(NOTE_ID, note.noteId)
                 }
             )
         })
     }
+
     private val formatter by lazy { dateFormatter() }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         initialCalenderPageSetup()
         setupCurrentDate()
+        setupBgTheme()
     }
+    private fun applyDynamicTheme(themeResId: Int?) {
+        val themeColor = when (themeResId) {
+            R.drawable.theme_1 -> ContextCompat.getColor(requireContext(), R.color.theme1_color)
+            R.drawable.theme_2 -> ContextCompat.getColor(requireContext(), R.color.theme2_color)
+            R.drawable.theme_3 -> ContextCompat.getColor(requireContext(), R.color.theme3_color)
+            R.drawable.theme_4 -> ContextCompat.getColor(requireContext(), R.color.theme4_color)
+            R.drawable.theme_5 -> ContextCompat.getColor(requireContext(), R.color.theme5_color)
+            else -> ContextCompat.getColor(requireContext(), R.color.app_primary_color)
+        }
 
+        binding?.apply {
+
+            // 1. Update the Icon Tint
+            ivCalender.imageTintList = android.content.res.ColorStateList.valueOf(themeColor)
+
+            // 2. Update the Text Color
+            tvMonth.setTextColor(themeColor)
+        }
+    }
+    private fun setupBgTheme() {
+        val currentTheme = sessionManagerRepo.getBgTheme()
+
+        // Apply colors to FAB and Bottom Nav
+        applyDynamicTheme(currentTheme)
+    }
     private fun setupCalender() {
         setupCustomCalenderMonth()
         customCalenderDaySetup()
@@ -187,6 +219,7 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
             textView?.visibility = View.GONE
             imageView?.visibility = View.VISIBLE
             imageView?.setImageResource(noteEntity.feelingEmojiRes)
+
             imageView?.setCustomDayEmojiBackground(
                 fillColor = noteEntity.selectedEmojiColor,
                 strokeColor = noteEntity.selectedEmojiColor,

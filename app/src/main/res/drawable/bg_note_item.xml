@@ -4,6 +4,6 @@
     <solid android:color="@color/white" />
     <corners android:radius="@dimen/_5sdp" />
     <stroke
-        android:width="@dimen/_2sdp"
+        android:width="2dp"
         android:color="@color/calender_bg_color" />
 </shape>

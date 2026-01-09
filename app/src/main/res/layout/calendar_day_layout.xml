@@ -13,6 +13,7 @@
         android:layout_height="@dimen/_32sdp"
         android:background="@drawable/bg_rounded_day"
         android:gravity="center"
+        android:textColor="@color/black"
         android:textSize="@dimen/_12ssp"
         android:visibility="visible" />
 

@@ -1,6 +1,7 @@
 package com.example.easydiarysatti
 
 import android.Manifest
+import android.R.attr.required
 import android.app.AlarmManager
 import android.content.Intent
 import android.os.Build
@@ -18,22 +19,26 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import com.example.easydiarysatti.ads.cmp.ConsentController
+import com.example.easydiarysatti.ads.cmp.ConsentController.ConsentCallback
 import com.example.easydiarysatti.data.repo.UpdateState
 import com.example.easydiarysatti.databinding.ActivityMainBinding
 import com.example.easydiarysatti.domain.model.DrawerItem
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.ui.onboarding.OnBoardingViewModel
+import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), ConsentCallback {
 
     private lateinit var binding: ActivityMainBinding
     private val updateViewModel: UpdateViewModel by viewModels()
-
+    // 1. Declare the controller
+    private lateinit var consentController: ConsentController
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
@@ -103,11 +108,14 @@ class MainActivity : AppCompatActivity() {
     private val noteBgList: List<Int?> by lazy {
         listOf(
             null,
-            R.drawable.note_bg_1,
-            R.drawable.note_bg_2,
-            R.drawable.note_bg_3,
-            R.drawable.note_bg_4,
-            R.drawable.note_bg_3,
+            R.drawable.background_1,
+            R.drawable.background_2,
+            R.drawable.background_3,
+            R.drawable.background_4,
+            R.drawable.background_5,
+            R.drawable.background_6,
+            R.drawable.background_7,
+            R.drawable.background_8,
         )
     }
 
@@ -144,7 +152,7 @@ class MainActivity : AppCompatActivity() {
                 title = getString(R.string.langauge)
             ), DrawerItem(
                 bgTint = "#FFAC81",
-                imgRes = R.drawable.ic_privacy_policy,
+                imgRes = R.drawable.privacy_policy,
                 title = getString(R.string.privacy_policy)
             )
         )
@@ -155,6 +163,8 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        consentController = ConsentController(this)
+        consentController.initConsent(deviceId = "D31911EF56FDCB9715391100A2AB57A8", callback = this)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -162,6 +172,7 @@ class MainActivity : AppCompatActivity() {
         }
         setupStartGraph()
         checkAutoUpdate()
+        handleIntent(intent)
     }
 
     fun getBgThemes(): List<Int?> = noteBgList
@@ -176,9 +187,9 @@ class MainActivity : AppCompatActivity() {
         val inflater = navController.navInflater
         val navGraph = inflater.inflate(R.navigation.mobile_navigation)
         if (viewModel.isOnBoardingCompleted()) {
-            navGraph.setStartDestination(R.id.loginFragment)
+            navGraph.setStartDestination(R.id.splashFragment)
         } else {
-            navGraph.setStartDestination(R.id.onBoardingFragment)
+            navGraph.setStartDestination(R.id.splashFragment)
         }
         navController.graph = navGraph
 
@@ -202,6 +213,7 @@ class MainActivity : AppCompatActivity() {
         }
         updateViewModel.checkDownloadedOnResume()
     }
+    // ADD THIS: Handle intent if the app is already in the background
 
     override fun onDestroy() {
         super.onDestroy()
@@ -223,7 +235,27 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    // Inside MainActivity.kt
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        val noteId = intent?.getIntExtra(REMAINDER_UNIQUE_ID, -1) ?: -1
+        if (noteId != -1) {
+            // Use your safeNav extension to go to the note screen
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+            navHostFragment?.navController?.safeNav(
+                currentDestId = R.id.mainFragment, // Or current destination
+                actionId = R.id.remainderFragment,
+                bundle = Bundle().apply { putInt("noteId", noteId) }
+            )
+        }
+    }
     private fun showRestartSnackBar() {
         Snackbar.make(
             findViewById(android.R.id.content),
@@ -235,4 +267,20 @@ class MainActivity : AppCompatActivity() {
             }.show()
     }
 
+    override fun onAdsLoad(canRequestAds: Boolean) {
+        if (canRequestAds) {
+            Log.d("ConsentCheck", "Ads can be requested. Initialize your Ads SDK here.")
+             MobileAds.initialize(this) {}
+        } else {
+            Log.d("ConsentCheck", "Ads cannot be requested.")
+        }
+    }
+
+    override fun onPolicyStatus(isRequired: Boolean) {
+        // This tells you if the "Privacy Options" entry point needs to be visible in settings
+        Log.d("ConsentCheck", "Privacy Options Required: $required")
+    }
+    override fun onConsentFormDismissed() {
+        Log.d("ConsentCheck", "Form dismissed.")
+    }
 }

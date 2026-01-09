@@ -46,7 +46,7 @@
                 android:layout_height="@dimen/_45sdp"
                 android:layout_marginTop="@dimen/_15sdp"
                 android:layout_marginEnd="@dimen/_8sdp"
-                android:background="@drawable/bg_create_note"
+                android:background="@android:color/transparent"
                 android:enabled="false"
                 android:fontFamily="@font/outfit"
                 android:hint="@string/header"
@@ -70,7 +70,7 @@
                 app:layout_constraintBottom_toBottomOf="@id/et_header"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@id/et_header"
-                app:srcCompat="@drawable/emooji_smilie" />
+                app:srcCompat="@drawable/happy" />
 
             <!-- Note Detail Section -->
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -78,7 +78,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_15sdp"
-                android:background="@drawable/bg_create_note"
+                android:background="@android:color/transparent"
                 android:padding="@dimen/_10sdp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/iv_emoji"
@@ -93,6 +93,7 @@
                     android:visibility="visible"
                     app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="1.0"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     tools:itemCount="1"

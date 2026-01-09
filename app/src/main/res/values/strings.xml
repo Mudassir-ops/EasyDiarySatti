@@ -48,6 +48,7 @@
     <string name="add_note">Add Note</string>
     <string name="save">Save</string>
     <string name="header">Header</string>
+    <string name="title">Title</string>
     <string name="write_your_thoughts_here">Write your thoughts here…</string>
     <string name="hash_tag">Hash Tag</string>
     <string name="media">Media</string>
@@ -124,7 +125,6 @@
     <string name="privacy_policy_link">https://sites.google.com/view/easy-diary-journal-with-lock/home</string>
 
 
-
     <string name="entrance_screen">Entrance Screen</string>
     <string name="language_screen">Language Screen</string>
     <string name="on_boarding_screen">OnBoarding Screen</string>
@@ -142,5 +142,10 @@
     <string name="_continue">Continue</string>
     <string name="navigate">Navigate</string>
     <string name="example_gmail_com">example@gmail.com</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="ok">Ok</string>
+    <string name="success">success</string>
+    <string name="error">"Please enter same pin "</string>
 
 </resources>

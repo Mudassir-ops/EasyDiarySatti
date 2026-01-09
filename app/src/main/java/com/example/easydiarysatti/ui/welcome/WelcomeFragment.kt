@@ -106,14 +106,6 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
     private fun onAppOpenResponse() {
         viewModelEntrance.onAdResponse()
     }
-
-    private fun Boolean.enableButton() {
-        binding?.apply {
-            btnNext.isEnabled = this@enableButton
-            btnNext.alpha = if (this@enableButton) 1.0F else 0.5F
-        }
-    }
-
     private fun observeAdd() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModelEntrance.openAddState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
@@ -123,4 +115,12 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
             }
         }
     }
+    private fun Boolean.enableButton() {
+        binding?.apply {
+            btnNext.isEnabled = this@enableButton
+            btnNext.alpha = if (this@enableButton) 1.0F else 0.5F
+        }
+    }
+
+
 }

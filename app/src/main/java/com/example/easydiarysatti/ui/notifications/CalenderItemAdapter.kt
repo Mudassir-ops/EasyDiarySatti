@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.CalenderNoteItemLayoutBinding
+import com.example.easydiarysatti.setSafeClickListener
 
 class CalenderItemAdapter(
     private val onNoteItemClick: (CreateNoteEntity) -> Unit
@@ -18,7 +19,9 @@ class CalenderItemAdapter(
         fun bind(noteEntity: CreateNoteEntity) {
             binding.noteEntity = noteEntity
             binding.executePendingBindings()
-            binding.root.setOnClickListener {
+
+            // Use setSafeClickListener from Extensions.kt to prevent double-click crashes
+            binding.root.setSafeClickListener {
                 onNoteItemClick.invoke(noteEntity)
             }
         }
@@ -51,4 +54,3 @@ class CalenderItemAdapter(
         }
     }
 }
-

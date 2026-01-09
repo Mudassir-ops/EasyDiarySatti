@@ -124,7 +124,10 @@ class CreateNotesViewModel @Inject constructor(
     fun clearTags() {
         tagList.clear()
     }
-
+    fun updateImagesList(newList: List<String>) {
+        imagesList?.clear()
+        imagesList?.addAll(newList)
+    }
     fun updateTagsForNote(
         noteId: Long,
         newTags: List<CustomTagEntity>

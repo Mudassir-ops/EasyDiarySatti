@@ -2,8 +2,7 @@ package com.example.easydiarysatti.ads.cmp
 
 import android.app.Activity
 import android.util.Log
-import com.example.easydiarysatti.ads.cmp.callback.ConsentCallback
-import com.example.easydiarysatti.ads.utils.Constants.TAG
+import com.example.easydiarysatti.BuildConfig
 import com.google.android.ump.ConsentDebugSettings
 import com.google.android.ump.ConsentForm
 import com.google.android.ump.ConsentInformation
@@ -17,153 +16,89 @@ class ConsentController(private val activity: Activity) {
     private var consentCallback: ConsentCallback? = null
     private var consentForm: ConsentForm? = null
 
+    private val TAG = "ConsentController"
+
     val canRequestAds: Boolean get() = consentInformation?.canRequestAds() == true
 
-//    fun initConsent(
-//        @Debug("Device Id is only use for DEBUG") deviceId: String,
-//        callback: ConsentCallback?
-//    ) {
-//        this.consentCallback = callback
-//
-//        val isDebug = BuildConfig.DEBUG
-//
-//
-//        val debugSettings = ConsentDebugSettings.Builder(activity)
-//            .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
-//            .addTestDeviceHashedId(deviceId)
-//            .build()
-//
-//        val params = when (isDebug) {
-//            true -> ConsentRequestParameters.Builder().setConsentDebugSettings(debugSettings)
-//                .build()
-//
-//            false -> ConsentRequestParameters.Builder().setTagForUnderAgeOfConsent(false).build()
-//        }
-//
-//        consentInformation = UserMessagingPlatform.getConsentInformation(activity).also {
-//            if (isDebug) {
-//                Log.d(TAG, "Consent Form reset() in Debug")
-//                it.reset()
-//            }
-//
-//            Log.d(TAG, "Consent ready for initialization")
-//            it.requestConsentInfoUpdate(activity, params, {
-//                Log.d(
-//                    TAG,
-//                    "Consent successfully
-//                    initialized \n Is Consent Form Available: ${it.isConsentFormAvailable}"
-//                )
-//
-//                if (it.isConsentFormAvailable) {
-//
-//                    // Show Consent Logs
-//                    when (consentInformation?.consentStatus) {
-//                        ConsentStatus.REQUIRED -> Log.d(TAG, "consentStatus: REQUIRED")
-//                        ConsentStatus.NOT_REQUIRED -> Log.d(TAG, "consentStatus: NOT_REQUIRED")
-//                        ConsentStatus.OBTAINED -> Log.d(TAG, "consentStatus: OBTAINED")
-//                        ConsentStatus.UNKNOWN -> Log.d(TAG, "consentStatus: UNKNOWN")
-//                    }
-//
-//                    // Show Policy Logs
-//                    when (consentInformation?.privacyOptionsRequirementStatus) {
-//                        ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED -> Log.d(
-//                            TAG,
-//                            "privacyOptionsRequirementStatus: REQUIRED"
-//                        )
-//
-//                        ConsentInformation.PrivacyOptionsRequirementStatus.NOT_REQUIRED -> Log.d(
-//                            TAG,
-//                            "privacyOptionsRequirementStatus: NOT_REQUIRED"
-//                        )
-//
-//                        ConsentInformation.PrivacyOptionsRequirementStatus.UNKNOWN -> Log.d(
-//                            TAG,
-//                            "privacyOptionsRequirementStatus: UNKNOWN"
-//                        )
-//
-//                        null -> Log.d(TAG, "Consent Information is null")
-//                    }
-//
-//                    // Whether consent & policy is required or not
-//                    when (consentInformation?.consentStatus == ConsentStatus.REQUIRED) {
-//                        true -> loadConsentForm()
-//                        false -> consentCallback?.onAdsLoad(canRequestAds)
-//                    }
-//
-//                    val isPolicyRequired =
-//                        consentInformation?.privacyOptionsRequirementStatus == ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
-//                    consentCallback?.onPolicyStatus(isPolicyRequired)
-//
-//                } else {
-//                    Log.d(TAG, "Consent form is not available")
-//                    consentCallback?.onAdsLoad(canRequestAds)
-//                }
-//            }, { error ->
-//                Log.e(TAG, "initializationError: ${error.message}")
-//                consentCallback?.onAdsLoad(canRequestAds)
-//            })
-//        }
-//    }
+    interface ConsentCallback {
+        fun onAdsLoad(canRequestAds: Boolean)
+        fun onPolicyStatus(isRequired: Boolean)
+        fun onConsentFormLoaded() {}
+        fun onConsentFormDismissed() {}
+    }
+
+    fun initConsent(deviceId: String = "", callback: ConsentCallback?) {
+        this.consentCallback = callback
+        consentInformation = UserMessagingPlatform.getConsentInformation(activity)
+
+        // --- FOR TESTING ONLY ---
+        // Uncomment the line below to reset the consent state and force the form to show every time
+        // consentInformation?.reset()
+
+        val params = if (BuildConfig.DEBUG) {
+            // Debug settings for developers
+            val debugSettings = ConsentDebugSettings.Builder(activity)
+                .setDebugGeography(ConsentDebugSettings.DebugGeography.DEBUG_GEOGRAPHY_EEA)
+                .addTestDeviceHashedId(deviceId)
+                .build()
+
+            ConsentRequestParameters.Builder()
+                .setTagForUnderAgeOfConsent(false)
+                .setConsentDebugSettings(debugSettings)
+                .build()
+        } else {
+            // Production settings for real users
+            ConsentRequestParameters.Builder()
+                .setTagForUnderAgeOfConsent(false)
+                .build()
+        }
+
+        consentInformation?.requestConsentInfoUpdate(activity, params, {
+            val isFormAvailable = consentInformation?.isConsentFormAvailable == true
+
+            if (isFormAvailable) {
+                handleConsentStatus()
+            } else {
+                consentCallback?.onAdsLoad(canRequestAds)
+            }
+
+            val isPolicyRequired = consentInformation?.privacyOptionsRequirementStatus ==
+                    ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED
+            consentCallback?.onPolicyStatus(isPolicyRequired)
+
+        }, { error ->
+            Log.e(TAG, "initializationError: ${error.message}")
+            consentCallback?.onAdsLoad(canRequestAds)
+        })
+    }
+
+    private fun handleConsentStatus() {
+        when (consentInformation?.consentStatus) {
+            ConsentStatus.REQUIRED -> loadConsentForm()
+            ConsentStatus.OBTAINED, ConsentStatus.NOT_REQUIRED -> {
+                consentCallback?.onAdsLoad(canRequestAds)
+            }
+            else -> consentCallback?.onAdsLoad(canRequestAds)
+        }
+    }
 
     private fun loadConsentForm() {
-        UserMessagingPlatform.loadConsentForm(activity, { consentForm ->
-            Log.d(TAG, "Consent Form Load Successfully")
-            this.consentForm = consentForm
-            consentCallback?.onConsentFormLoaded()
-        }) { formError ->
-            Log.e(TAG, "Consent Form Load to Fail: ${formError.message}")
+        UserMessagingPlatform.loadConsentForm(activity, { form ->
+            this.consentForm = form
+            showConsentForm()
+        }, { error ->
+            Log.e(TAG, "Consent Form Load Fail: ${error.message}")
             consentCallback?.onAdsLoad(canRequestAds)
-        }
+        })
     }
 
     fun showConsentForm() {
-        Log.i(TAG, "Consent form is showing")
-        consentForm?.show(activity) { formError ->
-            Log.i(TAG, "consent Form Dismissed")
-
+        consentForm?.show(activity) { error ->
+            if (error != null) {
+                Log.e(TAG, "Form Show Error: ${error.message}")
+            }
             consentCallback?.onConsentFormDismissed()
             consentCallback?.onAdsLoad(canRequestAds)
-
-            when (formError == null) {
-                true -> checkConsentAndPrivacyStatus()
-                false -> Log.e(TAG, "Consent Form Show to fail: ${formError.message}")
-            }
-
-        } ?: run {
-            Log.e(TAG, "Consent form failed to show")
-            consentCallback?.onAdsLoad(canRequestAds)
         }
     }
-
-    private fun checkConsentAndPrivacyStatus() {
-        Log.d(TAG, "Check Consent And Privacy Status After Form Dismissed")
-
-        when (consentInformation?.consentStatus) {
-            ConsentStatus.REQUIRED -> Log.d(TAG, "consentStatus: REQUIRED")
-            ConsentStatus.NOT_REQUIRED -> Log.d(TAG, "consentStatus: NOT_REQUIRED")
-            ConsentStatus.OBTAINED -> Log.d(TAG, "consentStatus: OBTAINED")
-            ConsentStatus.UNKNOWN -> Log.d(TAG, "consentStatus: UNKNOWN")
-            null -> Log.d(TAG, "Consent Information is null")
-        }
-        when (consentInformation?.privacyOptionsRequirementStatus) {
-            ConsentInformation.PrivacyOptionsRequirementStatus.REQUIRED -> Log.d(
-                TAG,
-                "privacyOptionsRequirementStatus: REQUIRED"
-            )
-
-            ConsentInformation.PrivacyOptionsRequirementStatus.NOT_REQUIRED -> Log.d(
-                TAG,
-                "privacyOptionsRequirementStatus: NOT_REQUIRED"
-            )
-
-            ConsentInformation.PrivacyOptionsRequirementStatus.UNKNOWN -> Log.d(
-                TAG,
-                "privacyOptionsRequirementStatus: UNKNOWN"
-            )
-
-            null -> Log.d(TAG, "Consent Information is null")
-        }
-    }
-
-    annotation class Debug(val message: String = "For Debug Feature")
 }

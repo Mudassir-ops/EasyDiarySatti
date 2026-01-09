@@ -1,6 +1,8 @@
 package com.example.easydiarysatti.ui.login
 
 import android.content.Context
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -17,12 +19,14 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentLoginBinding
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executor
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class LoginFragment : Fragment(R.layout.fragment_login) {
@@ -32,7 +36,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private var isVerified = false
     private var currentPin = StringBuilder()
     private val dotsIds = listOf(R.id.dot1, R.id.dot2, R.id.dot3, R.id.dot4)
-
+    @Inject
+    lateinit var sessionManagerRepo: SessionManagerRepo
     private lateinit var executor: Executor
     private lateinit var biometricPrompt: BiometricPrompt
     private lateinit var promptInfo: BiometricPrompt.PromptInfo
@@ -44,7 +49,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         setupKeypadListeners()
         observeLoginState()
         clickListeners()
-
+        setupBgTheme()
+        updateDotsUi()
         isVerified = false
         enabledDisabledButton(enabled = false)
     }
@@ -127,12 +133,12 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
     }
 
-    private fun updateDotsUi() {
-        dotsIds.forEachIndexed { index, dotId ->
-            val dotView = binding?.root?.findViewById<ImageView>(dotId)
-            dotView?.setImageResource(if (index < currentPin.length) R.drawable.ic_pin_dot_filled else R.drawable.ic_pin_dot_empty)
-        }
-    }
+//    private fun updateDotsUi() {
+//        dotsIds.forEachIndexed { index, dotId ->
+//            val dotView = binding?.root?.findViewById<ImageView>(dotId)
+//            dotView?.setImageResource(if (index < currentPin.length) R.drawable.ic_pin_dot_filled else R.drawable.ic_pin_dot_empty)
+//        }
+//    }
 
     private fun checkBiometricAvailability() {
         val biometricManager = BiometricManager.from(requireContext())
@@ -168,4 +174,53 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             override fun handleOnBackPressed() {}
         })
     }
+    // Helper to get color once for various UI elements
+    private fun getThemeColor(themeResId: Int?): Int {
+        return when (themeResId) {
+            R.drawable.theme_1 -> ContextCompat.getColor(requireContext(), R.color.theme1_color)
+            R.drawable.theme_2 -> ContextCompat.getColor(requireContext(), R.color.theme2_color)
+            R.drawable.theme_3 -> ContextCompat.getColor(requireContext(), R.color.theme3_color)
+            R.drawable.theme_4 -> ContextCompat.getColor(requireContext(), R.color.theme4_color)
+            R.drawable.theme_5 -> ContextCompat.getColor(requireContext(), R.color.theme5_color)
+            else -> ContextCompat.getColor(requireContext(), R.color.app_primary_color)
+        }
+    }
+
+
+
+    private fun applyDynamicTheme(themeResId: Int?) {
+        val themeColor = getThemeColor(themeResId)
+
+        binding?.apply {
+            // Update Next Button
+            btnNext.backgroundTintList = ColorStateList.valueOf(themeColor)
+
+            // If you have a keypad, you might want to tint the backspace or biometric icon too
+            keypadLayout.btnBiometric.imageTintList = ColorStateList.valueOf(themeColor)
+            keypadLayout.btnBackspace.imageTintList = ColorStateList.valueOf(themeColor)
+        }
+
+        // Refresh dots color based on current input
+        updateDotsUi()
+    }
+    private fun setupBgTheme() {
+        val currentTheme = sessionManagerRepo.getBgTheme()
+        applyDynamicTheme(currentTheme)
+    }
+    private fun updateDotsUi() {
+        val themeColor = getThemeColor(sessionManagerRepo.getBgTheme())
+
+        dotsIds.forEachIndexed { index, dotId ->
+            val dotView = binding?.root?.findViewById<ImageView>(dotId)
+            if (index < currentPin.length) {
+                dotView?.setImageResource(R.drawable.ic_pin_dot_filled)
+                dotView?.imageTintList = ColorStateList.valueOf(themeColor)
+            } else {
+                dotView?.setImageResource(R.drawable.ic_pin_dot_empty)
+                // Using a lighter gray for the empty state
+                dotView?.imageTintList = ColorStateList.valueOf(Color.parseColor("#D1D5DB"))
+            }
+        }
+    }
+
 }

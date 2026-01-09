@@ -83,8 +83,8 @@
                 android:fontFamily="@font/outfit"
                 android:hint="@string/personal"
                 android:maxLength="15"
-                android:textColor="@color/tag_txt_color"
-                android:textColorHint="@color/tag_txt_color"
+                android:textColor="@color/black"
+                android:textColorHint="@color/pin_border"
                 android:textSize="@dimen/_14ssp"
                 app:hintTextAppearance="@style/HintTextStyle" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -104,11 +104,11 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/_40sdp"
-            android:background="@drawable/btn_bg"
+            android:background="@color/app_primary_color"
             android:fontFamily="@font/outfit_medium"
             android:text="@string/save"
+
             android:textSize="@dimen/_14ssp"
-            app:backgroundTint="@color/app_primary_color"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"

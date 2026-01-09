@@ -16,19 +16,25 @@ import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.setKeyboardVisibilityListener
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.viewBinding
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class NameFragment : Fragment(R.layout.fragment_name) {
     private val viewModel by viewModels<NameViewModel>()
+    lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private val binding by viewBinding(FragmentNameBinding::bind)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
+        val eventParams = Bundle()
+        eventParams.putString("OnboardingName", "open_screen")
+        mFirebaseAnalytics.logEvent("On_Boarding_Enter_Your_Name", eventParams)
         binding?.apply {
             adjustScreenKeyboard()
             clickListener()
-            imgIntroOne.loadImage(resourceId = R.drawable.name_pic)
+            imgIntroOne.loadImage(resourceId = R.drawable.bg_home_ic)
             val savedName = viewModel.getName()
             if (savedName?.isNotEmpty() == true) {
                 edTextName.setText(savedName)
@@ -59,6 +65,9 @@ class NameFragment : Fragment(R.layout.fragment_name) {
     private fun clickListener() {
         binding?.apply {
             btnNext.setOnClickListener {
+                val eventParams = Bundle()
+                eventParams.putString("OnboardingName", "next_click")
+                mFirebaseAnalytics.logEvent("On_Boarding_Enter_Your_Name_Next", eventParams)
                 if (edTextName.text?.isEmpty() == true) {
                     binding?.nestedScrollView?.showSnackbar(
                         message = getString(R.string.enterName)

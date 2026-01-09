@@ -98,8 +98,8 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/outfit"
                 android:maxLength="15"
-                android:textColor="@color/tag_txt_color"
-                android:textColorHint="@color/tag_txt_color"
+                android:textColor="@color/black"
+                android:textColorHint="#ACB2BD"
                 android:textSize="@dimen/_14ssp"
                 app:hintTextAppearance="@style/HintTextStyle" />
         </com.google.android.material.textfield.TextInputLayout>

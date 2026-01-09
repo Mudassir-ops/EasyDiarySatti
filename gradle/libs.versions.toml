@@ -37,9 +37,9 @@ googleFirebaseCrashlytics = "3.0.6"
 firebaseAnalytics = "23.0.0"
 appUpdateVersion = "2.1.0"
 biometric = "1.1.0"
+play-review = "2.0.2"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
-
 colorpickerview = { module = "com.github.skydoves:colorpickerview", version.ref = "colorpickerview" }
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
@@ -78,6 +78,8 @@ app-update-ktx = { module = "com.google.android.play:app-update-ktx", version.re
 flexbox_layout = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexboxlayout" }
 image-cropper = { group = "com.vanniktech", name = "android-image-cropper", version.ref = "image_cropoper" }
 androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
+play-review = { group = "com.google.android.play", name = "review", version.ref = "play-review" }
+play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "play-review" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

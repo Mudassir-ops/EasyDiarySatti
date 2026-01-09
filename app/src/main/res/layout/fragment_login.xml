@@ -92,7 +92,7 @@
         android:fontFamily="@font/outfit_medium"
         android:text="@string/login"
         android:textSize="@dimen/_14ssp"
-        android:visibility="visible"
+        android:visibility="gone"
         app:backgroundTint="@color/app_primary_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

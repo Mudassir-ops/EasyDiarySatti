@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.utills
 
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
@@ -21,6 +22,8 @@ import androidx.core.graphics.toColorInt
 import androidx.databinding.BindingAdapter
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.canhub.cropper.CropImageView
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.data.local.CustomTagEntity
@@ -247,17 +250,21 @@ fun loadImageDialog(view: AppCompatImageView, imageUrl: String?) {
 
 @BindingAdapter("imagePath")
 fun CropImageView.setImagePath(path: String?) {
-    Log.d("CropImageView", "setImagePath: $path")
     if (path.isNullOrEmpty()) return
+
     val file = File(path)
-    Log.d("CropImageView", "setImagePath: $path")
     if (file.exists()) {
-        Log.d("CropImageView", "IfsetImagePath: $path")
-        val uri = Uri.fromFile(file)
-        this.setImageUriAsync(uri)
-    } else {
-        Log.d("CropImageView", "ElsesetImagePath: $path")
-        this.clearImage()
+        // Glide automatically resizes the image to fit the View dimensions
+        Glide.with(this.context)
+            .asBitmap()
+            .load(file)
+            .override(800, 800) // Force a safe size
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    setImageBitmap(resource)
+                }
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
     }
 }
 

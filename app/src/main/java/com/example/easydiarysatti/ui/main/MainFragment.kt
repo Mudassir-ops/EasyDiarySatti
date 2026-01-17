@@ -693,6 +693,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             })
     }
 
+
     private fun applyDynamicTheme(themeResId: Int?) {
         val themeColor = when (themeResId) {
             R.drawable.theme_1 -> ContextCompat.getColor(requireContext(), R.color.theme1_color)

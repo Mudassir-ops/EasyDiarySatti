@@ -147,5 +147,8 @@
     <string name="ok">Ok</string>
     <string name="success">success</string>
     <string name="error">"Please enter same pin "</string>
+    <string name="onboard_desc_1"> Log <b>your thoughts</b>, track habits, and <b>plan your goals</b> effortlessly in one beautiful space.</string>
+    <string name="onboard_desc_2"> <b>Save moments</b>, attach photos, organize entries with tags, and <b>relive your favorite memories</b> anytime.</string>
+    <string name="onboard_desc_3">Keep your <b>personal diary notes safe</b> with secure lock protection and <b>complete privacy control</b>.</string>
 
 </resources>

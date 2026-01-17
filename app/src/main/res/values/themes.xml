@@ -132,7 +132,9 @@
         <item name="colorAccent">@color/app_primary_color</item>
     </style>
 
-
+    <style name="ShapeAppearance.App.Circle" parent="">
+        <item name="cornerSize">50%</item>
+    </style>
     <!--    Ads Theme Style-->
     <style name="Theme.AdmobAds" parent="Base.Theme.EasyDiarySatti" />
 

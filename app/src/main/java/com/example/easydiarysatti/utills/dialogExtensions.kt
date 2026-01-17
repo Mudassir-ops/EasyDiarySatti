@@ -156,14 +156,8 @@ inline fun Fragment.showImageCropDialog(
     }
 
     binding.apply {
-//        binding.cropImageView.post {
-//            cropImageView.setImagePath(imagePath)
-//        }
         binding.cropImageView.post {
-            val finalPath = if (!imagePath.startsWith("content://") && !imagePath.startsWith("file://")) {
-                "file://$imagePath"
-            } else imagePath
-            cropImageView.setImagePath(finalPath)
+            cropImageView.setImagePath(imagePath)
         }
         binding.imagePath = imagePath
         btnSave.setOnClickListener {

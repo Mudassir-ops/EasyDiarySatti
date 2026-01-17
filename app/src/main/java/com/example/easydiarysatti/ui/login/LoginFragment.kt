@@ -3,6 +3,7 @@ package com.example.easydiarysatti.ui.login
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -63,12 +64,49 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                     super.onAuthenticationSucceeded(result)
                     handleNavigation()
                 }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                    // Optional: Handle specific error codes or show snackbar
+                }
             })
 
-        promptInfo = BiometricPrompt.PromptInfo.Builder()
+        val builder = BiometricPrompt.PromptInfo.Builder()
             .setTitle("Biometric login")
-            .setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
-            .build()
+            .setSubtitle("Use your biometric to unlock")
+
+        // RESOLVE CRASH: API-specific authenticator logic
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            // API 30+: Supports the combined bitmask
+            builder.setAllowedAuthenticators(BIOMETRIC_STRONG or DEVICE_CREDENTIAL)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // API 29: Use the legacy boolean method
+            builder.setDeviceCredentialAllowed(true)
+        } else {
+            // API 28 and below: Combination is unsupported
+            // You MUST use a negative button and CANNOT use DEVICE_CREDENTIAL
+            builder.setNegativeButtonText("Use PIN")
+        }
+
+        promptInfo = builder.build()
+    }
+
+    private fun checkBiometricAvailability() {
+        val biometricManager = BiometricManager.from(requireContext())
+
+        // Define authenticators to check based on API level to avoid crash
+        val authenticators = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            BIOMETRIC_STRONG or DEVICE_CREDENTIAL
+        } else {
+            // On API 28/29, check for Biometric only for the initial check
+            BIOMETRIC_STRONG
+        }
+
+        if (biometricManager.canAuthenticate(authenticators) == BiometricManager.BIOMETRIC_SUCCESS) {
+            binding?.keypadLayout?.btnBiometric?.visibility = View.VISIBLE
+        } else {
+            binding?.keypadLayout?.btnBiometric?.visibility = View.GONE
+        }
     }
 
     private fun clickListeners() {
@@ -101,22 +139,18 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
 
     private fun handleNavigation() {
         if (viewModel.isFirstLogin()) {
-            // ONLY SHOWS ONCE: First login after setup
             viewModel.markWelcomeScreenAsSeen()
             findNavController().safeNav(
                 currentDestId = R.id.loginFragment,
                 actionId = R.id.action_loginFragment_to_welcomeFragment
             )
         } else {
-            // SUBSEQUENT LOGINS: Skip Welcome back screen
             findNavController().safeNav(
                 currentDestId = R.id.loginFragment,
                 actionId = R.id.action_loginFragment_to_mainFragment
             )
         }
     }
-
-    // --- Keypad and UI Logic ---
 
     private fun onNumberClicked(number: String) {
         if (currentPin.length < 4) {
@@ -133,26 +167,21 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
     }
 
-//    private fun updateDotsUi() {
-//        dotsIds.forEachIndexed { index, dotId ->
-//            val dotView = binding?.root?.findViewById<ImageView>(dotId)
-//            dotView?.setImageResource(if (index < currentPin.length) R.drawable.ic_pin_dot_filled else R.drawable.ic_pin_dot_empty)
-//        }
-//    }
-
-    private fun checkBiometricAvailability() {
-        val biometricManager = BiometricManager.from(requireContext())
-        if (biometricManager.canAuthenticate(BIOMETRIC_STRONG or DEVICE_CREDENTIAL) == BiometricManager.BIOMETRIC_SUCCESS) {
-            binding?.keypadLayout?.btnBiometric?.visibility = View.VISIBLE
-        }
-    }
-
     private fun setupKeypadListeners() {
         binding?.keypadLayout?.apply {
             val numberButtons = listOf(btnKey0, btnKey1, btnKey2, btnKey3, btnKey4, btnKey5, btnKey6, btnKey7, btnKey8, btnKey9)
-            numberButtons.forEachIndexed { index, btn -> btn.setOnClickListener { onNumberClicked(index.toString()) } }
+            numberButtons.forEachIndexed { index, btn ->
+                btn.setOnClickListener { onNumberClicked(index.toString()) }
+            }
             btnBackspace.setOnClickListener { onBackspaceClicked() }
-            btnBiometric.setOnClickListener { biometricPrompt.authenticate(promptInfo) }
+            btnBiometric.setOnClickListener {
+                try {
+                    biometricPrompt.authenticate(promptInfo)
+                } catch (e: Exception) {
+                    // Safe catch for any remaining edge cases
+                    binding?.parentView?.showSnackbar("Biometric authentication unavailable")
+                }
+            }
         }
     }
 
@@ -174,7 +203,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
             override fun handleOnBackPressed() {}
         })
     }
-    // Helper to get color once for various UI elements
+
     private fun getThemeColor(themeResId: Int?): Int {
         return when (themeResId) {
             R.drawable.theme_1 -> ContextCompat.getColor(requireContext(), R.color.theme1_color)
@@ -186,30 +215,23 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         }
     }
 
-
-
     private fun applyDynamicTheme(themeResId: Int?) {
         val themeColor = getThemeColor(themeResId)
-
         binding?.apply {
-            // Update Next Button
             btnNext.backgroundTintList = ColorStateList.valueOf(themeColor)
-
-            // If you have a keypad, you might want to tint the backspace or biometric icon too
             keypadLayout.btnBiometric.imageTintList = ColorStateList.valueOf(themeColor)
             keypadLayout.btnBackspace.imageTintList = ColorStateList.valueOf(themeColor)
         }
-
-        // Refresh dots color based on current input
         updateDotsUi()
     }
+
     private fun setupBgTheme() {
         val currentTheme = sessionManagerRepo.getBgTheme()
         applyDynamicTheme(currentTheme)
     }
+
     private fun updateDotsUi() {
         val themeColor = getThemeColor(sessionManagerRepo.getBgTheme())
-
         dotsIds.forEachIndexed { index, dotId ->
             val dotView = binding?.root?.findViewById<ImageView>(dotId)
             if (index < currentPin.length) {
@@ -217,10 +239,8 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
                 dotView?.imageTintList = ColorStateList.valueOf(themeColor)
             } else {
                 dotView?.setImageResource(R.drawable.ic_pin_dot_empty)
-                // Using a lighter gray for the empty state
                 dotView?.imageTintList = ColorStateList.valueOf(Color.parseColor("#D1D5DB"))
             }
         }
     }
-
 }

@@ -6,7 +6,7 @@ import androidx.room.TypeConverters
 
 @Database(
     entities = [CreateNoteEntity::class, ReminderEntity::class],
-    version = 18, exportSchema = false
+    version = 19, exportSchema = false
 )
 @TypeConverters(ListStringConverter::class)
 abstract class EasyDiaryDatabase : RoomDatabase() {

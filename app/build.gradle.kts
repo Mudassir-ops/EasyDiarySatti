@@ -28,9 +28,9 @@ android {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 21
-        versionName = "21.0"
-
+        versionCode = 23
+        versionName = "23.0"
+        multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")
     }

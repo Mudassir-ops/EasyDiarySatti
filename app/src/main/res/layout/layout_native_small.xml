@@ -5,102 +5,101 @@
     android:id="@+id/nativeAdView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#DCDCDC">
+    android:background="@android:color/white">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:id="@+id/adAppIcon"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="4dp"
-            android:adjustViewBounds="true"
-            app:layout_constraintHeight_min="40dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:round="8dp"
+            app:round="16dp"
             tools:srcCompat="@tools:sample/avatars" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/adHeadline"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="#1B3A1B"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/adAppIcon"
+            app:layout_constraintTop_toTopOf="@+id/adAppIcon"
+            tools:text="Avocado Land" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/adAttribute"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:background="@drawable/bg_ads"
-            android:maxLines="1"
-            android:paddingHorizontal="5dp"
-            android:paddingVertical="2dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/bg_ads_border"
+            android:paddingHorizontal="4dp"
             android:text="Ad"
-            android:textColor="@android:color/white"
-            android:textSize="11sp"
+            android:textColor="#2E7D32"
+            android:textSize="10sp"
+            android:textStyle="bold"
             android:visibility="gone"
-            app:layout_constraintBottom_toBottomOf="@+id/adHeadline"
-            app:layout_constraintStart_toEndOf="@+id/adAppIcon"
-            app:layout_constraintTop_toTopOf="@+id/adHeadline"
-            tools:ignore="HardcodedText"
+            app:layout_constraintStart_toStartOf="@+id/adHeadline"
+            app:layout_constraintTop_toBottomOf="@+id/adHeadline"
             tools:visibility="visible" />
 
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/adHeadline"
-            style="@style/TextAppearance.Material3.TitleSmall"
-            android:layout_width="0dp"
+        <RatingBar
+            android:id="@+id/adStars"
+            style="?android:attr/ratingBarStyleSmall"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="6dp"
+            android:numStars="5"
+            android:progressTint="#2E7D32"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@+id/adAttribute"
             app:layout_constraintStart_toEndOf="@+id/adAttribute"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Test Ad: Google Ads" />
+            app:layout_constraintTop_toTopOf="@+id/adAttribute"
+            tools:rating="4.5"
+            tools:visibility="visible" />
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/adBody"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:layout_marginTop="2dp"
-            android:layout_marginEnd="8dp"
             android:ellipsize="end"
-            android:maxLines="1"
-            android:textSize="9sp"
+            android:maxLines="2"
+            android:textColor="#666666"
+            android:textSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/adAppIcon"
-            app:layout_constraintTop_toBottomOf="@+id/adHeadline"
-            app:lineHeight="12dp"
-            tools:ignore="SmallSp"
-            tools:text="@tools:sample/lorem/random" />
-
-        <androidx.constraintlayout.widget.Barrier
-            android:id="@+id/barrier"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:barrierDirection="bottom"
-            app:constraint_referenced_ids="adAppIcon, adBody" />
+            app:layout_constraintStart_toStartOf="@+id/adHeadline"
+            app:layout_constraintTop_toBottomOf="@+id/adAttribute"
+            tools:text="48 min • $2.99 delivery" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/adCallToAction"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="4dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="4dp"
-            android:paddingVertical="4dp"
-            android:textAllCaps="true"
-            android:textAppearance="@style/TextAppearance.Material3.BodySmall"
-            android:textSize="@dimen/_12ssp"
-            android:textStyle="bold"
+            android:layout_height="40dp"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="#1B3A1B"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingVertical="12dp"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:textSize="14sp"
             android:visibility="gone"
+            app:cornerRadius="6dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/barrier"
-            tools:text="Visit Site"
+            app:layout_constraintTop_toBottomOf="@+id/adAppIcon"
+            tools:text="Order Now"
             tools:visibility="visible" />
 
         <com.google.android.material.textview.MaterialTextView
@@ -108,12 +107,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Loading Advertisement..."
+            android:textColor="#999999"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:ignore="HardcodedText" />
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </com.google.android.gms.ads.nativead.NativeAdView>

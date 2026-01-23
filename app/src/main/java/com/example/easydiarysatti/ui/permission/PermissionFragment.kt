@@ -10,19 +10,25 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeLargeView
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.databinding.FragmentPermissionBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showPermissionDialog
 import com.example.easydiarysatti.viewBinding
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
+import kotlin.getValue
 
 @AndroidEntryPoint
 class PermissionFragment : Fragment(R.layout.fragment_permission) {
     private val binding by viewBinding(FragmentPermissionBinding::bind)
-
+    private val nativeViewModel: ViewModelNative by viewModels()
     private var cameraDeniedCount = 0
     private var galleryDeniedCount = 0
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
@@ -62,11 +68,27 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
                 checkAllPermissions()
             }
     }
+    private fun setupNativeAd() {
+        // 1. Observe the LiveData
+        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+            if (nativeAd != null) {
+                val adLargeView = AdNativeLargeView(requireContext())
+                binding?.flAdplaceholder?.apply {
+                    removeAllViews()
+                    addView(adLargeView)
+                    adLargeView.setNativeAd(nativeAd)
+                }
+            }
+        }
 
+        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+        nativeViewModel.loadNativeAd(NativeAdKey.PERMISSION)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         clickListener()
         checkAllPermissions()
+        setupNativeAd()
     }
 
     private fun checkAllPermissions() {

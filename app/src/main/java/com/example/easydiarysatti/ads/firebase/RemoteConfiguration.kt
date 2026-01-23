@@ -78,6 +78,7 @@ class RemoteConfiguration @Inject constructor(
             try {
                 rcAppOpen = remoteConfig[appOpen].asLong().toInt()
                 rcBannerHome = remoteConfig[bannerHome].asLong().toInt()
+                rcNativeLogin = remoteConfig[nativeLogin].asLong().toInt()
                 rcInterFeatureSaveNote = remoteConfig[interSaveNoteFeature].asLong().toInt()
                 rcRewardedImageAddFeature =
                     remoteConfig[rewardedImagesOnNoteFeature].asLong().toInt()

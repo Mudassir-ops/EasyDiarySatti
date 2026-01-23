@@ -10,7 +10,7 @@ import com.example.easydiarysatti.databinding.ItemDateHeaderBinding
 import com.example.easydiarysatti.databinding.ItemSingleImageBinding
 
 class MultiViewAdapter(
-    private val onImageClick: (String, String, Long) -> Unit
+    private val onImageClick: (List<String>, String, Long) -> Unit // Update parameter
 ) : ListAdapter<LibraryItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
     companion object {
@@ -65,19 +65,20 @@ class MultiViewAdapter(
 
     class ImageViewHolder(
         private val binding: ItemSingleImageBinding,
-        private val onImageClick: (String, String,Long) -> Unit
+        private val onImageClick: (List<String>, String, Long) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: LibraryItem.ImagesItem) {
+            // Load the first image as the representative cover
             Glide.with(binding.imageView.context)
-                .load(item.imagePaths)
+                .load(item.imagePaths.firstOrNull())
                 .thumbnail(0.1f)
                 .centerCrop()
                 .into(binding.imageView)
 
             binding.tvTitle.text = item.noteTitle
             binding.imageView.setOnClickListener {
-                onImageClick(item.imagePaths, item.date,item.noteId)
+                onImageClick(item.imagePaths, item.date, item.noteId)
             }
         }
     }
@@ -87,17 +88,13 @@ class MultiViewAdapter(
             return when {
                 oldItem is LibraryItem.DateItem && newItem is LibraryItem.DateItem ->
                     oldItem.date == newItem.date
-
                 oldItem is LibraryItem.ImagesItem && newItem is LibraryItem.ImagesItem ->
-                    oldItem.imagePaths == newItem.imagePaths
-
+                    oldItem.noteId == newItem.noteId // Use noteId for better comparison
                 else -> false
             }
         }
-
-        override fun areContentsTheSame(oldItem: LibraryItem, newItem: LibraryItem): Boolean {
-            return oldItem == newItem
-        }
+        override fun areContentsTheSame(oldItem: LibraryItem, newItem: LibraryItem): Boolean = oldItem == newItem
     }
 }
+
 

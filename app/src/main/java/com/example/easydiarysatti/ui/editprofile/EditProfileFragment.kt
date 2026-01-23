@@ -8,6 +8,10 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeLargeView
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.databinding.FragmentEditProfileBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.ui.name.NameViewModel
@@ -26,7 +30,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     private lateinit var imagePicker: ImagePickerDelegate
     private var profilePic = ""
     private val viewModel by viewModels<NameViewModel>()
-
+    private val nativeViewModel: ViewModelNative by viewModels()
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
@@ -58,8 +62,24 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
         setupClickListeners()
         setupDefaultValues()
+        setupNativeAd()
     }
+    private fun setupNativeAd() {
+        // 1. Observe the LiveData
+        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+            if (nativeAd != null) {
+                val adSmallView = AdNativeSmallView(requireContext())
+                binding.flAdplaceholder.apply {
+                    removeAllViews()
+                    addView(adSmallView)
+                    adSmallView.setNativeAd(nativeAd)
+                }
+            }
+        }
 
+        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+        nativeViewModel.loadNativeAd(NativeAdKey.PERMISSION)
+    }
     private fun setupClickListeners() {
         // Using binding?.apply is safe here as it's called directly in onViewCreated
         binding?.apply {

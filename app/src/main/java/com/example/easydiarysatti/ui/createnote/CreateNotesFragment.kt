@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -113,6 +114,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         clickListeners()
         adjustScreenKeyboard()
         setupImagesRecyclerview()
+        setupDescriptionScroll()
         logAnalyticsEvent("Add_Note_Screen", "fragment_open")
         listOf(
             CustomTagEntity(
@@ -125,7 +127,21 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         loadInterstitial()
 
     }
+    @SuppressLint("ClickableViewAccessibility")
+    private fun setupDescriptionScroll() {
+        binding?.etDescription?.setOnTouchListener { view, event ->
+            if (view.hasFocus()) {
+                // Disallow NestedScrollView to intercept touch events
+                view.parent.requestDisallowInterceptTouchEvent(true)
 
+                // Check if the event is an ACTION_UP to return control to the parent
+                if ((event.action and MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
+                    view.parent.requestDisallowInterceptTouchEvent(false)
+                }
+            }
+            false
+        }
+    }
     fun List<CustomTagEntity>.setupFlexBox() {
         val displayTags = this.filter { it.tagName.isNotBlank() }
 
@@ -524,12 +540,23 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     }
 
     private fun showInterstitial() {
+        // Set bypass to true so MainActivity.onResume doesn't show login
+        sessionManagerRepo.bypassSecurityLogin(true)
+
         interstitialAdsConfig.showInterstitialAd(
-            activity,
+            requireActivity(),
             InterAdKey.FEATURE_SAVE_NOTE,
             object : InterstitialOnShowCallBack {
-                override fun onAdFailedToShow() = navigateScreen()
-                override fun onAdImpressionDelayed() = navigateScreen()
+                override fun onAdFailedToShow() {
+                    sessionManagerRepo.bypassSecurityLogin(false)
+                    navigateScreen()
+                }
+                override fun onAdImpressionDelayed() {
+                    // Keep it true if the ad is still technically showing/active
+                    navigateScreen()
+                }
+                // If your callback has an 'onAdDismissed' or similar,
+                // set bypassSecurityLogin(false) there.
             })
     }
 

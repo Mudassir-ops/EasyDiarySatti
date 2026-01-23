@@ -54,6 +54,7 @@ import javax.inject.Inject
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.easydiarysatti.AppLogger
+import com.example.easydiarysatti.ui.edittags.AddTagsFragment
 import com.example.easydiarysatti.utills.getCurrentThemeColor
 import com.google.firebase.analytics.FirebaseAnalytics
 
@@ -580,14 +581,32 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             headerTitle.text = ContextCompat.getString(context ?: return, R.string.add_note)
             ivRemainder.visibility = View.GONE
             headerSave.visibility = View.VISIBLE
+            // RESTORE the Note Save listener
+            headerSave.setOnClickListener {
+                createNotesViewModel.sendAction(action = CreateNotesState.SaveNote)
+            }
         }
     }
-
+    private fun setProfileHeader() {
+        binding?.apply {
+            headerTitle.text = ContextCompat.getString(context ?: return, R.string.edit_profile)
+            ivRemainder.visibility = View.GONE
+            headerSave.visibility = View.VISIBLE
+        }
+    }
     private fun setTagsHeader() {
         binding?.apply {
             headerTitle.text = ContextCompat.getString(context ?: return, R.string.tags)
             ivRemainder.visibility = View.GONE
-            headerSave.visibility = View.GONE
+            headerSave.visibility = View.VISIBLE
+
+            headerSave.setOnClickListener {
+                // Find the child fragment inside the currently active NavHost
+                val currentFragment = activeNavHost?.childFragmentManager?.fragments?.find { it is AddTagsFragment }
+
+                // Cast and call the public save function
+                (currentFragment as? AddTagsFragment)?.handleSaveAction()
+            }
         }
     }
 

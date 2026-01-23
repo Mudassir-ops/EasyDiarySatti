@@ -8,6 +8,8 @@ import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.view.View
+import android.widget.FrameLayout
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -25,6 +27,7 @@ import com.example.easydiarysatti.data.repo.UpdateState
 import com.example.easydiarysatti.databinding.ActivityMainBinding
 import com.example.easydiarysatti.domain.model.DrawerItem
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
+import com.example.easydiarysatti.ui.login.LoginFragment
 import com.example.easydiarysatti.ui.onboarding.OnBoardingViewModel
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.snackbar.Snackbar
@@ -195,26 +198,54 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
 
     }
 
+    private var isColdStart = true // Will be true when app is first opened
+
     override fun onResume() {
         super.onResume()
         val isOnBoardingDone = viewModel.isOnBoardingCompleted()
         if (!isOnBoardingDone) return
-        val cameraCall = viewModel.getCameraCall()
-        Log.e("OnResumeApp-->", "onResume: $cameraCall")
+
+        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+        val currentDestinationId = navHostFragment?.navController?.currentDestination?.id
+
+        // 1. DO NOT show login if we are on Splash.
+        // This allows Splash to show and Ads to initialize properly.
+        if (currentDestinationId == R.id.splashFragment) {
+            return
+        }
+
+        if (sessionManagerRepo.isBypassSecurityLogin()) {
+            sessionManagerRepo.bypassSecurityLogin(false)
+            return
+        }
+
         if (viewModel.shouldRequireLogin()) {
-            viewModel.clearLogin()
-            val navHostFragment =
-                supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
-                    ?: return
-            val navController = navHostFragment.navController
-            if (navController.currentDestination?.id != R.id.loginFragment) {
-                navController.navigate(R.id.loginFragment)
-            }
+            showLoginOverlay()
         }
         updateViewModel.checkDownloadedOnResume()
     }
-    // ADD THIS: Handle intent if the app is already in the background
 
+    private fun showLoginOverlay() {
+        val overlayContainer = findViewById<FrameLayout>(R.id.loginOverlayContainer)
+        overlayContainer.visibility = View.VISIBLE
+
+        // Pass the Cold Start flag to the Fragment
+        val fragment = LoginFragment().apply {
+            arguments = Bundle().apply { putBoolean("IS_COLD_START", isColdStart) }
+        }
+
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.loginOverlayContainer, fragment)
+            .commit()
+
+        // After it shows once, any other trigger in this session is a resume
+        isColdStart = false
+    }
+
+    // Function for LoginFragment to call
+    fun onLoginFinished() {
+        findViewById<FrameLayout>(R.id.loginOverlayContainer).visibility = View.GONE
+    }
     override fun onDestroy() {
         super.onDestroy()
         updateViewModel.unregisterListener()
@@ -243,19 +274,37 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         handleIntent(intent)
     }
 
-    private fun handleIntent(intent: Intent?) {
-        val noteId = intent?.getIntExtra(REMAINDER_UNIQUE_ID, -1) ?: -1
-        if (noteId != -1) {
-            // Use your safeNav extension to go to the note screen
-            val navHostFragment = supportFragmentManager
-                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
-            navHostFragment?.navController?.safeNav(
-                currentDestId = R.id.mainFragment, // Or current destination
-                actionId = R.id.remainderFragment,
-                bundle = Bundle().apply { putInt("noteId", noteId) }
+//    private fun handleIntent(intent: Intent?) {
+//        val noteId = intent?.getIntExtra(REMAINDER_UNIQUE_ID, -1) ?: -1
+//        if (noteId != -1) {
+//            // Use your safeNav extension to go to the note screen
+//            val navHostFragment = supportFragmentManager
+//                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+//            navHostFragment?.navController?.safeNav(
+//                currentDestId = R.id.mainFragment, // Or current destination
+//                actionId = R.id.remainderFragment,
+//                bundle = Bundle().apply { putInt("noteId", noteId) }
+//            )
+//        }
+//    }
+// Inside MainActivity.kt
+private fun handleIntent(intent: Intent?) {
+    val noteId = intent?.getIntExtra("REMAINDER_UNIQUE_ID", -1) ?: -1
+    if (noteId != -1) {
+        val navHostFragment = supportFragmentManager
+            .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+
+        // Use global action instead of fragment ID to avoid crashes
+        try {
+            navHostFragment?.navController?.navigate(
+                R.id.action_global_remainderFragment,
+                Bundle().apply { putInt("noteId", noteId) }
             )
+        } catch (e: Exception) {
+            Log.e("Nav", "Global nav failed: ${e.message}")
         }
     }
+}
     private fun showRestartSnackBar() {
         Snackbar.make(
             findViewById(android.R.id.content),

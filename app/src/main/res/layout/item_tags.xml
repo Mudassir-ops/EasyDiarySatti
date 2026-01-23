@@ -51,6 +51,7 @@
         app:layout_constraintEnd_toStartOf="@id/icDelete"
         app:layout_constraintStart_toEndOf="@id/txtTagName"
         app:layout_constraintTop_toTopOf="@id/txtTagName"
+        app:tint="@color/adsTextColor"
         app:srcCompat="@drawable/pencil_icon" />
 
     <androidx.appcompat.widget.AppCompatImageView

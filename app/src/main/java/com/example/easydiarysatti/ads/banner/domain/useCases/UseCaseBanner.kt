@@ -25,18 +25,21 @@ class UseCaseBanner @Inject constructor(
     private fun checkRemoteConfig(bannerAdKey: BannerAdKey): Boolean {
         return when (bannerAdKey) {
             BannerAdKey.HOME -> sharedPreferenceUtils.rcBannerHome != 0
+            BannerAdKey.ON_BOARDING -> sharedPreferenceUtils.rcBannerOnboarding != 0
         }
     }
 
     private fun getAdId(bannerAdKey: BannerAdKey, context: Context): String {
         return when (bannerAdKey) {
             BannerAdKey.HOME -> context.getString(R.string.admob_banner_home_id).trim()
+            BannerAdKey.ON_BOARDING -> context.getString(R.string.admob_banner_onboard).trim()
         }
     }
 
     private fun getAdType(bannerAdKey: BannerAdKey): BannerAdType {
         return when (bannerAdKey) {
             BannerAdKey.HOME -> BannerAdType.COLLAPSIBLE_BOTTOM
+            BannerAdKey.ON_BOARDING -> BannerAdType.COLLAPSIBLE_BOTTOM
         }
     }
 

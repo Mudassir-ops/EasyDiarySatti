@@ -8,7 +8,6 @@ import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.launch
-
 @HiltViewModel
 class LoginViewModel @Inject constructor(
     private val sessionManagerRepo: SessionManagerRepo
@@ -27,15 +26,23 @@ class LoginViewModel @Inject constructor(
                     _loginState.emit(LoginState.Error("Wrong password"))
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
                 _loginState.emit(LoginState.Error("Failed to verify PIN"))
             }
         }
     }
+
+    // Logic: If isOnBoardingDoneOnce is null or false, it's the first login.
+    fun isFirstLogin(): Boolean {
+        return sessionManagerRepo.isOnBoardingDoneOnce() != true
+    }
+
+    fun markWelcomeScreenAsSeen() {
+        sessionManagerRepo.setOnBoardingDoneOnce(true)
+    }
 }
 
 sealed interface LoginState {
-    object Init : LoginState
+    data object Init : LoginState
     data object Success : LoginState
     data class Error(val message: String) : LoginState
 }

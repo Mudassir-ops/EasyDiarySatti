@@ -15,10 +15,17 @@ class CreateNoteRepositoryImpl(
     override suspend fun createEmptyNote(): Long {
         return localDataSource.createEmptyNote()
     }
-
+    override suspend fun updateNote(note: CreateNoteEntity) {
+        localDataSource.updateNote(note)
+    }
+    // Inside CreateNoteRepositoryImpl.kt
+    override suspend fun deleteNote(note: CreateNoteEntity) {
+        // FIX: Call localDataSource instead of createNoteDao directly
+        localDataSource.deleteNote(note)
+    }
     override suspend fun mergeAndSave(note: CreateNoteEntity) {
         val existing = note.noteId.takeIf { it != 0L }?.let { localDataSource.getNoteById(it) }
-        Log.e("headerSaveSatti", "setClickListeners:$existing ")
+
         val merged = existing?.copy(
             title = note.title ?: existing.title,
             description = note.description ?: existing.description,
@@ -57,7 +64,6 @@ class CreateNoteRepositoryImpl(
                 )
             }
         } else {
-            Log.e("headerSaveSatti", "42->setClickListeners:$existing ")
             localDataSource.updateNote(merged)
         }
     }

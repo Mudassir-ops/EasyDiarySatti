@@ -73,6 +73,18 @@ class HomeViewModel @Inject constructor(
             createNoteRepository.updateSortOrder(isAscending = false)
         }
     }
+    fun deleteNote(note: CreateNoteEntity) {
+        viewModelScope.launch {
+            createNoteRepository.deleteNote(note)
+        }
+    }
+    fun toggleFavorite(note: CreateNoteEntity) {
+        viewModelScope.launch {
+            // Toggle the boolean and update database
+            val updatedNote = note.copy(isFavorite = !note.isFavorite)
+            createNoteRepository.updateNote(updatedNote)
+        }
+    }
 }
 
 sealed interface HomeNotesState {

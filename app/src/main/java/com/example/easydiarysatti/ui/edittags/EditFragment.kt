@@ -1,5 +1,6 @@
 package com.example.easydiarysatti.ui.edittags
 
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -11,6 +12,7 @@ import com.example.easydiarysatti.databinding.FragmentEditBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
 import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
+import com.example.easydiarysatti.utills.getCurrentThemeColor
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -26,6 +28,8 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding?.apply {
+            val themeColor=getCurrentThemeColor(sessionManagerRepo)
+            btnNext.backgroundTintList = ColorStateList.valueOf(themeColor)
             btnNext.setOnClickListener {
                 if (etTags.text.toString().isEmpty()) {
                     findNavController().navigateUp()
@@ -52,4 +56,5 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
             placeholder = R.drawable.theme_1
         )
     }
+
 }

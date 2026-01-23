@@ -13,7 +13,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/parentLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tv_date"
@@ -22,8 +22,8 @@
             android:layout_marginStart="@dimen/_15sdp"
             android:fontFamily="@font/outfit_medium"
             android:text="13-8- | 4:45 PM"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_12ssp"
+            android:textColor="#AAB1BA"
+            android:textSize="@dimen/_11ssp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="HardcodedText" />
@@ -37,14 +37,13 @@
             app:layout_constraintStart_toEndOf="@id/tv_date"
             app:srcCompat="@drawable/down_arrow" />
 
-        <com.google.android.material.materialswitch.MaterialSwitch
+        <com.google.android.material.checkbox.MaterialCheckBox
             android:id="@+id/icSwitchRemainder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/_15sdp"
             android:checked="false"
-            android:scaleX="0.6"
-            android:scaleY="0.6"
+
             android:thumb="@drawable/custom_thumb"
             app:layout_constraintBottom_toBottomOf="@id/tv_date"
             app:layout_constraintEnd_toEndOf="parent"
@@ -70,10 +69,10 @@
             android:layout_height="@dimen/_45sdp"
             android:layout_marginTop="@dimen/_15sdp"
             android:layout_marginEnd="@dimen/_8sdp"
-            android:background="@drawable/bg_create_note"
+            android:background="@drawable/bg_edit_text"
             android:fontFamily="@font/outfit"
-            android:hint="@string/header"
-            android:maxLength="20"
+            android:hint="@string/title"
+            android:textColor="@color/black"
             android:paddingHorizontal="@dimen/_10sdp"
             android:textSize="@dimen/_15ssp"
             app:layout_constraintEnd_toStartOf="@id/iv_emoji"
@@ -90,15 +89,15 @@
             app:layout_constraintBottom_toBottomOf="@id/et_header"
             app:layout_constraintEnd_toEndOf="@+id/icSwitchRemainder"
             app:layout_constraintTop_toTopOf="@id/et_header"
-            app:srcCompat="@drawable/emooji_smilie" />
+            app:srcCompat="@drawable/happy" />
 
         <!-- Note Detail Section -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/view_note_detail"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:background="@drawable/bg_create_note"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:background="@drawable/bg_edit_text"
             android:padding="@dimen/_10sdp"
             app:layout_constraintEnd_toEndOf="@+id/iv_emoji"
             app:layout_constraintStart_toStartOf="@+id/et_header"
@@ -109,40 +108,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@id/view_note_detail"
+
+                app:layout_constraintTop_toBottomOf="@id/flexboxLayout"
                 app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
                 app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
                 tools:itemCount="1"
+                tools:layout_editor_absoluteY="13dp"
                 tools:listitem="@layout/image_item_layout" />
 
             <com.google.android.flexbox.FlexboxLayout
                 android:id="@+id/flexboxLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="@dimen/_5sdp"
+                app:layout_constraintBottom_toTopOf="@id/rv_notes_images"
+                app:layout_constraintEnd_toEndOf="@id/view_note_detail"
+                app:layout_constraintStart_toStartOf="@id/view_note_detail"
+                android:layout_marginVertical="@dimen/_10sdp"
                 app:alignItems="center"
                 app:flexDirection="row"
                 app:flexWrap="wrap"
                 app:justifyContent="flex_start"
-                app:layout_constraintTop_toBottomOf="@id/rv_notes_images" />
+                app:layout_constraintTop_toBottomOf="@id/et_description" />
 
             <androidx.appcompat.widget.AppCompatEditText
                 android:id="@+id/et_description"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/_15sdp"
                 android:background="@null"
                 android:fontFamily="@font/outfit"
                 android:gravity="top|start"
+                app:layout_constraintBottom_toTopOf="@id/flexboxLayout"
                 android:hint="@string/write_your_thoughts_here"
-                android:maxLines="5"
-                android:minHeight="@dimen/_80sdp"
+                android:maxLines="8"
+                android:textColor="@color/black"
+                android:inputType="textMultiLine"
+                android:scrollbars="vertical"
+                android:overScrollMode="always"
                 android:textSize="@dimen/_13ssp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/flexboxLayout" />
+                app:layout_constraintTop_toTopOf="@id/view_note_detail" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

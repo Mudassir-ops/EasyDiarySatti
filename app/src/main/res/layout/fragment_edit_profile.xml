@@ -127,7 +127,7 @@
             android:drawableStart="@drawable/mail"
             android:drawablePadding="@dimen/_5sdp"
             android:fontFamily="@font/outfit"
-            android:hint="@string/dreame488_yahoo_com"
+            android:hint="@string/example_gmail_com"
             android:maxLength="15"
             android:textColor="@color/tag_txt_color"
             android:textColorHint="#AAB1BA"

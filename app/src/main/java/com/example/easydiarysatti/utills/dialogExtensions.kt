@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.utills
 
 import android.app.Dialog
+import android.content.res.ColorStateList
 import android.net.Uri
 import android.util.Log
 import android.util.TypedValue
@@ -20,19 +21,22 @@ import com.example.easydiarysatti.databinding.EditTextDialogBinding
 import com.example.easydiarysatti.databinding.FeedbackLayoutBinding
 import com.example.easydiarysatti.databinding.PickPhotoDialogBinding
 import com.example.easydiarysatti.domain.model.EmojiInfo
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.saveBitmapToUri
 import com.example.easydiarysatti.setExclusiveSelection
 import com.example.easydiarysatti.setExclusiveSelectionColor
 import com.example.easydiarysatti.setExclusiveSelectionHeadingSize
 import com.skydoves.colorpickerview.ColorPickerDialog
 import com.skydoves.colorpickerview.listeners.ColorEnvelopeListener
+import javax.inject.Inject
 
 inline fun Fragment.showEditFeelingsDialog(
+    sessionManagerRepo: SessionManagerRepo,
     crossinline selectedEmotion: (EmojiInfo) -> Unit
 ) {
     val binding = EditFeelingsDialogBinding.inflate(LayoutInflater.from(context ?: return))
     val imageDialog = Dialog(context ?: return)
-
+    val themeColor = getCurrentThemeColor(sessionManagerRepo)
     imageDialog.run {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(binding.root)
@@ -53,37 +57,58 @@ inline fun Fragment.showEditFeelingsDialog(
 
     binding.apply {
 
-
+        ivClose.backgroundTintList = ColorStateList.valueOf(themeColor)
+        tvOnGoingItemLabel1.setTextColor(ColorStateList.valueOf(themeColor))
         val emojiMap = mapOf(
             ivEmojiHappy to EmojiInfo(
-                drawableRes = R.drawable.emoji_happy,
+                drawableRes = R.drawable.angry,
                 colorHex = "#42ABD0",
-                name = "Happy",
+                name = "Angry",
                 tagColor = "#9870E2"
             ), ivEmojiCalm to EmojiInfo(
-                drawableRes = R.drawable.emooji_calm,
+                drawableRes = R.drawable.anxious,
                 colorHex = "#5EE3A9",
-                name = "Calm",
+                name = "Anxious",
                 tagColor = "#981B9C"
             ), ivEmojiSad to EmojiInfo(
-                drawableRes = R.drawable.emoji_sad,
+                drawableRes = R.drawable.calm,
                 colorHex = "#FFDE8B",
-                name = "Sad",
+                name = "Calm",
                 tagColor = "#848D9B"
             ), ivEmojiExcited to EmojiInfo(
-                drawableRes = R.drawable.emooji_excited,
+                drawableRes = R.drawable.events,
                 colorHex = "#FF8D95",
-                name = "Excited",
+                name = "Event",
                 tagColor = "#F8B903"
             ), ivEmojiAngry to EmojiInfo(
-                drawableRes = R.drawable.emooji_angry,
+                drawableRes = R.drawable.family,
                 colorHex = "#FFAC81",
-                name = "Angry",
+                name = "Family",
                 tagColor = "#475569"
             ), ivEmojiPlayful to EmojiInfo(
-                drawableRes = R.drawable.emooji_playful,
+                drawableRes = R.drawable.happy,
                 colorHex = "#A29DFB",
-                name = "Playful",
+                name = "Excited",
+                tagColor = "#0DF21B"
+            ), ivEmojiPlayful1 to EmojiInfo(
+                drawableRes = R.drawable.sad,
+                colorHex = "#A29DFB",
+                name = "Sad",
+                tagColor = "#0DF21B"
+            ), ivEmojiPlayful2 to EmojiInfo(
+                drawableRes = R.drawable.personal,
+                colorHex = "#A29DFB",
+                name = "Personal",
+                tagColor = "#0DF21B"
+            ), ivEmojiPlayful3 to EmojiInfo(
+                drawableRes = R.drawable.travel,
+                colorHex = "#A29DFB",
+                name = "Travel",
+                tagColor = "#0DF21B"
+            ), ivEmojiPlayful4 to EmojiInfo(
+                drawableRes = R.drawable.work,
+                colorHex = "#A29DFB",
+                name = "Work",
                 tagColor = "#0DF21B"
             )
         )
@@ -152,12 +177,13 @@ inline fun Fragment.showImageCropDialog(
 }
 
 inline fun Fragment.showBackgroundDialog(
+    sessionManagerRepo: SessionManagerRepo,
     adapterMultiImageAdapter: MultiImageAdapter, crossinline closeDialog: () -> Unit
 ) {
     val context = this.context ?: return
     val binding = DialogBackgroundBinding.inflate(LayoutInflater.from(context))
     val imageDialog = Dialog(context)
-
+    val themeColor = getCurrentThemeColor(sessionManagerRepo)
     imageDialog.apply {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(binding.root)
@@ -188,6 +214,8 @@ inline fun Fragment.showBackgroundDialog(
     }
 
     binding.apply {
+        ivClose.backgroundTintList = ColorStateList.valueOf(themeColor)
+        tvOnGoingItemLabel1.setTextColor(ColorStateList.valueOf(themeColor))
         rvBackground.apply {
             adapter = adapterMultiImageAdapter
             setHasFixedSize(true)
@@ -200,6 +228,7 @@ inline fun Fragment.showBackgroundDialog(
 }
 
 inline fun Fragment.showEditTexDialog(
+    sessionManagerRepo: SessionManagerRepo,
     colorPalette: List<Int>,
     crossinline closeDialog: () -> Unit,
     crossinline fontSelectionListener: (fontName: String) -> Unit,
@@ -209,7 +238,7 @@ inline fun Fragment.showEditTexDialog(
 ) {
     val binding = EditTextDialogBinding.inflate(LayoutInflater.from(context ?: return))
     val imageDialog = Dialog(context ?: return)
-
+    val themeColor = getCurrentThemeColor(sessionManagerRepo)
     imageDialog.run {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(binding.root)
@@ -229,6 +258,9 @@ inline fun Fragment.showEditTexDialog(
     }
 
     binding.apply {
+        /* 🔹 CLOSE ICON */
+        ivClose.backgroundTintList = ColorStateList.valueOf(themeColor)
+        tvOnGoingItemLabel1.setTextColor(ColorStateList.valueOf(themeColor))
         setExclusiveSelection(
             binding.fontIntaliana,
             binding.fontLeckerli,
@@ -388,6 +420,7 @@ inline fun Fragment.editTagDialog(
 
 
 inline fun Fragment.pickPhotDialog(
+    sessionManagerRepo: SessionManagerRepo,
     crossinline cameraCallBack: (Boolean) -> Unit,
     crossinline galleryCallBack: (Boolean) -> Unit,
     crossinline onDismiss: () -> Unit,
@@ -395,7 +428,7 @@ inline fun Fragment.pickPhotDialog(
 
     val binding = PickPhotoDialogBinding.inflate(LayoutInflater.from(context ?: return))
     val imageDialog = Dialog(context ?: return)
-
+    val themeColor = getCurrentThemeColor(sessionManagerRepo)
     imageDialog.run {
         requestWindowFeature(Window.FEATURE_NO_TITLE)
         setContentView(binding.root)
@@ -415,6 +448,13 @@ inline fun Fragment.pickPhotDialog(
     }
 
     binding.apply {
+
+        ivClose.backgroundTintList = ColorStateList.valueOf(themeColor)
+
+        // If buttons exist
+        icAudio.imageTintList = ColorStateList.valueOf(themeColor)
+        icMusic.imageTintList = ColorStateList.valueOf(themeColor)
+        tvOnGoingItemLabel1.setTextColor(ColorStateList.valueOf(themeColor))
         ivClose.setOnClickListener {
             imageDialog.dismiss()
             onDismiss.invoke()
@@ -429,3 +469,17 @@ inline fun Fragment.pickPhotDialog(
         }
     }
 }
+fun Fragment.getCurrentThemeColor( sessionManagerRepo: SessionManagerRepo): Int {
+    val themeResId = sessionManagerRepo.getBgTheme()
+    return when (themeResId) {
+        R.drawable.theme_1 -> ContextCompat.getColor(requireContext(), R.color.theme1_color)
+        R.drawable.theme_2 -> ContextCompat.getColor(requireContext(), R.color.theme2_color)
+        R.drawable.theme_3 -> ContextCompat.getColor(requireContext(), R.color.theme3_color)
+        R.drawable.theme_4 -> ContextCompat.getColor(requireContext(), R.color.theme4_color)
+        R.drawable.theme_5 -> ContextCompat.getColor(requireContext(), R.color.theme5_color)
+        else -> ContextCompat.getColor(requireContext(), R.color.app_primary_color)
+    }
+}
+
+
+

@@ -1,12 +1,16 @@
 package com.example.easydiarysatti.utills
 
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.Color
 import android.graphics.PorterDuff
 import android.graphics.drawable.Drawable
 import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
+import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.widget.AppCompatButton
@@ -18,6 +22,8 @@ import androidx.core.graphics.toColorInt
 import androidx.databinding.BindingAdapter
 import com.airbnb.lottie.LottieAnimationView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.canhub.cropper.CropImageView
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.data.local.CustomTagEntity
@@ -60,7 +66,15 @@ fun AppCompatImageView.showIfHasImages(images: List<Any>?) {
 
 @BindingAdapter("firstTagText")
 fun MaterialTextView.setFirstTagText(tags: List<CustomTagEntity>?) {
-    text = tags?.firstOrNull()?.tagName ?: "Personal"
+    if (tags.isNullOrEmpty()) {
+        // Hide the view and clear text
+        this.visibility = View.GONE
+        this.text = ""
+    } else {
+        // Show the view and set the first tag
+        this.visibility = View.VISIBLE
+        this.text = tags.firstOrNull()?.tagName ?: ""
+    }
 }
 
 
@@ -145,11 +159,15 @@ fun MaterialTextView.setNoteItemBackground(fillColor: String?, strokeColor: Stri
     val drawable = ContextCompat.getDrawable(context, R.drawable.bg_note_item)?.mutate()
     if (drawable is GradientDrawable) {
         fillColor?.let {
-            val fillColor = lightenColor(it.toColorInt(), 0.65f)
+            val fillColor = lightenColor(it.toColorInt(), 0.85f)
             drawable.setColor(fillColor)
         }
         strokeColor?.let {
-            val strokeWidth = context.resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._2sdp)
+            val strokeWidth = TypedValue.applyDimension(
+                TypedValue.COMPLEX_UNIT_DIP,
+                1f,
+                context.resources.displayMetrics
+            ).toInt()
             drawable.setStroke(strokeWidth, it.toColorInt())
         }
     }
@@ -232,17 +250,21 @@ fun loadImageDialog(view: AppCompatImageView, imageUrl: String?) {
 
 @BindingAdapter("imagePath")
 fun CropImageView.setImagePath(path: String?) {
-    Log.d("CropImageView", "setImagePath: $path")
     if (path.isNullOrEmpty()) return
+
     val file = File(path)
-    Log.d("CropImageView", "setImagePath: $path")
     if (file.exists()) {
-        Log.d("CropImageView", "IfsetImagePath: $path")
-        val uri = Uri.fromFile(file)
-        this.setImageUriAsync(uri)
-    } else {
-        Log.d("CropImageView", "ElsesetImagePath: $path")
-        this.clearImage()
+        // Glide automatically resizes the image to fit the View dimensions
+        Glide.with(this.context)
+            .asBitmap()
+            .load(file)
+            .override(800, 800) // Force a safe size
+            .into(object : CustomTarget<Bitmap>() {
+                override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
+                    setImageBitmap(resource)
+                }
+                override fun onLoadCleared(placeholder: Drawable?) {}
+            })
     }
 }
 

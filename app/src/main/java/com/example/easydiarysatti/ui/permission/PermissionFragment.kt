@@ -16,6 +16,7 @@ import com.example.easydiarysatti.databinding.FragmentPermissionBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showPermissionDialog
 import com.example.easydiarysatti.viewBinding
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -24,12 +25,13 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
 
     private var cameraDeniedCount = 0
     private var galleryDeniedCount = 0
-
+    lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private lateinit var requestCameraPermission: ActivityResultLauncher<String>
     private lateinit var requestGalleryPermission: ActivityResultLauncher<Array<String>>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
         requestCameraPermission =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
                 if (granted) {
@@ -117,7 +119,13 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
                 }
                 requestGalleryPermission.launch(permissions.toTypedArray())
             }
-            btnNext.setOnClickListener { moveToNextScreen() }
+            btnNext.setOnClickListener {
+                val eventParams = Bundle().apply {
+                    putString("action_type", "done_clicked")
+                }
+                mFirebaseAnalytics.logEvent("On_Boarding_Permissions_Done", eventParams)
+                moveToNextScreen()
+            }
         }
     }
 

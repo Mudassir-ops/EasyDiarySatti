@@ -20,7 +20,9 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
-    private val binding by viewBinding(FragmentEditProfileBinding::bind)
+
+    private var _binding: FragmentEditProfileBinding? = null
+    private val binding get() = _binding!!
     private lateinit var imagePicker: ImagePickerDelegate
     private var profilePic = ""
     private val viewModel by viewModels<NameViewModel>()
@@ -28,64 +30,79 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        imagePicker = ImagePickerDelegate(this) { uri, file ->
-            showImageCropDialog(imagePath = file?.path ?: return@ImagePickerDelegate, btnDone = {
-                profilePic = it.toString()
-                binding?.ivProfile?.setImage(drawable = it)
-            }, closeDialog = {
-
-            })
-        }
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        _binding = FragmentEditProfileBinding.bind(view)
+        // Initializing the ImagePicker with safety checks
+        imagePicker = ImagePickerDelegate(this) { uri, file ->
+            val path = file?.path ?: return@ImagePickerDelegate
+
+            showImageCropDialog(
+                imagePath = path,
+                btnDone = { drawable ->
+                    _binding?.let {
+                        profilePic = drawable.toString()
+                        it.ivProfile.setImage(drawable)
+                    }
+                }
+                ,
+                closeDialog = {
+                    // Safety check for dialog closure
+                    if (view != null) {
+
+                        // Handle logic if needed
+                    }
+                }
+            )
+        }
+
         setupClickListeners()
         setupDefaultValues()
     }
 
     private fun setupClickListeners() {
+        // Using binding?.apply is safe here as it's called directly in onViewCreated
         binding?.apply {
             ivEditProfile.setOnClickListener {
                 imagePicker.pickFromGalleryWithPermission()
             }
+
             ivProfile.setOnClickListener {
                 imagePicker.pickFromGalleryWithPermission()
             }
-            etPname.doOnTextChanged { text, _, _, _ ->
 
-            }
-            etPmail.doOnTextChanged { text, _, _, _ ->
-
-            }
+            // Note: If these are empty, ensure you aren't missing logic inside
+            etPname.doOnTextChanged { _, _, _, _ -> }
+            etPmail.doOnTextChanged { _, _, _, _ -> }
 
             btnNext.setOnClickListener {
-                sessionManagerRepo.setProfilePic(profilePic = profilePic)
-                viewModel.saveName(name = etPname.text.toString())
-                viewModel.saveEmail(mail = etPmail.text.toString())
+                sessionManagerRepo.setProfilePic(profilePic)
+                viewModel.saveName(etPname.text.toString())
+                viewModel.saveEmail(etPmail.text.toString())
                 findNavController().navigateUp()
             }
         }
     }
 
-
     private fun setupDefaultValues() {
-        binding?.apply {
-            val profilePic = sessionManagerRepo.getprofilePic().orEmpty()
-            if (!profilePic.isEmpty()) {
-                this@EditProfileFragment.profilePic = profilePic
-                ivProfile.setImage(drawable = profilePic.toUri())
-            }
-            val savedName = viewModel.getName()
-            if (savedName?.isNotEmpty() == true) {
-                etPname.setText(savedName)
-            }
-            val savedEmail = viewModel.getEmail()
-            if (savedEmail?.isNotEmpty() == true) {
-                etPmail.setText(savedEmail)
-            }
+        // Create a local reference to binding to ensure null-safety throughout the function
+        val currentBinding = binding ?: return
+
+        sessionManagerRepo.getprofilePic()?.takeIf { it.isNotEmpty() }?.let {
+            profilePic = it
+            currentBinding.ivProfile.setImage(drawable = it.toUri())
         }
+
+        viewModel.getName()?.takeIf { it.isNotEmpty() }?.let {
+            currentBinding.etPname.setText(it)
+        }
+
+        viewModel.getEmail()?.takeIf { it.isNotEmpty() }?.let {
+            currentBinding.etPmail.setText(it)
+        }
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -1,19 +1,20 @@
 package com.example.easydiarysatti.ui.signup
 
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.View
-import androidx.core.widget.doAfterTextChanged
+import android.widget.ImageView
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.databinding.FragmentSignUpBinding
-import com.example.easydiarysatti.hideKeyboard
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.viewBinding
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,14 +23,56 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     private val binding by viewBinding(FragmentSignUpBinding::bind)
     private var firstPin: String? = null
     private var isPinConfirmed = false
-
+    private var currentPin = StringBuilder()
+    private val dotsIds = listOf(R.id.dot1, R.id.dot2, R.id.dot3, R.id.dot4)
+    private var canUseBiometrics = false
+    lateinit var mFirebaseAnalytics : FirebaseAnalytics
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setupEditTextListeners()
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
+        val eventParams = Bundle()
+        eventParams.putString("onBoardingSignup", "open_screen")
+        mFirebaseAnalytics.logEvent("On_Boarding_Access_Your_Diary_Login", eventParams)
+        checkBiometricAvailability()
+        setupKeypadListeners()
         clickListener()
         setupInitialButtonState()
+        updateStageText()
     }
 
+    // Check if hardware is present to decide if we show the button
+    private fun checkBiometricAvailability() {
+        val biometricManager = BiometricManager.from(requireContext())
+        // Only checking for strong biometrics here for informational purposes
+        when (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
+            BiometricManager.BIOMETRIC_SUCCESS -> {
+                binding?.keypadLayout?.btnBiometric?.visibility = View.VISIBLE
+                canUseBiometrics = true
+            }
+            BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE,
+            BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
+                // Hide if no hardware
+                binding?.keypadLayout?.btnBiometric?.visibility = View.INVISIBLE
+                canUseBiometrics = false
+            }
+            BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
+                // Hardware exists but user hasn't set it up in phone settings
+                binding?.keypadLayout?.btnBiometric?.visibility = View.VISIBLE
+                canUseBiometrics = false
+            }
+            else -> {
+                binding?.keypadLayout?.btnBiometric?.visibility = View.INVISIBLE
+                canUseBiometrics = false
+            }
+        }
+    }
+    private fun logAnalyticsEvent(eventName: String, label: String) {
+        if (eventName.isEmpty()) return
+        val params = Bundle().apply {
+            putString("action_label", label)
+        }
+        mFirebaseAnalytics.logEvent(eventName, params)
+    }
     private fun setupInitialButtonState() {
         binding?.btnNext?.apply {
             isEnabled = false
@@ -38,36 +81,58 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         }
     }
 
-    private fun setupEditTextListeners() {
-        binding?.apply {
-            val editTexts = arrayOf(edTextOne, edTextTwo, edTextThree, edTextFour)
+    private fun setupKeypadListeners() {
+        binding?.keypadLayout?.apply {
+            val numberButtons = listOf(
+                btnKey0, btnKey1, btnKey2, btnKey3, btnKey4,
+                btnKey5, btnKey6, btnKey7, btnKey8, btnKey9
+            )
+            numberButtons.forEachIndexed { index, button ->
+                button.setOnClickListener { onNumberClicked(index.toString()) }
+            }
+            btnBackspace.setOnClickListener { onBackspaceClicked() }
 
-            editTexts.forEachIndexed { index, editText ->
-                editText.doAfterTextChanged { text ->
-                    if (text?.length == 1 && index < editTexts.lastIndex) {
-                        editTexts[index + 1].requestFocus()
-                    }
-                    if (isPinConfirmed && editTexts.any { it.text?.isEmpty() == true }) {
-                        resetButtonState()
-                        isPinConfirmed = false
-                    }
-                    if (editTexts.all { it.text?.length == 1 }) {
-                        val enteredPin = editTexts.joinToString("") { it.text.toString() }
-                        handlePinEntry(enteredPin)
-                    }
-
+            // Informational click listener for Sign Up phase
+            btnBiometric.setOnClickListener {
+                if (canUseBiometrics) {
+                    binding?.parentView?.showSnackbar("Biometric authentication will be available for future logins.")
+                } else {
+                    binding?.parentView?.showSnackbar("Biometrics are not set up on this device.")
                 }
+            }
+        }
+    }
 
-                editText.setOnKeyListener { _, keyCode, event ->
-                    if (keyCode == KeyEvent.KEYCODE_DEL && event.action == KeyEvent.ACTION_DOWN) {
-                        if (editText.text?.isEmpty() == true && index > 0) {
-                            val previousEditText = editTexts[index - 1]
-                            previousEditText.text?.clear()
-                            previousEditText.requestFocus()
-                            true
-                        } else false
-                    } else false
-                }
+    // --- Rest of existing PIN logic remains unchanged ---
+
+    private fun onNumberClicked(number: String) {
+        if (currentPin.length < 4) {
+            currentPin.append(number)
+            updateDotsUi()
+            if (currentPin.length == 4) {
+                handlePinEntry(currentPin.toString())
+            }
+        }
+    }
+
+    private fun onBackspaceClicked() {
+        if (currentPin.isNotEmpty()) {
+            currentPin.deleteCharAt(currentPin.length - 1)
+            updateDotsUi()
+            if (isPinConfirmed) {
+                isPinConfirmed = false
+                resetButtonState()
+            }
+        }
+    }
+
+    private fun updateDotsUi() {
+        dotsIds.forEachIndexed { index, dotId ->
+            val dotView = binding?.root?.findViewById<ImageView>(dotId)
+            if (index < currentPin.length) {
+                dotView?.setImageResource(R.drawable.ic_pin_dot_filled)
+            } else {
+                dotView?.setImageResource(R.drawable.ic_pin_dot_empty)
             }
         }
     }
@@ -76,17 +141,17 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         if (firstPin == null) {
             firstPin = enteredPin
             clearPinFields()
+            updateStageText()
         } else {
             if (firstPin == enteredPin) {
-                hideKeyboard()
                 setButtonReadyState()
                 isPinConfirmed = true
             } else {
-                hideKeyboard()
                 firstPin = null
                 clearPinFields()
                 isPinConfirmed = false
                 resetButtonState()
+                updateStageText()
                 binding?.parentView?.showSnackbar(
                     message = getString(R.string.pins_do_not_match_try_again)
                 )
@@ -94,11 +159,15 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         }
     }
 
+    private fun updateStageText() {
+        binding?.txtPinStage?.text = if (firstPin == null) "Create your PIN" else "Confirm your PIN"
+    }
+
     private fun setButtonReadyState() {
         binding?.btnNext?.apply {
             isEnabled = true
             alpha = 1f
-            text = getString(R.string.done) // "Done"
+            text = getString(R.string.done)
         }
     }
 
@@ -111,13 +180,8 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     }
 
     private fun clearPinFields() {
-        binding?.apply {
-            edTextOne.text?.clear()
-            edTextTwo.text?.clear()
-            edTextThree.text?.clear()
-            edTextFour.text?.clear()
-            edTextOne.requestFocus()
-        }
+        currentPin.clear()
+        updateDotsUi()
     }
 
     private fun clickListener() {
@@ -138,9 +202,8 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         findNavController().safeNav(
             currentDestId = R.id.signUpFragment,
             actionId = R.id.action_signUpFragment_to_themesFragment,
-            bundle=bundle
+            bundle = bundle
         )
     }
-
 }
 

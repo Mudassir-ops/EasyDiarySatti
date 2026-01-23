@@ -21,12 +21,12 @@ interface CreateNoteRepository {
 
     suspend fun updateSortOrder(isAscending: Boolean)
     fun observeSortOrder(): Flow<Boolean?>
-
+    suspend fun updateNote(note: CreateNoteEntity)
     suspend fun updateTagsForNote(
         noteId: Long,
         newTags: List<CustomTagEntity>
     )
-
+    suspend fun deleteNote(note: CreateNoteEntity)
     suspend fun updateImageForNote(
         noteId: Long,
         newImages: List<String>

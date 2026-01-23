@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.ui.createnote
 
 import android.annotation.SuppressLint
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -24,6 +25,7 @@ import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.databinding.FragmentCreateNotesBinding
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.getHeadingSize
 import com.example.easydiarysatti.safeNav
@@ -38,8 +40,10 @@ import com.example.easydiarysatti.showDatePickerWithTime
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.toFormattedString
 import com.example.easydiarysatti.ui.remainder.RemainderViewModel
+import com.example.easydiarysatti.utills.getCurrentThemeColor
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
+import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
@@ -79,23 +83,29 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             }
         )
     }
-
+    lateinit var mFirebaseAnalytics : FirebaseAnalytics
     @Inject
     lateinit var interstitialAdsConfig: InterstitialAdsConfig
 
-
+    @Inject
+    lateinit var sessionManagerRepo: SessionManagerRepo
     private var isNoteInitialized = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
         createNoteEntity = CreateNoteEntity(
-            feelingEmojiRes = R.drawable.emooji_excited,
+            feelingEmojiRes = R.drawable.happy,
             selectedEmojiColor = "#FF8D95",
             feelingTitle = "Excited",
-            tagColor = "#F8B903"
+            tagColor = "#F8B903",
+            tags = emptyList()
         )
     }
-
+    private fun logAnalyticsEvent(eventName: String, label: String) {
+        val params = Bundle().apply { putString("action_label", label) }
+        FirebaseAnalytics.getInstance(requireContext()).logEvent(eventName, params)
+    }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         observeNote()
@@ -103,70 +113,49 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         clickListeners()
         adjustScreenKeyboard()
         setupImagesRecyclerview()
+        logAnalyticsEvent("Add_Note_Screen", "fragment_open")
         listOf(
             CustomTagEntity(
-                tagName = "Personal", noteId = 999
+                tagName = "", noteId = 999
             )
         ).setupFlexBox()
-        setStyledDateTime(binding?.tvDate ?: return, R.color.black)
+        val themeColor=getCurrentThemeColor(sessionManagerRepo)
+        binding?.ivBottomArrow?.imageTintList=ColorStateList.valueOf(themeColor)
+        setStyledDateTime(binding?.tvDate ?: return, R.color.grey)
         loadInterstitial()
+
     }
 
     fun List<CustomTagEntity>.setupFlexBox() {
+        val displayTags = this.filter { it.tagName.isNotBlank() }
+
+        if (displayTags.isEmpty()) {
+            binding?.flexboxLayout?.visibility = View.GONE
+            binding?.flexboxLayout?.removeAllViews() // Clear UI
+            return
+        }
+
         binding?.flexboxLayout?.apply {
             removeAllViews()
             visibility = View.VISIBLE
             addTags(
                 fromPreview = false,
-                this@setupFlexBox.toMutableList(),
+                displayTags.toMutableList(),
                 onTagClick = {},
-                onRemoveTagClick = { tag ->
-                    val remainingTags = viewModel.removeTag(tag = tag)
-                    val filteredTags = remainingTags.let { tags ->
-                        val hasRealPersonal =
-                            tags.any { it.tagName.equals("Personal", true) && it.noteId != 999 }
-                        if (hasRealPersonal) {
-                            tags.filterNot {
-                                it.tagName.equals(
-                                    "Personal",
-                                    true
-                                ) && it.noteId == 999
-                            }
-                        } else {
-                            tags
-                        }
-                    }
-                    remainingTags.clear()
-                    remainingTags.addAll(filteredTags)
-                    Log.e("RemaningTagsSatti-->", "setupFlexBoxBefore: $remainingTags")
-                    if (remainingTags.isEmpty()) {
-                        val personalTag = CustomTagEntity(
-                            tagName = "Personal",
-                            noteId = 999
-                        )
-                        remainingTags.add(personalTag)
-                        post {
-                            remainingTags.distinct().setupFlexBox()
-                        }
-                    } else {
-                        if (remainingTags.size == 1 && remainingTags.first().tagName.equals(
-                                "Personal",
-                                ignoreCase = true
-                            )
-                        ) {
-                            post {
-                                remainingTags.distinct().setupFlexBox()
-                            }
-                            Log.d("TagCheck", "Only Personal tag remains")
-                        }
-                    }
-                    createNoteEntity = createNoteEntity?.copy(tags = remainingTags)
+                onRemoveTagClick = { tagToRemove ->
+                    // 1. Remove from ViewModel (this returns the new updated list)
+                    val updatedTags = viewModel.removeTag(tag = tagToRemove)
+
+                    // 2. Update the fragment's local entity
+                    createNoteEntity = createNoteEntity?.copy(tags = updatedTags)
+
+                    // 3. Re-run setupFlexBox with the new list to refresh UI
+                    updatedTags.setupFlexBox()
+
+                    // 4. Sync with Database if the note already exists
                     if (createNoteEntity?.noteId != 0L) {
-                        val updatedTags = viewModel.allTags().filter { existingTag ->
-                            existingTag.tagName != tag.tagName
-                        }
                         viewModel.updateTagsForNote(
-                            noteId = createNoteEntity?.noteId ?: return@addTags,
+                            noteId = createNoteEntity?.noteId ?: 0L,
                             newTags = updatedTags
                         )
                     }
@@ -180,7 +169,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     fun clickListeners() {
         binding?.apply {
             ivEmoji.setOnClickListener {
-                showEditFeelingsDialog(selectedEmotion = { emojiInfo ->
+                logAnalyticsEvent("Add_Note_Emoji_Clicked", "icon_click")
+                showEditFeelingsDialog( sessionManagerRepo = sessionManagerRepo,
+                    selectedEmotion = { emojiInfo ->
+                        logAnalyticsEvent("Add_Note_Emoji_Selected", emojiInfo.name)
                     ivEmoji.setImageResource(emojiInfo.drawableRes)
                     createNoteEntity = createNoteEntity?.copy(
                         feelingEmojiRes = emojiInfo.drawableRes,
@@ -191,12 +183,15 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 })
             }
             tvDate.setOnClickListener {
+                logAnalyticsEvent("Add_Note_Reminder_Clicked", "date_text_click")
                 onClickDateTimePick()
             }
             ivBottomArrow.setOnClickListener {
+                logAnalyticsEvent("Add_Note_Reminder_Clicked", "arrow_click")
                 onClickDateTimePick()
             }
             binding?.icSwitchRemainder?.setOnClickListener {
+                logAnalyticsEvent("Add_Note_Reminder_Clicked", "switch_click")
                 binding?.icSwitchRemainder?.isChecked = false
                 onClickDateTimePick()
             }
@@ -250,10 +245,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             ).toMutableList().apply {
                                 if (this.isEmpty()) {
                                     val hasPersonal =
-                                        any { it.tagName.equals("Personal", ignoreCase = true) }
+                                        any { it.tagName.equals("", ignoreCase = true) }
                                     if (!hasPersonal) add(
                                         CustomTagEntity(
-                                            tagName = "Personal",
+                                            tagName = "",
                                             noteId = note.createNoteEntity?.noteId?.toInt() ?: 0
                                         )
                                     )
@@ -417,7 +412,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     fun onClickDateTimePick() {
         (activity as? MainActivity)?.requestExactAlarmPermission {
-            showDatePickerWithTime { selectedCalendar ->
+            showDatePickerWithTime(
+                sessionManagerRepo = sessionManagerRepo,
+                calendar = Calendar.getInstance()
+            ){ selectedCalendar ->
                 if (!isAdded || view == null ||
                     viewLifecycleOwner.lifecycle.currentState < Lifecycle.State.STARTED
                 ) return@showDatePickerWithTime
@@ -490,31 +488,28 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     }
 
     fun addDefaultTags() {
+        // 1. Get existing tags from the entity
         val tags = createNoteEntity?.tags?.toMutableList() ?: mutableListOf()
-        if (tags.isEmpty()) {
-            tags.add(
-                CustomTagEntity(
-                    tagName = "Personal",
-                    noteId = createNoteEntity?.noteId?.toInt() ?: 0
-                )
-            )
-        } else {
-            val updatedTags = tags.filterNot { it.tagName.equals("Personal", ignoreCase = true) }
-            tags.clear()
-            tags.addAll(updatedTags)
+
+        // 2. Filter out any blank tags that might have been saved accidentally
+        val validTags = tags.filter { it.tagName.isNotBlank() }
+
+        // 3. Sync with ViewModel
+        viewModel.clearTags()
+        if (validTags.isNotEmpty()) {
+            viewModel.addTags(validTags)
         }
 
-        if (tags.isEmpty()) {
-            tags.add(
-                CustomTagEntity(
-                    tagName = "Personal",
-                    noteId = createNoteEntity?.noteId?.toInt() ?: 999
-                )
-            )
+        // 4. Update the local entity reference
+        createNoteEntity = createNoteEntity?.copy(tags = validTags)
+
+        // 5. Only show the flexbox if there is actually something to display
+        if (validTags.isNotEmpty()) {
+            binding?.flexboxLayout?.visibility = View.VISIBLE
+            validTags.setupFlexBox()
+        } else {
+            binding?.flexboxLayout?.visibility = View.GONE
         }
-        viewModel.addTags(tags)
-        createNoteEntity = createNoteEntity?.copy(tags = tags)
-        createNoteEntity?.tags?.setupFlexBox()
     }
 
     private fun loadInterstitial() {

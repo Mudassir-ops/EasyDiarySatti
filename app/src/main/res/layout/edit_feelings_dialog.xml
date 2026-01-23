@@ -7,12 +7,14 @@
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/ivClose"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
+        android:layout_width="@dimen/_25sdp"
+        android:layout_height="@dimen/_25sdp"
         android:layout_margin="@dimen/_10sdp"
+        android:padding="@dimen/_6ssp"
+        android:background="@drawable/circle_bg"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/iv_close" />
+        app:srcCompat="@drawable/cross_ic" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/tv_onGoing_item_label_1"
@@ -50,7 +52,7 @@
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="@+id/view_horizontal_line"
         app:layout_constraintTop_toBottomOf="@+id/view_horizontal_line"
-        app:srcCompat="@drawable/emoji_happy" />
+        app:srcCompat="@drawable/angry" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_calm"
@@ -62,7 +64,7 @@
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toEndOf="@+id/iv_emoji_happy"
         app:layout_constraintTop_toTopOf="@+id/iv_emoji_happy"
-        app:srcCompat="@drawable/emooji_calm" />
+        app:srcCompat="@drawable/anxious" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_sad"
@@ -74,7 +76,7 @@
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toEndOf="@+id/iv_emoji_calm"
         app:layout_constraintTop_toTopOf="@+id/iv_emoji_calm"
-        app:srcCompat="@drawable/emoji_sad" />
+        app:srcCompat="@drawable/calm" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_excited"
@@ -85,7 +87,7 @@
         app:layout_constraintEnd_toEndOf="@+id/view_horizontal_line"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintTop_toTopOf="@+id/iv_emoji_sad"
-        app:srcCompat="@drawable/emooji_excited" />
+        app:srcCompat="@drawable/events" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_angry"
@@ -93,12 +95,11 @@
         android:layout_height="@dimen/_32sdp"
         android:layout_marginVertical="@dimen/_30sdp"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/iv_emoji_happy"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="@+id/iv_emoji_happy"
         app:layout_constraintTop_toBottomOf="@+id/iv_emoji_happy"
-        app:srcCompat="@drawable/emooji_angry" />
+        app:srcCompat="@drawable/family" />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/iv_emoji_playful"
@@ -106,12 +107,59 @@
         android:layout_height="@dimen/_32sdp"
         android:layout_marginVertical="@dimen/_30sdp"
         android:scaleType="fitXY"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/iv_emoji_calm"
         app:layout_constraintHorizontal_chainStyle="spread"
         app:layout_constraintStart_toStartOf="@+id/iv_emoji_calm"
         app:layout_constraintTop_toBottomOf="@+id/iv_emoji_calm"
-        app:srcCompat="@drawable/emooji_playful" />
+        app:srcCompat="@drawable/happy" />
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_emoji_playful1"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:layout_marginVertical="@dimen/_30sdp"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="@+id/iv_emoji_sad"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="@+id/iv_emoji_sad"
+        app:layout_constraintTop_toBottomOf="@+id/iv_emoji_sad"
+        app:srcCompat="@drawable/sad" />
 
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_emoji_playful2"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:layout_marginVertical="@dimen/_30sdp"
+        android:scaleType="fitXY"
+        app:layout_constraintEnd_toEndOf="@+id/iv_emoji_excited"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="@+id/iv_emoji_excited"
+        app:layout_constraintTop_toBottomOf="@+id/iv_emoji_excited"
+        app:srcCompat="@drawable/personal" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_emoji_playful3"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:layout_marginVertical="@dimen/_30sdp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/iv_emoji_angry"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="@+id/iv_emoji_angry"
+        app:layout_constraintTop_toBottomOf="@+id/iv_emoji_angry"
+        app:srcCompat="@drawable/travel" />
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/iv_emoji_playful4"
+        android:layout_width="@dimen/_32sdp"
+        android:layout_height="@dimen/_32sdp"
+        android:layout_marginVertical="@dimen/_30sdp"
+        android:scaleType="fitXY"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/iv_emoji_playful"
+        app:layout_constraintHorizontal_chainStyle="spread"
+        app:layout_constraintStart_toStartOf="@+id/iv_emoji_playful"
+        app:layout_constraintTop_toBottomOf="@+id/iv_emoji_playful"
+        app:srcCompat="@drawable/work" />
 </androidx.constraintlayout.widget.ConstraintLayout>

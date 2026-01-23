@@ -31,19 +31,35 @@ import javax.inject.Inject
 class PreviewFragment : Fragment(R.layout.fragment_preview) {
     private val binding by viewBinding(FragmentPreviewBinding::bind)
     private val viewModel by activityViewModels<PreviewViewModel>()
-    private val imagesItemAdapter: ImagesItemAdapter by lazy { ImagesItemAdapter(fromPreview = true, onDeleteItemClick = {},
-        imagesCount = {}) }
+    private val imagesItemAdapter: ImagesItemAdapter by lazy {
+        ImagesItemAdapter(
+            fromPreview = true,
+            onDeleteItemClick = {}, // Not needed in preview
+            imagesCount = {}
+        )
+    }
     private var noteId = 0L
     private var fromHome = false
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
+    // Inside PreviewFragment.kt
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        noteId = arguments?.getLong(NOTE_ID) ?: 0L
-        fromHome = arguments?.getBoolean(FROM_SCREEN) ?: false
-        viewModel.getNoteById(noteId = noteId)
+
+        // Check if a full note object was passed
+        val noteFromBundle = arguments?.getParcelable<CreateNoteEntity>("note")
+
+        if (noteFromBundle != null) {
+            // If we have the object, display it directly
+            noteFromBundle.setupDefaultValues()
+        } else {
+            // Fallback to your existing ID-based loading
+            noteId = arguments?.getLong(NOTE_ID) ?: 0L
+            viewModel.getNoteById(noteId = noteId)
+        }
+
         setupImagesRecyclerview()
         observeNote()
         clickListener()

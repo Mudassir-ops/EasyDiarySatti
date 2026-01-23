@@ -8,5 +8,16 @@
         android:id="@+id/calenderFragment"
         android:name="com.example.easydiarysatti.ui.notifications.CalenderFragment"
         android:label="@string/calender"
-        tools:layout="@layout/fragment_calender" />
+        tools:layout="@layout/fragment_calender">
+
+        <action
+            android:id="@+id/action_calenderFragment_to_previewFragment2"
+            app:destination="@id/previewFragment2" />
+
+    </fragment>
+    <fragment
+        android:id="@+id/previewFragment2"
+        android:name="com.example.easydiarysatti.ui.previewnote.PreviewFragment"
+        android:label="Preview Notes"
+        tools:layout="@layout/fragment_preview" />
 </navigation>

@@ -14,6 +14,7 @@ data class CreateNoteEntity(
     val noteId: Long = 0L,
     val title: String? = null,
     val description: String? = null,
+    val isFavorite: Boolean = false,
     val feelingTitle: String? = null,
     val feelingEmojiRes: Int? = null,
     val backgroundRes: Int? = null,

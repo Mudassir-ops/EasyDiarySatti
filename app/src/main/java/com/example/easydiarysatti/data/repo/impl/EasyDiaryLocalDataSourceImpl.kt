@@ -16,7 +16,9 @@ class EasyDiaryLocalDataSourceImpl(
         val emptyNote = CreateNoteEntity()
         return dao.insertNote(emptyNote)
     }
-
+    override suspend fun deleteNote(note: CreateNoteEntity) {
+        return dao.deleteNote(note) // This will now work correctly
+    }
     override suspend fun insertNote(note: CreateNoteEntity): Long {
         return dao.insertNote(note = note)
     }

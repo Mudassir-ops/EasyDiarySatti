@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.res.ColorStateList
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.PorterDuff
@@ -35,12 +36,14 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
+import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
@@ -58,9 +61,14 @@ import androidx.navigation.NavController
 import androidx.navigation.NavOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
+import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.remainder.AlarmHandler
+import com.example.easydiarysatti.utills.getCurrentThemeColor
 import com.google.android.flexbox.FlexboxLayout
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textview.MaterialTextView
@@ -76,7 +84,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-
+import javax.inject.Inject
 
 fun NavController.safeNav(
     @IdRes currentDestId: Int,
@@ -88,14 +96,18 @@ fun NavController.safeNav(
     popExitAnim: Int = R.anim.slide_out_right
 ) {
     if (currentDestination?.id == currentDestId) {
-        val navOptions = NavOptions.Builder()
-            .setEnterAnim(enterAnim)
-            .setExitAnim(exitAnim)
-            .setPopEnterAnim(popEnterAnim)
-            .setPopExitAnim(popExitAnim)
-            .build()
+        try {
+            val navOptions = NavOptions.Builder()
+                .setEnterAnim(enterAnim)
+                .setExitAnim(exitAnim)
+                .setPopEnterAnim(popEnterAnim)
+                .setPopExitAnim(popExitAnim)
+                .build()
 
-        navigate(actionId, bundle, navOptions)
+            navigate(actionId, bundle, navOptions)
+        } catch (e: Exception) {
+            Log.e("NavError", "Navigation failed: ${e.message}")
+        }
     }
 }
 
@@ -139,6 +151,7 @@ fun View?.showDatePicker(onDateSelected: (String) -> Unit) {
         )
     }?.show()
 }
+
 
 fun View.setCustomRipple(
     rippleColor: Int,
@@ -295,50 +308,42 @@ fun Fragment.hideKeyboard() {
     }
 }
 
+
 fun AppCompatImageView.loadImage(
     resourceId: Int?,
     placeholder: Int = R.drawable.image_placeholder
 ) {
-    Glide.with(this.context)
+    if (resourceId == null) {
+        setImageResource(placeholder)
+        return
+    }
+
+    Glide.with(this)
         .load(resourceId)
+        .placeholder(placeholder)
+        .error(placeholder)
+        .fitCenter() // 👈 prevents full-size decode
         .into(this)
 }
 
 
 fun AppCompatImageView.loadAdaptiveImage(
     imagePath: String?,
-    placeholder: Int = R.drawable.image_placeholder,
+    placeholder: Int = R.drawable.image_placeholder
 ) {
-    Glide.with(this.context)
-        .load(imagePath)
-        .thumbnail(0.1f)
-        .centerCrop()
-        .into(this)
+    if (imagePath.isNullOrEmpty()) {
+        setImageResource(placeholder)
+        return
+    }
 
-//    Glide.with(this.context)
-//        .asBitmap()
-//        .load(imagePath ?: placeholder)
-//        .placeholder(placeholder)
-//        .error(placeholder)
-//        .into(object : CustomTarget<Bitmap>() {
-//            override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-//                val targetWidth = width
-//                val targetHeight = height
-//
-//                if (targetWidth <= 0 || targetHeight <= 0) {
-//                    // View not measured yet; reload later
-//                    post { loadAdaptiveImage(imagePath, placeholder) }
-//                    return
-//                }
-//
-//                val resizedBitmap = resizeToFitView(resource, targetWidth, targetHeight)
-//                setImageBitmap(resizedBitmap)
-//            }
-//
-//            override fun onLoadCleared(placeholder: Drawable?) {
-//                setImageDrawable(placeholder)
-//            }
-//        })
+    Glide.with(this)
+        .load(imagePath)
+        .placeholder(placeholder)
+        .error(placeholder)
+        .fitCenter() // 👈 critical
+        .format(DecodeFormat.PREFER_RGB_565) // 👈 50% less memory
+        .disallowHardwareConfig()
+        .into(this)
 }
 
 /**
@@ -371,16 +376,29 @@ private fun resizeToFitView(
 
 
 fun View.loadBackground(
-    resourceId: Int?,
-    placeholder: Int? = null
+    @DrawableRes resourceId: Int?,
+    @DrawableRes placeholder: Int? = null
 ) {
-    val request = Glide.with(context)
+    if (resourceId == null) return
+
+    val metrics = resources.displayMetrics
+    val targetWidth = metrics.widthPixels
+    val targetHeight = metrics.heightPixels
+
+    val request = Glide.with(this)
         .load(resourceId)
+        .override(targetWidth, targetHeight)      // ✅ CRITICAL
+        .centerCrop()
+        .format(DecodeFormat.PREFER_RGB_565)      // ✅ 50% less memory
+        .dontAnimate()
+
     placeholder?.let { request.placeholder(it) }
-    request.into(object : com.bumptech.glide.request.target.CustomTarget<Drawable>() {
+
+    request.into(object : CustomTarget<Drawable>() {
+
         override fun onResourceReady(
             resource: Drawable,
-            transition: com.bumptech.glide.request.transition.Transition<in Drawable>?
+            transition: Transition<in Drawable>?
         ) {
             background = resource
         }
@@ -485,20 +503,23 @@ fun Int.dpToPx(context: Context): Int =
 
 fun FlexboxLayout.addTags(
     fromPreview: Boolean = false,
-    tagList: MutableList<CustomTagEntity>,
+    tagList: MutableList<CustomTagEntity>?, // Made nullable for safety
     onTagClick: ((CustomTagEntity) -> Unit)? = null,
     onRemoveTagClick: ((CustomTagEntity) -> Unit)? = null,
 ) {
+    // 1. Filter out tags that have no name (removes the "default" empty tag)
+    val validTags = tagList?.filter { it.tagName.isNotBlank() } ?: emptyList()
 
-    Log.e("RemaningTagsSatti-->", "setupFlexBoxInner: $tagList")
-    if (tagList.isEmpty()) {
+    if (validTags.isEmpty()) {
         this.visibility = View.GONE
         return
     } else {
         this.visibility = View.VISIBLE
     }
+
     this.removeAllViews()
-    for (tag in tagList) {
+
+    for (tag in validTags) {
         val tagContainer = LinearLayout(this.context).apply {
             orientation = LinearLayout.HORIZONTAL
             setPadding(8, 8, 8, 8)
@@ -536,26 +557,21 @@ fun FlexboxLayout.addTags(
             imageTintList = ContextCompat.getColorStateList(context, R.color.tag_txt_color)
             setOnClickListener {
                 if (fromPreview) return@setOnClickListener
-                val onlyPersonalLeft =
-                    tagList.size == 1 && tagList.firstOrNull()?.tagName == "Personal"
-                if (onlyPersonalLeft) {
-                    onTagClick?.invoke(tag)
-                    return@setOnClickListener
-                }
+
                 this@addTags.removeView(tagContainer)
-                tagList.remove(tag)
+                tagList?.remove(tag)
                 onRemoveTagClick?.invoke(tag)
-                if (tagList.isEmpty()) {
+
+                // Hide if no valid tags left
+                if (tagList?.none { it.tagName.isNotBlank() } == true) {
                     this@addTags.visibility = View.GONE
                 }
             }
         }
 
-
         tagContainer.addView(hashIcon)
         tagContainer.addView(tagText)
         tagContainer.addView(closeIcon)
-
         this.addView(tagContainer)
     }
 }
@@ -646,26 +662,26 @@ fun AppCompatImageView.setCustomDayEmojiBackground(
 ) {
     val drawable = ContextCompat.getDrawable(context, R.drawable.bg_note_item)?.mutate()
     if (drawable is GradientDrawable) {
-        fillColor?.let {
-            drawable.setColor(lightenColor(it.toColorInt(), 0.65f))
-        }
+        // Set center to transparent so the PNG is visible
+        drawable.setColor(Color.TRANSPARENT)
+
         strokeColor?.let {
-            val strokeWidth = context.resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._1sdp)
-            drawable.setStroke(strokeWidth, it.toColorInt())
+            try {
+                val strokeWidth = context.resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._1sdp)
+                drawable.setStroke(strokeWidth, Color.parseColor(it))
+            } catch (e: Exception) {
+                // Ignore invalid hex
+            }
         }
     }
-    if (dayNow) {
-        setColorFilter(
-            ContextCompat.getColor(context, R.color.red_color),
-            PorterDuff.Mode.SRC_IN
-        )
-    } else {
-        setColorFilter(
-            ContextCompat.getColor(context, R.color.tag_txt_color),
-            PorterDuff.Mode.SRC_IN
-        )
-    }
-    background = drawable
+
+    // 2. CRITICAL FIX: Clear the color filter
+    // This stops Android from turning your PNG into a solid colored dot
+    this.colorFilter = null
+    this.imageTintList = null
+
+    // 3. Apply the ring background
+    this.background = drawable
 }
 
 fun setStyledDateTime(tvDate: MaterialTextView, colorId: Int) {
@@ -898,43 +914,86 @@ fun Activity?.cancelAlarm(uniqueId: Int) {
     alarmHandler.cancelAlarm(uniqueId)
 }
 
-
 fun Fragment.showDatePickerWithTime(
+    sessionManagerRepo: SessionManagerRepo,
     calendar: Calendar = Calendar.getInstance(),
     onDateTimeSelected: (Calendar) -> Unit
 ) {
+    val themeColor = getCurrentThemeColor(sessionManagerRepo)
+    // Use the fixed style we discussed to prevent inflation crashes
     val contextThemeWrapper = ContextThemeWrapper(requireContext(), R.style.TimePickerDialogTheme)
 
-    DatePickerDialog(
+    val dateDialog = DatePickerDialog(
         contextThemeWrapper,
         { _, year, monthOfYear, dayOfMonth ->
             calendar.set(year, monthOfYear, dayOfMonth)
-            showTimePicker(calendar) {
+            showTimePicker(sessionManagerRepo, calendar) {
                 onDateTimeSelected(calendar)
             }
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
         calendar.get(Calendar.DAY_OF_MONTH)
-    ).show()
+    )
+
+    dateDialog.show()
+
+    // --- NEW: DYNAMIC HEADER COLOR ---
+    // 2. CHANGE HEADER COLOR (Supports multiple Android versions)
+    val headerIds = arrayOf("date_picker_header", "day_picker_selector_layout", "header")
+    for (idName in headerIds) {
+        val id = Resources.getSystem().getIdentifier(idName, "id", "android")
+        if (id != 0) {
+            dateDialog.findViewById<View>(id)?.setBackgroundColor(themeColor)
+        }
+    }
+
+    // DYNAMIC BUTTON COLORS
+    dateDialog.getButton(DatePickerDialog.BUTTON_POSITIVE).setTextColor(themeColor)
+    dateDialog.getButton(DatePickerDialog.BUTTON_NEGATIVE).setTextColor(themeColor)
 }
 
-fun Fragment.showTimePicker(calendar: Calendar, onTimeSelected: () -> Unit) {
+fun Fragment.showTimePicker(
+    sessionManagerRepo: SessionManagerRepo,
+    calendar: Calendar,
+    onTimeSelected: () -> Unit
+) {
+    val themeColor = getCurrentThemeColor(sessionManagerRepo)
     val contextThemeWrapper = ContextThemeWrapper(requireContext(), R.style.TimePickerDialogTheme)
 
-    TimePickerDialog(
+    val timeDialog = TimePickerDialog(
         contextThemeWrapper,
         { _, hourOfDay, minute ->
             calendar.set(Calendar.HOUR_OF_DAY, hourOfDay)
             calendar.set(Calendar.MINUTE, minute)
-            calendar.set(Calendar.SECOND, 0)
-            calendar.set(Calendar.MILLISECOND, 0)
             onTimeSelected()
         },
         calendar.get(Calendar.HOUR_OF_DAY),
         calendar.get(Calendar.MINUTE),
         false
-    ).show()
+    )
+
+    timeDialog.show()
+    val headerIds = arrayOf("date_picker_header", "day_picker_selector_layout", "header")
+    for (idName in headerIds) {
+        val id = Resources.getSystem().getIdentifier(idName, "id", "android")
+        if (id != 0) {
+            timeDialog.findViewById<View>(id)?.setBackgroundColor(themeColor)
+        }
+    }
+    // --- NEW: DYNAMIC HEADER COLOR ---
+    try {
+        // TimePicker usually uses "header" as the ID name
+        val headerId = Resources.getSystem().getIdentifier("header", "id", "android")
+        val headerView = timeDialog.findViewById<View>(headerId)
+        headerView?.setBackgroundColor(themeColor)
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+    // DYNAMIC BUTTON COLORS
+    timeDialog.getButton(TimePickerDialog.BUTTON_POSITIVE).setTextColor(themeColor)
+    timeDialog.getButton(TimePickerDialog.BUTTON_NEGATIVE).setTextColor(themeColor)
 }
 
 fun Date.toFormattedString(pattern: String, locale: Locale = Locale.getDefault()): String {

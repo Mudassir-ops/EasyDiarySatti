@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="@dimen/_160sdp">
 
@@ -23,6 +24,17 @@
         android:layout_height="@dimen/_25sdp"
         android:background="@drawable/bg_edit_iamge"
         android:backgroundTint="#1D293933"
+        android:visibility="invisible"
+        android:layout_marginEnd="@dimen/_10sdp"
+        app:layout_constraintTop_toTopOf="@id/viewDelete"
+app:layout_constraintEnd_toStartOf="@id/viewDelete"
+         />
+    <View
+        android:id="@+id/viewDelete"
+        android:layout_width="@dimen/_36sdp"
+        android:layout_height="@dimen/_25sdp"
+        android:background="@drawable/bg_edit_iamge"
+        android:backgroundTint="#1D293933"
 
         app:layout_constraintEnd_toEndOf="@+id/iv_note_image"
         app:layout_constraintTop_toTopOf="@+id/iv_note_image" />
@@ -31,22 +43,24 @@
         android:id="@+id/icEdit"
         android:layout_width="@dimen/_15sdp"
         android:layout_height="@dimen/_15sdp"
-        android:visibility="invisible"
         android:layout_marginHorizontal="@dimen/_10sdp"
-        app:layout_constraintBottom_toBottomOf="@+id/icDelete"
-        app:layout_constraintStart_toStartOf="@+id/viewEdit"
-        app:layout_constraintTop_toTopOf="@+id/icDelete"
+        android:visibility="invisible"
+       app:layout_constraintEnd_toEndOf="@id/viewEdit"
+        app:layout_constraintTop_toTopOf="@+id/viewEdit"
         app:srcCompat="@drawable/pencil_icon"
-        app:tint="@color/white" />
+        android:layout_marginEnd="15dp"
+        app:layout_constraintBottom_toBottomOf="@id/icDelete"
+        app:tint="@color/white"
+         />
 
     <androidx.appcompat.widget.AppCompatImageView
         android:id="@+id/icDelete"
         android:layout_width="@dimen/_15sdp"
         android:layout_height="@dimen/_25sdp"
         android:layout_marginEnd="@dimen/_10sdp"
-        app:layout_constraintBottom_toBottomOf="@id/viewEdit"
-        app:layout_constraintEnd_toEndOf="@id/viewEdit"
-        app:layout_constraintTop_toTopOf="@id/viewEdit"
+        app:layout_constraintBottom_toBottomOf="@id/viewDelete"
+        app:layout_constraintEnd_toEndOf="@id/viewDelete"
+        app:layout_constraintTop_toTopOf="@id/viewDelete"
         app:srcCompat="@drawable/ic_delete"
         app:tint="@color/white" />
 

@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.signup.SignUpFragment">
 
-
     <androidx.appcompat.widget.AppCompatTextView
         android:id="@+id/txChooseYourTheme"
         android:layout_width="0dp"
@@ -18,7 +17,6 @@
         android:text="@string/access_your_diary"
         android:textColor="@color/black"
         android:textSize="@dimen/_18ssp"
-        app:layout_constraintBottom_toTopOf="@id/txtSetPasswordDescription"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -37,88 +35,81 @@
         app:layout_constraintTop_toBottomOf="@id/txChooseYourTheme"
         app:layout_constraintWidth_percent="0.8" />
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/edText_one"
-        android:layout_width="@dimen/_50sdp"
-        android:layout_height="@dimen/_50sdp"
-        android:layout_marginTop="@dimen/_50sdp"
-        android:background="@drawable/bg_pin"
-        android:fontFamily="@font/outfit"
-        android:gravity="center"
-        android:inputType="numberDecimal"
-        android:maxLength="1"
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/txtPinStage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_40sdp"
+        android:fontFamily="@font/outfit_medium"
+        android:text="Create your PIN"
         android:textColor="@color/black"
-        android:textSize="@dimen/_16sdp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toStartOf="@id/edText_two"
+        android:textSize="@dimen/_16ssp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/txtSetPasswordDescription" />
 
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/edText_two"
-        android:layout_width="@dimen/_50sdp"
-        android:layout_height="0dp"
-        android:background="@drawable/bg_pin"
-        android:fontFamily="@font/outfit"
-        android:gravity="center"
-        android:inputType="numberDecimal"
-        android:maxLength="1"
-        android:textColor="@color/black"
-        android:textSize="@dimen/_16sdp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/edText_one"
-        app:layout_constraintEnd_toStartOf="@id/edText_three"
-        app:layout_constraintStart_toEndOf="@id/edText_one"
-        app:layout_constraintTop_toTopOf="@id/edText_one" />
-
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/edText_three"
-        android:layout_width="@dimen/_50sdp"
-        android:layout_height="0dp"
-        android:background="@drawable/bg_pin"
-        android:fontFamily="@font/outfit"
-        android:gravity="center"
-        android:inputType="numberDecimal"
-        android:maxLength="1"
-        android:textColor="@color/black"
-        android:textSize="@dimen/_16sdp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/edText_one"
-        app:layout_constraintEnd_toStartOf="@id/edText_four"
-        app:layout_constraintStart_toEndOf="@id/edText_two"
-        app:layout_constraintTop_toTopOf="@id/edText_one" />
-
-    <androidx.appcompat.widget.AppCompatEditText
-        android:id="@+id/edText_four"
-        android:layout_width="@dimen/_50sdp"
-        android:layout_height="0dp"
-        android:background="@drawable/bg_pin"
-        android:fontFamily="@font/outfit"
-        android:gravity="center"
-        android:inputType="numberDecimal"
-        android:maxLength="1"
-        android:textColor="@color/black"
-        android:textSize="@dimen/_16sdp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="@id/edText_one"
+    <LinearLayout
+        android:id="@+id/dotsContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/edText_three"
-        app:layout_constraintTop_toTopOf="@id/edText_one" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/txtPinStage">
+
+        <ImageView
+            android:id="@+id/dot1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:src="@drawable/ic_pin_dot_empty" />
+
+        <ImageView
+            android:id="@+id/dot2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:src="@drawable/ic_pin_dot_empty" />
+
+        <ImageView
+            android:id="@+id/dot3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/_8sdp"
+            android:src="@drawable/ic_pin_dot_empty" />
+
+        <ImageView
+            android:id="@+id/dot4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_pin_dot_empty" />
+    </LinearLayout>
+
+    <include
+        android:id="@+id/keypadLayout"
+        layout="@layout/layout_numeric_keypad"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_30sdp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dotsContainer" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnNext"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/_40sdp"
+        android:layout_marginBottom="@dimen/_30sdp"
         android:background="@drawable/btn_bg"
         android:fontFamily="@font/outfit_medium"
         android:text="@string/setup_pin"
         android:textSize="@dimen/_14ssp"
+        android:visibility="visible"
         app:backgroundTint="@color/app_primary_color"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintWidth_percent="0.85" />
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

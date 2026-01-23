@@ -10,12 +10,16 @@ import androidx.navigation.fragment.findNavController
 import androidx.viewpager2.widget.ViewPager2
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.appOpen.entrance.ViewModelEntrance
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
 import com.example.easydiarysatti.ads.firebase.RemoteConfiguration
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.databinding.FragmentOnBoardingBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.uimodels.OnGoingScreenUiModel
 import com.example.easydiarysatti.viewBinding
+import com.google.android.gms.ads.AdView
 import com.google.android.material.tabs.TabLayoutMediator
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
@@ -28,7 +32,7 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
     private val viewModel by viewModels<OnBoardingViewModel>()
     lateinit var mFirebaseAnalytics: FirebaseAnalytics
     private val viewModelEntrance by viewModels<ViewModelEntrance>()
-
+    private val viewModelBanner by viewModels<ViewModelBanner>()
     @Inject
     lateinit var sharedPreferenceUtils: SharedPreferenceUtils
 
@@ -65,6 +69,7 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
         setupOnGoingPagerAdapter()
         clickListeners()
         initRemoteConfigs()
+        loadBanner()
         initObservers()
     }
 
@@ -197,5 +202,22 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
         viewModelEntrance.remoteConfigResponseLiveData.observe(viewLifecycleOwner) {
             // Observe remote config if necessary
         }
+        viewModelBanner.adViewLiveData.observe(viewLifecycleOwner) {
+            binding?.bannerAdView?.addCleanView(it)
+        }
+        viewModelBanner.loadFailedLiveData.observe(viewLifecycleOwner) {
+            binding?.bannerAdView?.visibility = View.GONE
+        }
+        viewModelBanner.clearViewLiveData.observe(viewLifecycleOwner) {
+            binding?.bannerAdView?.removeAllViews()
+        }
     }
+    private fun loadBanner() {
+        context?.let {
+            val adView = AdView(it)
+            viewModelBanner.loadBannerAd(adView, BannerAdKey.ON_BOARDING, context ?: return@let)
+        }
+    }
+
+
 }

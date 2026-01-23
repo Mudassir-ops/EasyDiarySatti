@@ -41,7 +41,7 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
                     when (state) {
                         is SplashState.ShowAd -> startAdFlow()
                         is SplashState.NavigateToOnboarding -> navigateTo(R.id.action_splashFragment_to_onBoardingFragment)
-                        is SplashState.NavigateToLogin -> navigateTo(R.id.action_splashFragment_to_loginFragment)
+                        is SplashState.NavigateToLogin -> navigateTo(R.id.loginFragment)
                         is SplashState.Idle -> Unit
                     }
                 }
@@ -68,10 +68,15 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         appOpenAdsConfig.showAppOpenAd(activity, AppOpenAdKey.NAME_SCREEN,
             object : AppOpenOnShowCallBack {
                 override fun onAdDismissedFullScreenContent() {
-                    viewModel.onAdFinished()
+                    // 2. ONLY proceed if the fragment is still attached to the activity
+                    if (isAdded && !isDetached) {
+                        viewModel.onAdFinished()
+                    }
                 }
                 override fun onAdFailedToShow() {
-                    viewModel.onAdFinished()
+                    if (isAdded && !isDetached) {
+                        viewModel.onAdFinished()
+                    }
                 }
                 override fun onAdClicked() {}
                 override fun onAdShowedFullScreenContent() {}
@@ -81,7 +86,8 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
     }
 
     private fun navigateTo(actionId: Int) {
-        if (isNavigatedInternal || !isAdded) return
+        // 1. Safety check: Ensure fragment is attached and view exists
+        if (isNavigatedInternal || !isAdded || view == null) return
 
         try {
             val navController = findNavController()

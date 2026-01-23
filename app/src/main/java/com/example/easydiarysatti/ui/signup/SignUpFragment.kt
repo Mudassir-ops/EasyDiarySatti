@@ -10,6 +10,10 @@ import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeLargeView
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.databinding.FragmentSignUpBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showSnackbar
@@ -24,6 +28,7 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     private var firstPin: String? = null
     private var isPinConfirmed = false
     private var currentPin = StringBuilder()
+    private val nativeViewModel: ViewModelNative by viewModels()
     private val dotsIds = listOf(R.id.dot1, R.id.dot2, R.id.dot3, R.id.dot4)
     private var canUseBiometrics = false
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
@@ -38,8 +43,24 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         clickListener()
         setupInitialButtonState()
         updateStageText()
+        setupNativeAd()
     }
+    private fun setupNativeAd() {
+        // 1. Observe the LiveData
+        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+            if (nativeAd != null) {
+                val adSmallView = AdNativeSmallView(requireContext())
+                binding?.flAdplaceholder?.apply {
+                    removeAllViews()
+                    addView(adSmallView)
+                    adSmallView.setNativeAd(nativeAd)
+                }
+            }
+        }
 
+        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+        nativeViewModel.loadNativeAd(NativeAdKey.SIGNUP)
+    }
     // Check if hardware is present to decide if we show the button
     private fun checkBiometricAvailability() {
         val biometricManager = BiometricManager.from(requireContext())
@@ -109,8 +130,10 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         if (currentPin.length < 4) {
             currentPin.append(number)
             updateDotsUi()
+
+            // When we reach 4, trigger the logic immediately
             if (currentPin.length == 4) {
-                handlePinEntry(currentPin.toString())
+                handleFullPinEntry()
             }
         }
     }
@@ -121,7 +144,7 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             updateDotsUi()
             if (isPinConfirmed) {
                 isPinConfirmed = false
-                resetButtonState()
+
             }
         }
     }
@@ -137,20 +160,36 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         }
     }
 
-    private fun handlePinEntry(enteredPin: String) {
+    private fun onPinEntry(digit: String) {
+        if (currentPin.length < 4) {
+            currentPin.append(digit)
+            updateDotsUi()
+
+            // Add this check to move forward automatically
+            if (currentPin.length == 4) {
+                handleFullPinEntry()
+            }
+        }
+    }
+
+    private fun handleFullPinEntry() {
+        val enteredPin = currentPin.toString()
+
         if (firstPin == null) {
+            // STEP 1: First 4 digits entered, move to confirmation
             firstPin = enteredPin
-            clearPinFields()
-            updateStageText()
+            clearPinFields() // This clears currentPin for the next entry
+            updateStageText() // Should now show "Confirm your PIN"
         } else {
-            if (firstPin == enteredPin) {
-                setButtonReadyState()
+            // STEP 2: Confirmation digits entered, check if they match
+            if (enteredPin == firstPin) {
                 isPinConfirmed = true
+                viewModel.savePin(enteredPin = firstPin.orEmpty())
+                moveToNextScreen() // Auto-navigate to dashboard
             } else {
+                // Error: PINs don't match, reset to start
                 firstPin = null
                 clearPinFields()
-                isPinConfirmed = false
-                resetButtonState()
                 updateStageText()
                 binding?.parentView?.showSnackbar(
                     message = getString(R.string.pins_do_not_match_try_again)
@@ -160,7 +199,11 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     }
 
     private fun updateStageText() {
-        binding?.txtPinStage?.text = if (firstPin == null) "Create your PIN" else "Confirm your PIN"
+        binding?.txtPinStage?.text = if (firstPin == null) {
+            "Create your PIN"
+        } else {
+            "Confirm your PIN"
+        }
     }
 
     private fun setButtonReadyState() {

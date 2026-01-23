@@ -7,13 +7,18 @@ import androidx.lifecycle.viewModelScope
 import com.example.easydiarysatti.ads.natives.domain.useCases.UseCaseNative
 import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
 import com.google.android.gms.ads.nativead.NativeAd
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import javax.inject.Inject // MUST BE javax, NOT jakarta
 
-class ViewModelNative(private val useCaseNative: UseCaseNative) : ViewModel() {
+@HiltViewModel
+class ViewModelNative @Inject constructor(
+    private val useCaseNative: UseCaseNative
+) : ViewModel() {
 
-    private val _adViewLiveData = MutableLiveData<NativeAd>()
-    val adViewLiveData: LiveData<NativeAd> get() = _adViewLiveData
+    private val _adViewLiveData = MutableLiveData<NativeAd?>()
+    val adViewLiveData: LiveData<NativeAd?> get() = _adViewLiveData
 
     private val _loadFailedLiveData = MutableLiveData<Unit>()
     val loadFailedLiveData: LiveData<Unit> get() = _loadFailedLiveData
@@ -24,9 +29,9 @@ class ViewModelNative(private val useCaseNative: UseCaseNative) : ViewModel() {
     fun loadNativeAd(nativeAdKey: NativeAdKey) = viewModelScope.launch {
         useCaseNative.loadNativeAd(nativeAdKey) { itemNativeAd ->
             itemNativeAd?.let {
-                _adViewLiveData.value = it.nativeAd
+                _adViewLiveData.postValue(it.nativeAd)
             } ?: run {
-                _loadFailedLiveData.value = Unit
+                _loadFailedLiveData.postValue(Unit)
             }
         }
     }

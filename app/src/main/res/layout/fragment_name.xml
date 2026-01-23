@@ -1,26 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nestedScrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:fitsSystemWindows="true"
     android:scrollbars="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <TextView
+            android:id="@+id/btnNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:fontFamily="@font/outfit_medium"
+            android:padding="@dimen/_10sdp"
+            android:text="@string/next"
+            android:textColor="@color/app_primary_color"
+            android:textSize="@dimen/_14ssp"
+            app:backgroundTint="@color/app_primary_color"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_chainStyle="spread_inside"
+            app:layout_constraintWidth_percent="0.85" />
+
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/imgIntroOne"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            app:layout_constraintBottom_toTopOf="@id/txtPermission"
+            app:layout_constraintBottom_toTopOf="@+id/txtPermission"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.5"
+            app:layout_constraintHeight_percent="0.27"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnNext"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintWidth_percent="0.8" />
 
@@ -28,7 +44,6 @@
             android:id="@+id/txtPermission"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
             android:layout_marginTop="@dimen/_25sdp"
             android:fontFamily="@font/outfit_bold"
             android:text="@string/start_writing"
@@ -36,8 +51,8 @@
             android:textColor="@color/black"
             android:textSize="@dimen/_20sdp"
             app:layout_constraintBottom_toTopOf="@+id/txtFullName"
-            app:layout_constraintEnd_toEndOf="@+id/imgIntroOne"
-            app:layout_constraintStart_toStartOf="@+id/imgIntroOne"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/imgIntroOne"
             app:layout_constraintVertical_chainStyle="packed" />
 
@@ -45,7 +60,7 @@
             android:id="@+id/txtFullName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/_10sdp"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="@dimen/_12sdp"
             android:fontFamily="@font/outfit_regular"
             android:text="@string/enter_your_name"
@@ -62,40 +77,29 @@
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_marginTop="@dimen/_5sdp"
-            android:layout_marginBottom="@dimen/_30sdp"
             android:background="@drawable/language_item_bg"
             android:drawableStart="@drawable/ic_person_svg"
             android:drawablePadding="@dimen/_10sdp"
             android:fontFamily="@font/outfit"
             android:hint="@string/name"
-            android:textColor="@color/black"
             android:inputType="textCapSentences|textPersonName"
             android:paddingStart="@dimen/_10sdp"
             android:paddingEnd="@dimen/_10sdp"
             android:singleLine="true"
-            app:layout_constraintBottom_toTopOf="@+id/btnNext"
-            app:layout_constraintStart_toStartOf="@id/txtFullName"
-            app:layout_constraintTop_toBottomOf="@id/txtFullName"
-            app:layout_constraintVertical_bias="0"
-            app:layout_constraintWidth_percent="0.9" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnNext"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/_7sdp"
-            android:background="@drawable/btn_bg"
-            android:fontFamily="@font/outfit_medium"
-            android:text="@string/next"
-            android:enabled="false"
-            android:alpha="0.6"
-            android:textSize="@dimen/_14ssp"
-            app:backgroundTint="@color/app_primary_color"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:textColor="@color/black"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintWidth_percent="0.85" />
+            app:layout_constraintTop_toBottomOf="@id/txtFullName"
+            app:layout_constraintWidth_percent="0.9" />
 
+
+        <FrameLayout
+            android:id="@+id/fl_adplaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>

@@ -9,6 +9,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeLargeView
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.databinding.FragmentNameBinding
 import com.example.easydiarysatti.enableResize
 import com.example.easydiarysatti.loadImage
@@ -25,6 +28,7 @@ class NameFragment : Fragment(R.layout.fragment_name) {
     private val viewModel by viewModels<NameViewModel>()
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private val binding by viewBinding(FragmentNameBinding::bind)
+    private val nativeViewModel: ViewModelNative by viewModels()
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
@@ -34,6 +38,7 @@ class NameFragment : Fragment(R.layout.fragment_name) {
         binding?.apply {
             adjustScreenKeyboard()
             clickListener()
+            setupNativeAd()
             imgIntroOne.loadImage(resourceId = R.drawable.bg_home_ic)
             val savedName = viewModel.getName()
             if (savedName?.isNotEmpty() == true) {
@@ -41,22 +46,43 @@ class NameFragment : Fragment(R.layout.fragment_name) {
             }
         }
     }
+    private fun setupNativeAd() {
+        // 1. Observe the LiveData
+        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+            if (nativeAd != null) {
+                val adLargeView = AdNativeLargeView(requireContext())
+                binding?.flAdplaceholder?.apply {
+                    removeAllViews()
+                    addView(adLargeView)
+                    adLargeView.setNativeAd(nativeAd)
+                }
+            }
+        }
 
+        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+        nativeViewModel.loadNativeAd(NativeAdKey.PERMISSION)
+    }
     private fun adjustScreenKeyboard() {
         setKeyboardVisibilityListener { isVisible ->
             viewLifecycleOwner.lifecycleScope.launch {
                 if (isVisible) {
+                    // 1. Keyboard is OPEN: Hide the ad and resize screen
                     enableResize(true)
+                    binding?.flAdplaceholder?.visibility = View.GONE
+
                     binding?.nestedScrollView?.post {
-                        if (view != null && viewLifecycleOwner.lifecycle.currentState.isAtLeast(
-                                Lifecycle.State.STARTED
-                            )
-                        ) {
-                            binding?.nestedScrollView?.fullScroll(View.FOCUS_DOWN)
+                        if (view != null && viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+                            binding?.nestedScrollView?.smoothScrollTo(0, binding?.edTextName?.top ?: 0)
                         }
                     }
                 } else {
+                    // 2. Keyboard is CLOSED: Show the ad again
                     enableResize(false)
+
+                    // Only show if we actually have an ad loaded
+                    if (nativeViewModel.adViewLiveData.value != null) {
+                        binding?.flAdplaceholder?.visibility = View.VISIBLE
+                    }
                 }
             }
         }

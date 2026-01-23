@@ -62,7 +62,9 @@ import androidx.navigation.NavOptions
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
@@ -379,34 +381,50 @@ fun View.loadBackground(
     @DrawableRes resourceId: Int?,
     @DrawableRes placeholder: Int? = null
 ) {
-    if (resourceId == null) return
+    if (resourceId == null) {
+        // Clear background if no ID is provided
+        background = null
+        return
+    }
 
+    // 1. Calculate safe dimensions (fallback to screen size if view isn't laid out)
     val metrics = resources.displayMetrics
-    val targetWidth = metrics.widthPixels
-    val targetHeight = metrics.heightPixels
+    val targetWidth = if (width > 0) width else metrics.widthPixels
+    val targetHeight = if (height > 0) height else metrics.heightPixels
 
-    val request = Glide.with(this)
+    // 2. Create a "low-res" request for the placeholder.
+    // This prevents the 76MB allocation shown in your crash.
+    val placeholderRequest = placeholder?.let {
+        Glide.with(this)
+            .load(it)
+            .override(targetWidth / 4, targetHeight / 4) // Load at 1/4 size
+            .format(DecodeFormat.PREFER_RGB_565)
+            .centerCrop()
+    }
+
+    // 3. Main Request
+    Glide.with(this)
+        .asDrawable()
         .load(resourceId)
-        .override(targetWidth, targetHeight)      // ✅ CRITICAL
+        .thumbnail(placeholderRequest) // Use thumbnail instead of .placeholder()
+        .override(targetWidth, targetHeight)
         .centerCrop()
-        .format(DecodeFormat.PREFER_RGB_565)      // ✅ 50% less memory
-        .dontAnimate()
+        .format(DecodeFormat.PREFER_RGB_565) // Use 16-bit colors (saves 50% RAM)
+        .diskCacheStrategy(DiskCacheStrategy.ALL)
+        .into(object : CustomViewTarget<View, Drawable>(this) {
+            override fun onResourceReady(resource: Drawable, transition: Transition<in Drawable>?) {
+                view.background = resource
+            }
 
-    placeholder?.let { request.placeholder(it) }
+            override fun onResourceCleared(placeholder: Drawable?) {
+                view.background = placeholder
+            }
 
-    request.into(object : CustomTarget<Drawable>() {
-
-        override fun onResourceReady(
-            resource: Drawable,
-            transition: Transition<in Drawable>?
-        ) {
-            background = resource
-        }
-
-        override fun onLoadCleared(placeholderDrawable: Drawable?) {
-            background = placeholderDrawable
-        }
-    })
+            override fun onLoadFailed(errorDrawable: Drawable?) {
+                // Optional: set a solid color if everything fails
+                // view.setBackgroundColor(Color.GRAY)
+            }
+        })
 }
 
 

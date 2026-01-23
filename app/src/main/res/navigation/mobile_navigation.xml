@@ -162,5 +162,7 @@
         android:name="com.example.easydiarysatti.ui.createnote.CreateNotesFragment"
         android:label="fragment_create_notes"
         tools:layout="@layout/fragment_create_notes" />
-
+    <action
+        android:id="@+id/action_global_remainderFragment"
+        app:destination="@id/remainderFragment" />
 </navigation>

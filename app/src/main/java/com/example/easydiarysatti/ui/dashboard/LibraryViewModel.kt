@@ -48,21 +48,20 @@ class LibraryViewModel @Inject constructor(
                         .flatMap { (date, noteList) ->
                             val items = mutableListOf<LibraryItem>()
                             items.add(LibraryItem.DateItem(date))
+
+                            // Add the note once, passing the entire list of images
                             noteList.forEach { note ->
-                                note.images?.forEach { imagePath ->
-                                    items.add(
-                                        LibraryItem.ImagesItem(
-                                            date = date,
-                                            imagePaths = imagePath,
-                                            noteTitle = note.title ?: "no title",
-                                            noteId = note.noteId
-                                        )
+                                items.add(
+                                    LibraryItem.ImagesItem(
+                                        date = date,
+                                        imagePaths = note.images ?: emptyList(), // Pass the list here
+                                        noteTitle = note.title ?: "no title",
+                                        noteId = note.noteId
                                     )
-                                }
+                                )
                             }
                             items
                         }
-
                     _allImagesState.value = LibraryImagesState.Success(groupedItems)
                 }
             }

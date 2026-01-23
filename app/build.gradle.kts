@@ -57,6 +57,11 @@ android {
                 name = "admob_banner_home_id",
                 value = "ca-app-pub-3940256099942544/2014213617"
             )
+            resValue(
+                type = "string",
+                name = "admob_banner_onboard",
+                value = "ca-app-pub-3940256099942544/2014213617"
+            )
 
             // Interstitial Ads - Satti
             resValue(
@@ -71,7 +76,71 @@ android {
                 name = "admob_rewarded_images_more_than_two",
                 value = "ca-app-pub-3940256099942544/1712485313"
             )
-
+            resValue(
+                type = "string",
+                name = "admob_native_login",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_permission",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_name",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_signup",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_language",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_home",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_library",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_calendar",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_profile",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_tags",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_edit_tag",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_remiander",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_change_password",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
             isMinifyEnabled = false
             isShrinkResources = false
             isDebuggable = true
@@ -110,6 +179,11 @@ android {
                 name = "admob_banner_home_id",
                 value = "ca-app-pub-6929888913467755/3876876618"
             )
+            resValue(
+                type = "string",
+                name = "admob_banner_onboard",
+                value = "ca-app-pub-6929888913467755/3876876618"
+            )
 
             // Interstitial Ads - Satti
             resValue(
@@ -117,11 +191,77 @@ android {
                 name = "admob_inter_before_main_id",
                 value = "ca-app-pub-6929888913467755/1142851070"
             )
+
             // Rewarded Ads Image Adding - Satti
             resValue(
                 type = "string",
                 name = "admob_rewarded_images_more_than_two",
                 value = "ca-app-pub-6929888913467755/2643619090"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_login",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_permission",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_name",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_signup",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_language",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_home",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_library",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_calendar",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_profile",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_tags",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_edit_tag",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_remiander",
+                value = "ca-app-pub-3940256099942544/2247696110"
+            )
+            resValue(
+                type = "string",
+                name = "admob_native_change_password",
+                value = "ca-app-pub-3940256099942544/2247696110"
             )
             signingConfig = signingConfigs.getByName("release")
 

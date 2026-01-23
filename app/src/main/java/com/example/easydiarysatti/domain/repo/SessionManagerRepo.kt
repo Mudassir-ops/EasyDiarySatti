@@ -29,7 +29,8 @@ interface SessionManagerRepo {
     fun setRequireLogin(value: Boolean)
     fun shouldRequireLogin(): Boolean
     fun clearRequireLogin()
-
+    fun saveLastDestination(destinationId: Int)
+    fun getLastDestination(): Int
     fun bypassSecurityLogin(value: Boolean)
     fun isBypassSecurityLogin(): Boolean
 }

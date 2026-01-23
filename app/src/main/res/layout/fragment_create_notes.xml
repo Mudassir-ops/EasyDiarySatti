@@ -140,8 +140,8 @@
                 android:background="@null"
                 android:fontFamily="@font/outfit"
                 android:gravity="top|start"
-                app:layout_constraintBottom_toTopOf="@id/flexboxLayout"
                 android:hint="@string/write_your_thoughts_here"
+                android:minLines="3"
                 android:maxLines="8"
                 android:textColor="@color/black"
                 android:inputType="textMultiLine"
@@ -150,7 +150,8 @@
                 android:textSize="@dimen/_13ssp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="@id/view_note_detail" />
+                app:layout_constraintTop_toTopOf="@id/view_note_detail"
+                app:layout_constraintBottom_toTopOf="@id/flexboxLayout" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

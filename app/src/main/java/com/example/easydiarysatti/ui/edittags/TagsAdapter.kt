@@ -59,10 +59,10 @@ class TagsAdapter(
 
     class ViewHolder(val binding: ItemTagsBinding) : RecyclerView.ViewHolder(binding.root)
 
-    override fun submitList(list: List<CustomTagEntity>?) {
-        fullList = list ?: emptyList()
-        super.submitList(ArrayList(list ?: emptyList()))
-    }
+//    override fun submitList(list: List<CustomTagEntity>?) {
+//        fullList = list ?: emptyList()
+//        super.submitList(ArrayList(list ?: emptyList()))
+//    }
 
     fun filter(query: String) {
         val filteredList = if (query.isEmpty()) {
@@ -75,15 +75,22 @@ class TagsAdapter(
         super.submitList(ArrayList(filteredList))
     }
 
+    // Inside TagsAdapter.kt
     class DiffCallback : DiffUtil.ItemCallback<CustomTagEntity>() {
         override fun areItemsTheSame(oldItem: CustomTagEntity, newItem: CustomTagEntity): Boolean {
-            return oldItem.noteId == newItem.noteId
+            // Fix: If the name is different, treat it as a different item so it refreshes
+            return oldItem.noteId == newItem.noteId && oldItem.tagName == newItem.tagName
         }
 
-        override fun areContentsTheSame(
-            oldItem: CustomTagEntity,
-            newItem: CustomTagEntity
-        ): Boolean = oldItem == newItem
+        override fun areContentsTheSame(oldItem: CustomTagEntity, newItem: CustomTagEntity): Boolean {
+            return oldItem == newItem
+        }
+    }
+
+    override fun submitList(list: List<CustomTagEntity>?) {
+        fullList = list ?: emptyList()
+        // Fix: Always pass a NEW ArrayList instance so DiffUtil is forced to check changes
+        super.submitList(if (list != null) ArrayList(list) else null)
     }
 
     companion object {

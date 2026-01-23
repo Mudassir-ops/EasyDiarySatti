@@ -35,7 +35,7 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
     }
 
     private fun setupRecyclerView() {
-        adapter = MultiViewAdapter { imagePath, date, noteId ->
+        adapter = MultiViewAdapter { imagePaths, date, noteId ->
             findNavController().safeNav(
                 currentDestId = R.id.libraryFragment,
                 actionId = R.id.action_libraryFragment_to_previewFragment,

@@ -89,7 +89,16 @@ class SessionManagerRepoImpl(
             PIN, ""
         )
     }
+    private val KEY_LAST_DESTINATION = "key_last_destination"
 
+    override fun saveLastDestination(destinationId: Int) {
+        preferences.edit { this.putInt(KEY_LAST_DESTINATION, destinationId).apply() }
+    }
+
+    override fun getLastDestination(): Int {
+        // Returns -1 as a default if no screen was saved
+        return preferences.getInt(KEY_LAST_DESTINATION, -1)
+    }
     override fun setOnBoardingDoneOnce(isOnBoardingDoneOnce: Boolean) {
         preferences.edit {
             this.putBoolean(ON_BOARDING_DONE, isOnBoardingDoneOnce)

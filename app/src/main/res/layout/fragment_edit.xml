@@ -94,7 +94,7 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toTopOf="@id/btnNext"
+            app:layout_constraintBottom_toTopOf="@+id/btnNext"
             app:layout_constraintEnd_toEndOf="@+id/etTagsView"
             app:layout_constraintStart_toStartOf="@+id/etTagsView"
             app:layout_constraintTop_toBottomOf="@+id/etTagsView" />
@@ -116,5 +116,12 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-
+    <FrameLayout
+        android:id="@+id/fl_adplaceholder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        />
 </androidx.constraintlayout.widget.ConstraintLayout>

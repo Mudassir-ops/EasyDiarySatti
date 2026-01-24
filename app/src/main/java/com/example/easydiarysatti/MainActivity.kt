@@ -181,7 +181,11 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         setupStartGraph()
         checkAutoUpdate()
         handleIntent(intent)
-        viewModel.fetchAndUpdateDbWithRemote()
+
+        /**
+         * If Db Empty Then Fetch From Remote
+         * */
+        viewModel.isDbEmpty()
     }
 
     fun getBgThemes(): List<Int?> = noteBgList
@@ -329,8 +333,5 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         Log.d("ConsentCheck", "Form dismissed.")
     }
 
-    fun getRemoteData() {
-
-    }
 
 }

@@ -66,5 +66,14 @@ class OnBoardingViewModel @Inject constructor(
         }
     }
 
+    fun isDbEmpty() {
+        viewModelScope.launch {
+            val isDbEmpty = createNoteRepository.isDbHaveNoData()
+            AppLogger.createLog("OnBoardingViewModel", "isDbEmpty: $isDbEmpty")
+            if (isDbEmpty) {
+                fetchAndUpdateDbWithRemote()
+            }
+        }
+    }
 }
 

@@ -144,4 +144,8 @@ class CreateNoteRepositoryImpl(
         updatedNote?.let { firebaseRepo.saveUserNote(createNoteEntity = it) }
     }
 
+    override suspend fun isDbHaveNoData(): Boolean {
+        return localDataSource.isDbHaveNoData()
+    }
+
 }

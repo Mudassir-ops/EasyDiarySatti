@@ -15,8 +15,10 @@ interface CreateNoteDao {
 
     @Update
     suspend fun updateNote(note: CreateNoteEntity)
+
     @Delete
     suspend fun deleteNote(note: CreateNoteEntity)
+
     @Query("SELECT * FROM create_note_entity_table WHERE noteId = :id LIMIT 1")
     suspend fun getNoteById(id: Long): CreateNoteEntity?
 
@@ -92,5 +94,7 @@ interface CreateNoteDao {
     @Query("SELECT * FROM reminder_table")
     fun observeReminder(): Flow<List<ReminderEntity>?>
 
+    @Query("SELECT COUNT(*) FROM create_note_entity_table")
+    suspend fun getRowCount(): Int
 
 }

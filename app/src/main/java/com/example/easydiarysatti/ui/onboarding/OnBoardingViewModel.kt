@@ -50,9 +50,9 @@ class OnBoardingViewModel @Inject constructor(
 
     fun saveBackUpProfileInPref(profile: FirebaseProfile) {
         viewModelScope.launch {
-            sessionManagerRepo.setProfileName(profilePic = profile.name.orEmpty())
+            sessionManagerRepo.setProfilePic(profilePic = profile.profilePicUrl.orEmpty())
         }
-        sessionManagerRepo.setProfilePic(profilePic = profile.profilePicUrl.orEmpty())
+        sessionManagerRepo.setProfileName(profilePic = profile.name.orEmpty())
         sessionManagerRepo.setProfileEmail(email = profile.email.orEmpty())
         sessionManagerRepo.setPin(pin = profile.pinHash.orEmpty())
         sessionManagerRepo.setBgTheme(themeResId = profile.theme.orEmpty())

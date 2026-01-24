@@ -45,7 +45,7 @@ class SessionManagerRepoImpl(
         )
     }
 
-    override fun setProfilePic(profilePic: String) {
+    override suspend fun setProfilePic(profilePic: String) {
         preferences.edit {
             this.putString(PROFILE_PIC, profilePic)
         }
@@ -58,7 +58,7 @@ class SessionManagerRepoImpl(
         )
     }
 
-    override suspend fun setProfileName(profilePic: String) {
+    override fun setProfileName(profilePic: String) {
         preferences.edit {
             this.putString(PROFILE_NAME, profilePic)
         }

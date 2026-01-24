@@ -12,7 +12,7 @@ interface FirebaseRemoteDataSync {
     fun savePinHash(pinHash: String)
     fun saveTheme(themeId: Int)
 
-    fun saveUserNote(createNoteEntity: CreateNoteEntity)
+    suspend fun saveUserNote(createNoteEntity: CreateNoteEntity)
 
     fun fetchUserDataFromFirebase(
         onComplete: (

@@ -17,7 +17,8 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("/Users/mudassirsatti/AndroidStudioProjects/EasyDiarySatti/easydairy123.jks")
+            storeFile =
+                file("/Users/mudassirsatti/AndroidStudioProjects/EasyDiarySatti/easydairy123.jks")
             storePassword = "easydairy123"
             keyAlias = "key0"
             keyPassword = "easydairy123"
@@ -300,6 +301,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.firebase.storage.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -346,7 +348,7 @@ dependencies {
     implementation(libs.google.firebase.crashlytics)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.database)
-
+    implementation(libs.firebase.storage)
     //in app update
     implementation(libs.play.app.update)
     implementation(libs.app.update.ktx)

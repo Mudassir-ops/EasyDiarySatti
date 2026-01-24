@@ -66,7 +66,8 @@ fun FirebaseNote.toRoomEntity(): CreateNoteEntity {
         textAlignment = textAlignment,
         text = text,
         creationTime = creationTime,
-        tags = tags?.map { CustomTagEntity(it["tagName"] as String, it["noteId"] as Int) },
+        tags = tags?.map { CustomTagEntity(it["tagName"] as String, (it["noteId"] as? Long)?.toInt() ?: 0
+        ) },
         images = images,
         isAscending = isAscending,
         remainderTime = remainderTime

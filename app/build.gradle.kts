@@ -17,7 +17,8 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("/Users/mudassirsatti/AndroidStudioProjects/EasyDiarySatti/easydairy123.jks")
+            storeFile =
+                file("/Users/mudassirsatti/AndroidStudioProjects/EasyDiarySatti/easydairy123.jks")
             storePassword = "easydairy123"
             keyAlias = "key0"
             keyPassword = "easydairy123"
@@ -344,6 +345,9 @@ dependencies {
     implementation(libs.firebase.config)
     implementation(libs.google.firebase.analytics)
     implementation(libs.google.firebase.crashlytics)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.storage)
 
     //in app update
     implementation(libs.play.app.update)

@@ -6,6 +6,7 @@ import androidx.core.net.toUri
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
@@ -20,13 +21,14 @@ import com.example.easydiarysatti.utills.setImage
 import com.example.easydiarysatti.utills.showImageCropDialog
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
     private var _binding: FragmentEditProfileBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = _binding
     private lateinit var imagePicker: ImagePickerDelegate
     private var profilePic = ""
     private val viewModel by viewModels<NameViewModel>()
@@ -69,7 +71,7 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
         nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
             if (nativeAd != null) {
                 val adSmallView = AdNativeSmallView(requireContext())
-                binding.flAdplaceholder.apply {
+                binding?.flAdplaceholder?.apply {
                     removeAllViews()
                     addView(adSmallView)
                     adSmallView.setNativeAd(nativeAd)
@@ -96,7 +98,9 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
             etPmail.doOnTextChanged { _, _, _, _ -> }
 
             btnNext.setOnClickListener {
-                sessionManagerRepo.setProfilePic(profilePic)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    sessionManagerRepo.setProfilePic(profilePic)
+                }
                 viewModel.saveName(etPname.text.toString())
                 viewModel.saveEmail(etPmail.text.toString())
                 findNavController().navigateUp()
@@ -106,23 +110,25 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
     private fun setupDefaultValues() {
         // Create a local reference to binding to ensure null-safety throughout the function
-        val currentBinding = binding ?: return
+        val currentBinding = binding
 
         sessionManagerRepo.getprofilePic()?.takeIf { it.isNotEmpty() }?.let {
             profilePic = it
-            currentBinding.ivProfile.setImage(drawable = it.toUri())
+            currentBinding?.ivProfile?.setImage(drawable = it.toUri())
         }
 
         viewModel.getName()?.takeIf { it.isNotEmpty() }?.let {
-            currentBinding.etPname.setText(it)
+            currentBinding?.etPname?.setText(it)
         }
 
         viewModel.getEmail()?.takeIf { it.isNotEmpty() }?.let {
-            currentBinding.etPmail.setText(it)
+            currentBinding?.etPmail?.setText(it)
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 }

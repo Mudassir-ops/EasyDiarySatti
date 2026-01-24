@@ -37,5 +37,5 @@ interface EasyDiaryLocalDataSource {
     suspend fun deleteReminder(reminderEntity: ReminderEntity)
     suspend fun updateReminder(reminderEntity: ReminderEntity)
     fun observeReminder(): Flow<List<ReminderEntity>?>
-
+    suspend fun isDbHaveNoData(): Boolean
 }

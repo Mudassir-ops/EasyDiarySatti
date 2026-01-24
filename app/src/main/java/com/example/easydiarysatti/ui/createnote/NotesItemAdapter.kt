@@ -25,9 +25,6 @@ class NotesItemAdapter(
             binding.viewForeground.setOnClickListener {
                 onNoteItemClick(noteEntity)
             }
-
-
-
             binding.executePendingBindings()
         }
     }

@@ -26,6 +26,7 @@ interface CreateNoteRepository {
         noteId: Long,
         newTags: List<CustomTagEntity>
     )
+
     suspend fun deleteNote(note: CreateNoteEntity)
     suspend fun updateImageForNote(
         noteId: Long,
@@ -37,5 +38,5 @@ interface CreateNoteRepository {
     suspend fun deleteReminder(reminderEntity: ReminderEntity?)
     suspend fun updateReminder(reminderEntity: ReminderEntity?)
     fun observeReminder(): Flow<List<ReminderEntity>?>
-
+    suspend fun isDbHaveNoData(): Boolean
 }

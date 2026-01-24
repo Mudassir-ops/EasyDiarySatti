@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.easydiarysatti.PREF_NAME
 import com.example.easydiarysatti.data.repo.SessionManagerRepoImpl
+import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import dagger.Module
 import dagger.Provides
@@ -18,8 +19,8 @@ object SharedPreferencesModule {
 
     @Provides
     @Singleton
-    fun provideSessionManagerRepository(sharedPreferences: SharedPreferences): SessionManagerRepo {
-        return SessionManagerRepoImpl(sharedPreferences)
+    fun provideSessionManagerRepository(sharedPreferences: SharedPreferences,firebaseRemoteDataSync: FirebaseRemoteDataSync): SessionManagerRepo {
+        return SessionManagerRepoImpl(sharedPreferences, firebaseRepo = firebaseRemoteDataSync)
     }
 
     @Singleton

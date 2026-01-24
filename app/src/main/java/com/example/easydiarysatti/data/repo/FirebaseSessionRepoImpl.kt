@@ -1,12 +1,13 @@
 package com.example.easydiarysatti.data.repo
 
+import com.example.easydiarysatti.AppLogger
+import com.example.easydiarysatti.data.local.CreateNoteEntity
+import com.example.easydiarysatti.data.mapper.toFirebaseNote
 import com.example.easydiarysatti.domain.model.Device
 import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 
 class FirebaseSessionRepoImpl(
-    private val auth: FirebaseAuth,
     private val database: DatabaseReference,
     private val device: Device
 ) : FirebaseRemoteDataSync {
@@ -36,8 +37,18 @@ class FirebaseSessionRepoImpl(
         userRef().child("theme").setValue(themeId)
     }
 
-    override fun saveUserNote() {
-        TODO("Not yet implemented")
+    override fun saveUserNote(createNoteEntity: CreateNoteEntity) {
+        AppLogger.createLog("FirebaseRemoteDataSync", "saveUserNote: $createNoteEntity")
+        userRef().child("notes").push()
+            .setValue(createNoteEntity.toFirebaseNote())
+            .addOnSuccessListener {
+                AppLogger.createLog("FirebaseRemoteDataSync", "Note saved successfully")
+            }
+            .addOnFailureListener { e ->
+                AppLogger.createLog("FirebaseRemoteDataSync", "Failed to save note: $e")
+            }
+
+
     }
 
 }

@@ -6,23 +6,28 @@ import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
+import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
 import kotlinx.coroutines.flow.Flow
 
 class CreateNoteRepositoryImpl(
-    private val localDataSource: EasyDiaryLocalDataSource
+    private val localDataSource: EasyDiaryLocalDataSource,
+    private val firebaseRepo: FirebaseRemoteDataSync
 ) : CreateNoteRepository {
 
     override suspend fun createEmptyNote(): Long {
         return localDataSource.createEmptyNote()
     }
+
     override suspend fun updateNote(note: CreateNoteEntity) {
         localDataSource.updateNote(note)
     }
+
     // Inside CreateNoteRepositoryImpl.kt
     override suspend fun deleteNote(note: CreateNoteEntity) {
         // FIX: Call localDataSource instead of createNoteDao directly
         localDataSource.deleteNote(note)
     }
+
     override suspend fun mergeAndSave(note: CreateNoteEntity) {
         val existing = note.noteId.takeIf { it != 0L }?.let { localDataSource.getNoteById(it) }
 
@@ -62,8 +67,10 @@ class CreateNoteRepositoryImpl(
                 localDataSource.updateNote(
                     merged.copy(tags = updatedTags)
                 )
+                saveNoteRemoteDataStore(noteId = newNoteId.toInt())
             }
         } else {
+            saveNoteRemoteDataStore(noteId = merged.noteId.toInt())
             localDataSource.updateNote(merged)
         }
     }
@@ -128,9 +135,13 @@ class CreateNoteRepositoryImpl(
         reminderEntity?.let { localDataSource.updateReminder(it) }
     }
 
-    override fun observeReminder(): Flow<List<ReminderEntity>?>{
+    override fun observeReminder(): Flow<List<ReminderEntity>?> {
         return localDataSource.observeReminder()
     }
 
+    suspend fun saveNoteRemoteDataStore(noteId: Int) {
+        val updatedNote = localDataSource.getNoteById(id = noteId.toLong())
+        updatedNote?.let { firebaseRepo.saveUserNote(createNoteEntity = it) }
+    }
 
 }

@@ -11,7 +11,6 @@ import com.example.easydiarysatti.domain.model.DeviceType
 import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
 import com.example.easydiarysatti.getDeviceSerialNumber
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import dagger.Module
 import dagger.Provides
@@ -33,8 +32,14 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideCreateNoteRepository(localDataSource: EasyDiaryLocalDataSource): CreateNoteRepository {
-        return CreateNoteRepositoryImpl(localDataSource = localDataSource)
+    fun provideCreateNoteRepository(
+        localDataSource: EasyDiaryLocalDataSource,
+        firebaseRemoteDataSync: FirebaseRemoteDataSync
+    ): CreateNoteRepository {
+        return CreateNoteRepositoryImpl(
+            localDataSource = localDataSource,
+            firebaseRepo = firebaseRemoteDataSync
+        )
     }
 
     @Provides
@@ -42,7 +47,6 @@ object RepositoryModule {
         device: Device
     ): FirebaseRemoteDataSync =
         FirebaseSessionRepoImpl(
-            auth = FirebaseAuth.getInstance(),
             database = FirebaseDatabase.getInstance().reference,
             device = device
         )

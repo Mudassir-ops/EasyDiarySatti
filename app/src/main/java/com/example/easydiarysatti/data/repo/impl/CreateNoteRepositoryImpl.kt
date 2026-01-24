@@ -70,8 +70,8 @@ class CreateNoteRepositoryImpl(
                 saveNoteRemoteDataStore(noteId = newNoteId.toInt())
             }
         } else {
-            saveNoteRemoteDataStore(noteId = merged.noteId.toInt())
             localDataSource.updateNote(merged)
+            saveNoteRemoteDataStore(noteId = merged.noteId.toInt())
         }
     }
 

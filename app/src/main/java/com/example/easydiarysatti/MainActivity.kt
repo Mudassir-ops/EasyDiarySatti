@@ -40,8 +40,10 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
 
     private lateinit var binding: ActivityMainBinding
     private val updateViewModel: UpdateViewModel by viewModels()
+
     // 1. Declare the controller
     private lateinit var consentController: ConsentController
+
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
@@ -167,7 +169,10 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         consentController = ConsentController(this)
-        consentController.initConsent(deviceId = "D31911EF56FDCB9715391100A2AB57A8", callback = this)
+        consentController.initConsent(
+            deviceId = "D31911EF56FDCB9715391100A2AB57A8",
+            callback = this
+        )
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -176,6 +181,7 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         setupStartGraph()
         checkAutoUpdate()
         handleIntent(intent)
+        viewModel.fetchAndUpdateDbWithRemote()
     }
 
     fun getBgThemes(): List<Int?> = noteBgList
@@ -205,7 +211,8 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         val isOnBoardingDone = viewModel.isOnBoardingCompleted()
         if (!isOnBoardingDone) return
 
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+        val navHostFragment =
+            supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
         val currentDestinationId = navHostFragment?.navController?.currentDestination?.id
 
         // 1. DO NOT show login if we are on Splash.
@@ -246,6 +253,7 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
     fun onLoginFinished() {
         findViewById<FrameLayout>(R.id.loginOverlayContainer).visibility = View.GONE
     }
+
     override fun onDestroy() {
         super.onDestroy()
         updateViewModel.unregisterListener()
@@ -274,37 +282,24 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         handleIntent(intent)
     }
 
-//    private fun handleIntent(intent: Intent?) {
-//        val noteId = intent?.getIntExtra(REMAINDER_UNIQUE_ID, -1) ?: -1
-//        if (noteId != -1) {
-//            // Use your safeNav extension to go to the note screen
-//            val navHostFragment = supportFragmentManager
-//                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
-//            navHostFragment?.navController?.safeNav(
-//                currentDestId = R.id.mainFragment, // Or current destination
-//                actionId = R.id.remainderFragment,
-//                bundle = Bundle().apply { putInt("noteId", noteId) }
-//            )
-//        }
-//    }
-// Inside MainActivity.kt
-private fun handleIntent(intent: Intent?) {
-    val noteId = intent?.getIntExtra("REMAINDER_UNIQUE_ID", -1) ?: -1
-    if (noteId != -1) {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+    private fun handleIntent(intent: Intent?) {
+        val noteId = intent?.getIntExtra("REMAINDER_UNIQUE_ID", -1) ?: -1
+        if (noteId != -1) {
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
 
-        // Use global action instead of fragment ID to avoid crashes
-        try {
-            navHostFragment?.navController?.navigate(
-                R.id.action_global_remainderFragment,
-                Bundle().apply { putInt("noteId", noteId) }
-            )
-        } catch (e: Exception) {
-            Log.e("Nav", "Global nav failed: ${e.message}")
+            // Use global action instead of fragment ID to avoid crashes
+            try {
+                navHostFragment?.navController?.navigate(
+                    R.id.action_global_remainderFragment,
+                    Bundle().apply { putInt("noteId", noteId) }
+                )
+            } catch (e: Exception) {
+                Log.e("Nav", "Global nav failed: ${e.message}")
+            }
         }
     }
-}
+
     private fun showRestartSnackBar() {
         Snackbar.make(
             findViewById(android.R.id.content),
@@ -319,7 +314,7 @@ private fun handleIntent(intent: Intent?) {
     override fun onAdsLoad(canRequestAds: Boolean) {
         if (canRequestAds) {
             Log.d("ConsentCheck", "Ads can be requested. Initialize your Ads SDK here.")
-             MobileAds.initialize(this) {}
+            MobileAds.initialize(this) {}
         } else {
             Log.d("ConsentCheck", "Ads cannot be requested.")
         }
@@ -329,7 +324,13 @@ private fun handleIntent(intent: Intent?) {
         // This tells you if the "Privacy Options" entry point needs to be visible in settings
         Log.d("ConsentCheck", "Privacy Options Required: $required")
     }
+
     override fun onConsentFormDismissed() {
         Log.d("ConsentCheck", "Form dismissed.")
     }
+
+    fun getRemoteData() {
+
+    }
+
 }

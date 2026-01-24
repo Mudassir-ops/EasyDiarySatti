@@ -4,6 +4,8 @@ import com.example.easydiarysatti.AppLogger
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.mapper.toFirebaseNote
 import com.example.easydiarysatti.domain.model.Device
+import com.example.easydiarysatti.domain.model.FirebaseNote
+import com.example.easydiarysatti.domain.model.FirebaseProfile
 import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
 import com.google.firebase.database.DatabaseReference
 
@@ -49,6 +51,29 @@ class FirebaseSessionRepoImpl(
             }
 
 
+    }
+
+    override fun fetchUserDataFromFirebase(
+        onComplete: (
+            profile: FirebaseProfile?,
+            notes: List<FirebaseNote>
+        ) -> Unit
+    ) {
+        val uid = device.serial
+        val userRef = database.child("users").child(uid)
+        userRef.child("profile").get().addOnSuccessListener { profileSnapshot ->
+            val profile = profileSnapshot.getValue(FirebaseProfile::class.java)
+            userRef.child("notes").get().addOnSuccessListener { notesSnapshot ->
+                val notes =
+                    notesSnapshot.children.mapNotNull { it.getValue(FirebaseNote::class.java) }
+                onComplete(profile, notes)
+            }.addOnFailureListener {
+                onComplete(profile, emptyList())
+            }
+
+        }.addOnFailureListener {
+            onComplete(null, emptyList())
+        }
     }
 
 }

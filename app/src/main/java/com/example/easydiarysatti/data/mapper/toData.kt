@@ -47,3 +47,28 @@ fun List<CustomTagEntity>.toFirebaseList(): List<Map<String, Any>> {
         )
     }
 }
+
+fun FirebaseNote.toRoomEntity(): CreateNoteEntity {
+    return CreateNoteEntity(
+        noteId = noteId,
+        title = title,
+        description = description,
+        isFavorite = isFavorite,
+        feelingTitle = feelingTitle,
+        feelingEmojiRes = feelingEmojiRes,
+        backgroundRes = backgroundRes,
+        selectedEmojiColor = selectedEmojiColor,
+        textColor = textColor,
+        tagColor = tagColor,
+        textSizeHeader = textSizeHeader,
+        textFont = textFont,
+        textFontSize = textFontSize,
+        textAlignment = textAlignment,
+        text = text,
+        creationTime = creationTime,
+        tags = tags?.map { CustomTagEntity(it["tagName"] as String, it["noteId"] as Int) },
+        images = images,
+        isAscending = isAscending,
+        remainderTime = remainderTime
+    )
+}

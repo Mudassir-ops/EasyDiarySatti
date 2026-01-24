@@ -1041,3 +1041,7 @@ fun Context.getDeviceSerialNumber(): String = Settings.Secure.getString(
     Settings.Secure.ANDROID_ID
 ) ?: UUID.randomUUID().toString()
 
+fun Long?.orEmpty(default: Long = -1) = this ?: default
+fun Int?.orEmpty(default: Int = -1) = this ?: default
+fun Double?.orEmpty(default: Double = 0.0) = this ?: default
+fun Boolean?.orEmpty(default: Boolean = false) = this ?: default

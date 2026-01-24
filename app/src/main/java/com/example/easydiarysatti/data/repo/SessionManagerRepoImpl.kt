@@ -12,10 +12,12 @@ import com.example.easydiarysatti.PROFILE_EMAIL
 import com.example.easydiarysatti.PROFILE_NAME
 import com.example.easydiarysatti.PROFILE_PIC
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 
 class SessionManagerRepoImpl(
-    private val preferences: SharedPreferences
+    private val preferences: SharedPreferences,
+    private val firebaseRepo: FirebaseRemoteDataSync
 ) : SessionManagerRepo {
 
     override fun isLanguageSettled(): Boolean? {
@@ -34,6 +36,7 @@ class SessionManagerRepoImpl(
         preferences.edit {
             this.putInt(BG_THEME_ID, themeResId)
         }
+        firebaseRepo.saveTheme(themeId = themeResId)
     }
 
     override fun getBgTheme(): Int? {
@@ -46,6 +49,7 @@ class SessionManagerRepoImpl(
         preferences.edit {
             this.putString(PROFILE_PIC, profilePic)
         }
+        firebaseRepo.saveProfilePic(pic = profilePic)
     }
 
     override fun getprofilePic(): String? {
@@ -58,6 +62,7 @@ class SessionManagerRepoImpl(
         preferences.edit {
             this.putString(PROFILE_NAME, profilePic)
         }
+        firebaseRepo.saveProfileName(name = profilePic)
     }
 
     override fun getprofileName(): String? {
@@ -70,6 +75,7 @@ class SessionManagerRepoImpl(
         preferences.edit {
             this.putString(PROFILE_EMAIL, email)
         }
+        firebaseRepo.saveEmail(email = email)
     }
 
     override fun getprofileEmail(): String? {
@@ -82,6 +88,7 @@ class SessionManagerRepoImpl(
         preferences.edit {
             this.putString(PIN, pin)
         }
+        firebaseRepo.savePinHash(pinHash = pin)
     }
 
     override fun getPin(): String? {
@@ -89,6 +96,7 @@ class SessionManagerRepoImpl(
             PIN, ""
         )
     }
+
     private val KEY_LAST_DESTINATION = "key_last_destination"
 
     override fun saveLastDestination(destinationId: Int) {
@@ -99,6 +107,7 @@ class SessionManagerRepoImpl(
         // Returns -1 as a default if no screen was saved
         return preferences.getInt(KEY_LAST_DESTINATION, -1)
     }
+
     override fun setOnBoardingDoneOnce(isOnBoardingDoneOnce: Boolean) {
         preferences.edit {
             this.putBoolean(ON_BOARDING_DONE, isOnBoardingDoneOnce)

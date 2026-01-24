@@ -344,6 +344,8 @@ dependencies {
     implementation(libs.firebase.config)
     implementation(libs.google.firebase.analytics)
     implementation(libs.google.firebase.crashlytics)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
 
     //in app update
     implementation(libs.play.app.update)

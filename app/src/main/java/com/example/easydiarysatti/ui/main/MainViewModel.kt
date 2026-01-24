@@ -22,6 +22,12 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun saveUserProfileRemote() {
+        viewModelScope.launch {
+
+        }
+    }
+
 }
 
 sealed interface MainState {

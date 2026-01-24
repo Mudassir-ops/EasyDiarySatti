@@ -2,6 +2,7 @@ package com.example.easydiarysatti
 
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -12,7 +13,6 @@ import android.content.res.ColorStateList
 import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
-import android.graphics.PorterDuff
 import android.graphics.Rect
 import android.graphics.Typeface
 import android.graphics.drawable.Drawable
@@ -36,7 +36,6 @@ import android.view.View
 import android.view.ViewTreeObserver
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
-import android.widget.DatePicker
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -52,7 +51,6 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.graphics.toColorInt
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.DefaultLifecycleObserver
@@ -63,7 +61,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DecodeFormat
 import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.target.CustomTarget
 import com.bumptech.glide.request.target.CustomViewTarget
 import com.bumptech.glide.request.transition.Transition
 import com.example.easydiarysatti.data.local.CustomTagEntity
@@ -86,7 +83,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import javax.inject.Inject
+import java.util.UUID
 
 fun NavController.safeNav(
     @IdRes currentDestId: Int,
@@ -685,7 +682,8 @@ fun AppCompatImageView.setCustomDayEmojiBackground(
 
         strokeColor?.let {
             try {
-                val strokeWidth = context.resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._1sdp)
+                val strokeWidth =
+                    context.resources.getDimensionPixelSize(com.intuit.sdp.R.dimen._1sdp)
                 drawable.setStroke(strokeWidth, Color.parseColor(it))
             } catch (e: Exception) {
                 // Ignore invalid hex
@@ -1036,3 +1034,10 @@ fun Activity.privacyPolicyUrl() {
         e.printStackTrace()
     }
 }
+
+@SuppressLint("HardwareIds")
+fun Context.getDeviceSerialNumber(): String = Settings.Secure.getString(
+    contentResolver,
+    Settings.Secure.ANDROID_ID
+) ?: UUID.randomUUID().toString()
+

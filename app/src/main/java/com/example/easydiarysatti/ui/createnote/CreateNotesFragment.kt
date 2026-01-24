@@ -180,7 +180,6 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
-
     @SuppressLint("ClickableViewAccessibility")
     fun clickListeners() {
         binding?.apply {

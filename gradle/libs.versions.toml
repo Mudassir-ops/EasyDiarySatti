@@ -50,8 +50,6 @@ google-firebase-analytics = { module = "com.google.firebase:firebase-analytics" 
 google-firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-database = { module = "com.google.firebase:firebase-database" }
-
-google-firebase-storage-ktx = { module = "com.google.firebase:firebase-storage-ktx" }
 gson-v2110 = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

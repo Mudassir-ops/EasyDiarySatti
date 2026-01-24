@@ -54,26 +54,17 @@ class FirebaseSessionRepoImpl(
     }
 
     override fun fetchUserDataFromFirebase(
-        onComplete: (
-            profile: FirebaseProfile?,
-            notes: List<FirebaseNote>
-        ) -> Unit
+        onComplete: (profile: FirebaseProfile?, notes: List<FirebaseNote>) -> Unit
     ) {
         val uid = device.serial
         val userRef = database.child("users").child(uid)
         userRef.child("profile").get().addOnSuccessListener { profileSnapshot ->
             val profile = profileSnapshot.getValue(FirebaseProfile::class.java)
-            userRef.child("notes").get().addOnSuccessListener { notesSnapshot ->
-                val notes =
-                    notesSnapshot.children.mapNotNull { it.getValue(FirebaseNote::class.java) }
-                onComplete(profile, notes)
-            }.addOnFailureListener {
-                onComplete(profile, emptyList())
-            }
-
+            val notes = profileSnapshot.child("notes").children
+                .mapNotNull { it.getValue(FirebaseNote::class.java) }
+            onComplete(profile, notes)
         }.addOnFailureListener {
             onComplete(null, emptyList())
         }
     }
-
 }

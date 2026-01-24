@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.easydiarysatti.AppLogger
 import com.example.easydiarysatti.data.mapper.toRoomEntity
-import com.example.easydiarysatti.data.repo.EasyDiaryLocalDataSource
 import com.example.easydiarysatti.domain.model.FirebaseNote
 import com.example.easydiarysatti.domain.model.FirebaseProfile
+import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.orEmpty
@@ -18,7 +18,7 @@ import javax.inject.Inject
 class OnBoardingViewModel @Inject constructor(
     private val sessionManagerRepo: SessionManagerRepo,
     private val firebaseRemoteDataSync: FirebaseRemoteDataSync,
-    private val localDataSource: EasyDiaryLocalDataSource,
+    private val createNoteRepository: CreateNoteRepository
 ) : ViewModel() {
 
     fun isOnBoardingCompleted(): Boolean {
@@ -60,7 +60,7 @@ class OnBoardingViewModel @Inject constructor(
         firebaseNote.map {
             it.toRoomEntity()
         }.map {
-            localDataSource.insertNote(note = it)
+            createNoteRepository.mergeAndSave(note = it)
         }
     }
 

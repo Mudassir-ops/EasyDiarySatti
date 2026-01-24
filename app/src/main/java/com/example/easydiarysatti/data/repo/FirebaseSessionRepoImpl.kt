@@ -11,10 +11,8 @@ import com.example.easydiarysatti.domain.repo.FirebaseRemoteDataSync
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class FirebaseSessionRepoImpl(
@@ -31,8 +29,11 @@ class FirebaseSessionRepoImpl(
         userRef().child("name").setValue(name)
     }
 
-    override fun saveProfilePic(pic: String) {
-        userRef().child("profilePicUrl").setValue(pic)
+    override suspend fun saveProfilePic(pic: String) {
+        val uploadedUrl = uploadProfilePic(picPath = pic)
+        uploadedUrl?.let {
+            userRef().child("profilePicUrl").setValue(it)
+        }
     }
 
     override fun saveEmail(email: String) {
@@ -49,8 +50,7 @@ class FirebaseSessionRepoImpl(
 
     override suspend fun saveUserNote(createNoteEntity: CreateNoteEntity) {
         AppLogger.createLog("FirebaseRemoteDataSync", "saveUserNote: $createNoteEntity")
-        val uploadedUrls = uploadNoteImages(createNoteEntity)
-        val noteToSave = createNoteEntity.copy(images = uploadedUrls).toFirebaseNote()
+        val noteToSave = createNoteEntity.copy().toFirebaseNote()
         val noteKey = noteToSave.noteId.toString()
         userRef().child("notes").child(noteKey)
             .setValue(noteToSave)
@@ -78,29 +78,22 @@ class FirebaseSessionRepoImpl(
         }
     }
 
-    suspend fun uploadNoteImages(note: CreateNoteEntity): List<String> = coroutineScope {
-        val uid = device.serial
-        val storageRef = FirebaseStorage.getInstance().reference
-        val imagePaths = note.images ?: emptyList()
-
-        val uploadedUrls = imagePaths.map { localPath ->
-            async(Dispatchers.IO) {
-                try {
-                    val file = Uri.fromFile(File(localPath))
-                    val fileRef =
-                        storageRef.child("users/$uid/notes/${note.noteId}/${file.lastPathSegment}")
-                    fileRef.putFile(file).await()
-                    fileRef.downloadUrl.await().toString()
-                } catch (e: Exception) {
-                    AppLogger.createLog(
-                        "FirebaseRemoteDataSync",
-                        "Failed to upload image $localPath: $e"
-                    )
-                    null
-                }
-            }
+    suspend fun uploadProfilePic(picPath: String): String? = withContext(Dispatchers.IO) {
+        try {
+            val uid = device.serial
+            val storageRef = FirebaseStorage.getInstance().reference
+            val file = Uri.fromFile(File(picPath))
+            val fileRef = storageRef.child("users/$uid/profile/${file.lastPathSegment}")
+            fileRef.putFile(file).await()
+            fileRef.downloadUrl.await().toString()
+        } catch (e: Exception) {
+            AppLogger.createLog(
+                "FirebaseRemoteDataSync",
+                "Failed to upload profile pic $picPath: $e"
+            )
+            null
         }
-        uploadedUrls.awaitAll().filterNotNull()
     }
+
 
 }

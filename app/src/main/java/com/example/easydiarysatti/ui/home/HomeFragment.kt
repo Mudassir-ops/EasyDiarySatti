@@ -41,6 +41,8 @@ import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
 import kotlinx.coroutines.delay
@@ -53,6 +55,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val mainViewModel by activityViewModels<MainViewModel>()
     private val viewModelBanner by viewModels<ViewModelBanner>()
+    private val viewModelNative by viewModels<ViewModelNative>()
     private var reviewTriggered = false
     private lateinit var swipeHandler: ItemTouchHelper.SimpleCallback
 
@@ -87,11 +90,15 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun setupSwipeActions() {
-
         swipeHandler = object : ItemTouchHelper.SimpleCallback(
             0,
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
+            // 1. THIS IS THE KEY: Disable swiping for AdViewHolders
+            override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                if (viewHolder is NotesItemAdapter.AdViewHolder) return 0 // Return 0 to disable all swipe directions
+                return super.getSwipeDirs(recyclerView, viewHolder)
+            }
 
             override fun onMove(
                 recyclerView: RecyclerView,
@@ -101,27 +108,30 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
-                if (position == RecyclerView.NO_POSITION) return
 
-                val note = notesItemAdapter.currentList[position]
+                // Safety check for AdViewHolder (though getSwipeDirs should prevent this)
+                if (position == RecyclerView.NO_POSITION || viewHolder is NotesItemAdapter.AdViewHolder) {
+                    notesItemAdapter.notifyItemChanged(position)
+                    return
+                }
+
+                val adLoaded = viewModelNative.adViewLiveData.value != null
+                val noteIndex = if (adLoaded && position > 1) position - 1 else position
+
+                // Prevent out of bounds if list updates quickly
+                if (noteIndex < 0 || noteIndex >= notesItemAdapter.currentList.size) return
+
+                val note = notesItemAdapter.currentList[noteIndex]
 
                 if (direction == ItemTouchHelper.LEFT) {
-                    // DELETE
                     logAnalyticsEvent("Home_Delete_Note", "delete_click")
                     viewModel.deleteNote(note)
-
                 } else {
                     logAnalyticsEvent("Home_Favourite_Note", "swipe_toggle_fav")
-                    // FAVORITE (snap back)
                     viewModel.toggleFavorite(note)
 
-                    // 🔥 FORCE SNAP BACK
-                    swipeHandler.clearView(binding!!.rvNotes, viewHolder)
-
-                    viewHolder.itemView.animate()
-                        .translationX(0f)
-                        .setDuration(200)
-                        .start()
+                    // Snap back the note after favoriting
+                    notesItemAdapter.notifyItemChanged(position)
                 }
             }
 
@@ -134,7 +144,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 actionState: Int,
                 isCurrentlyActive: Boolean
             ) {
-                drawSwipeBackground(c, viewHolder, dX)
+                // 2. Prevent background colors from drawing behind the Ad
+                if (viewHolder !is NotesItemAdapter.AdViewHolder) {
+                    drawSwipeBackground(c, viewHolder, dX)
+                }
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
         }
@@ -244,7 +257,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         loadBanner()
         initObservers()
-
+        viewModelNative.loadNativeAd(NativeAdKey.HOME)
     }
     private fun logAnalyticsEvent(eventName: String, label: String) {
         if (eventName.isEmpty()) return
@@ -389,6 +402,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
         viewModelBanner.clearViewLiveData.observe(viewLifecycleOwner) {
             binding?.bannerAdViewHome?.removeAllViews()
+        }
+        viewModelNative.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+            if (nativeAd != null) {
+                notesItemAdapter.setNativeAd(nativeAd)
+            }
         }
     }
 

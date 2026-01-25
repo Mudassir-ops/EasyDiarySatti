@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.databinding.FragmentLibraryBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.dashboard.MultiViewAdapter.Companion.TYPE_DATE
@@ -24,7 +26,7 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
 
     private val binding by viewBinding(FragmentLibraryBinding::bind)
     private val viewModel by viewModels<LibraryViewModel>()
-
+    private val viewModelNative by viewModels<ViewModelNative>()
     private var adapter: MultiViewAdapter? = null
     private var layoutManager: GridLayoutManager? = null
 
@@ -32,8 +34,22 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
         super.onViewCreated(view, savedInstanceState)
         setupRecyclerView()
         observeAllImages()
+        loadNativeAd()
+        initAdObserver()
+    }
+    private fun loadNativeAd() {
+        // Request the ad using your specific key
+        viewModelNative.loadNativeAd(NativeAdKey.LIBRARY)
     }
 
+    private fun initAdObserver() {
+        viewModelNative.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+            if (nativeAd != null) {
+                // Pass the loaded ad to your adapter
+                adapter?.setNativeAd(nativeAd)
+            }
+        }
+    }
     private fun setupRecyclerView() {
         adapter = MultiViewAdapter { imagePaths, date, noteId ->
             findNavController().safeNav(
@@ -49,10 +65,16 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
         binding?.libraryRecyclerView?.adapter = adapter
         binding?.libraryRecyclerView?.layoutManager = layoutManager
         binding?.libraryRecyclerView?.setHasFixedSize(true)
+        // Inside setupRecyclerView()
         layoutManager?.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 val type = adapter?.getItemViewType(position)
-                return if (type == TYPE_DATE) layoutManager?.spanCount ?: 0 else 1
+                // If it's a Date Header OR an Ad, take up all columns (3)
+                return if (type == TYPE_DATE || type == MultiViewAdapter.TYPE_AD) {
+                    layoutManager?.spanCount ?: 1
+                } else {
+                    1 // Images take 1 column
+                }
             }
         }
     }

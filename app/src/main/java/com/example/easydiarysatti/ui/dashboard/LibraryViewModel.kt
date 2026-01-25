@@ -42,27 +42,44 @@ class LibraryViewModel @Inject constructor(
                 if (notes.isNullOrEmpty()) {
                     _allImagesState.value = LibraryImagesState.Error("No images found")
                 } else {
-                    val groupedItems = notes
+                    // 1. Create one single master list
+                    val finalItemsList = mutableListOf<LibraryItem>()
+
+                    // 2. Group and process the data
+                    val groupedMap = notes
                         .filter { it.images?.isNotEmpty() == true }
                         .groupBy { it.creationTime.toDateString() }
-                        .flatMap { (date, noteList) ->
-                            val items = mutableListOf<LibraryItem>()
-                            items.add(LibraryItem.DateItem(date))
 
-                            // Add the note once, passing the entire list of images
-                            noteList.forEach { note ->
-                                items.add(
-                                    LibraryItem.ImagesItem(
-                                        date = date,
-                                        imagePaths = note.images ?: emptyList(), // Pass the list here
-                                        noteTitle = note.title ?: "no title",
-                                        noteId = note.noteId
-                                    )
+                    groupedMap.forEach { (date, noteList) ->
+                        // Add Date Header
+                        finalItemsList.add(LibraryItem.DateItem(date))
+
+                        // Add Image Items
+                        noteList.forEach { note ->
+                            finalItemsList.add(
+                                LibraryItem.ImagesItem(
+                                    date = date,
+                                    imagePaths = note.images ?: emptyList(),
+                                    noteTitle = note.title ?: "no title",
+                                    noteId = note.noteId
                                 )
-                            }
-                            items
+                            )
                         }
-                    _allImagesState.value = LibraryImagesState.Success(groupedItems)
+                    }
+
+                    // 3. Insert the Ad Item
+                    // Check if we have enough items to reach the 2nd row
+                    if (finalItemsList.size >= 3) {
+                        // Index 3 usually places it at the start of the 2nd row
+                        // (Row 1 = Date Header + 2/3 images)
+                        finalItemsList.add(3, LibraryItem.AdItem)
+                    } else if (finalItemsList.isNotEmpty()) {
+                        // If the list is short, just add it at the end
+                        finalItemsList.add(LibraryItem.AdItem)
+                    }
+
+                    // 4. Update the state with the complete list
+                    _allImagesState.value = LibraryImagesState.Success(finalItemsList)
                 }
             }
             .launchIn(viewModelScope)

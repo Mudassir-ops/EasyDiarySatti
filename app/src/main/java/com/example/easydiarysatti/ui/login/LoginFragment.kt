@@ -40,7 +40,7 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private val binding by viewBinding(FragmentLoginBinding::bind)
     private var isVerified = false
     private var currentPin = StringBuilder()
-    private val nativeViewModel: ViewModelNative by viewModels()
+    private val nativeViewModel by viewModels<ViewModelNative>()
     private val dotsIds = listOf(R.id.dot1, R.id.dot2, R.id.dot3, R.id.dot4)
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo

@@ -6,27 +6,47 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
 import com.example.easydiarysatti.databinding.ItemDateHeaderBinding
+import com.example.easydiarysatti.databinding.ItemNativeAdContainerBinding
 import com.example.easydiarysatti.databinding.ItemSingleImageBinding
+import com.google.android.gms.ads.nativead.NativeAd
 
 class MultiViewAdapter(
     private val onImageClick: (List<String>, String, Long) -> Unit // Update parameter
 ) : ListAdapter<LibraryItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
+    // 1. Add NativeAd property
+    private var nativeAd: NativeAd? = null
+
     companion object {
         const val TYPE_DATE = 0
         const val TYPE_IMAGE = 1
+        const val TYPE_AD = 2 // New Type
+    }
+
+    // 2. Add setter for the ad
+    fun setNativeAd(ad: NativeAd) {
+        this.nativeAd = ad
+        notifyDataSetChanged()
     }
 
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is LibraryItem.DateItem -> TYPE_DATE
             is LibraryItem.ImagesItem -> TYPE_IMAGE
+            is LibraryItem.AdItem -> TYPE_AD
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         return when (viewType) {
+            TYPE_AD -> {
+                val binding = ItemNativeAdContainerBinding.inflate(
+                    LayoutInflater.from(parent.context), parent, false
+                )
+                AdViewHolder(binding)
+            }
             TYPE_DATE -> {
                 val binding = ItemDateHeaderBinding.inflate(
                     LayoutInflater.from(parent.context),
@@ -50,12 +70,21 @@ class MultiViewAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = getItem(position)) {
-            is LibraryItem.DateItem -> (holder as DateViewHolder).bind(item)
-            is LibraryItem.ImagesItem -> (holder as ImageViewHolder).bind(item)
+        when (holder) {
+            is AdViewHolder -> nativeAd?.let { holder.bind(it) }
+            is DateViewHolder -> holder.bind(getItem(position) as LibraryItem.DateItem)
+            is ImageViewHolder -> holder.bind(getItem(position) as LibraryItem.ImagesItem)
         }
     }
-
+    inner class AdViewHolder(val binding: ItemNativeAdContainerBinding) :
+        RecyclerView.ViewHolder(binding.root) {
+        fun bind(ad: NativeAd) {
+            val adView = AdNativeSmallView(binding.root.context)
+            binding.flAdplaceholder.removeAllViews()
+            binding.flAdplaceholder.addView(adView)
+            adView.setNativeAd(ad)
+        }
+    }
     class DateViewHolder(private val binding: ItemDateHeaderBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: LibraryItem.DateItem) {

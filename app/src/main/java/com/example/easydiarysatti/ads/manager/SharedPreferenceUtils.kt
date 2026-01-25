@@ -111,7 +111,7 @@ class SharedPreferenceUtils(private val sharedPreferences: SharedPreferences) {
         set(value) = sharedPreferences.edit().putInt(nativeLogin, value).apply()
 
     var rcNativeHome: Int
-        get() = sharedPreferences.getInt(nativeHome, 0)
+        get() = sharedPreferences.getInt(nativeHome, 1)
         set(value) = sharedPreferences.edit().putInt(nativeHome, value).apply()
 
     var rcNativeFeature: Int

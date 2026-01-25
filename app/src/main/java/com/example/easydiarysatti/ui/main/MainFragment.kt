@@ -720,7 +720,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             R.drawable.theme_3 -> ContextCompat.getColor(requireContext(), R.color.theme3_color)
             R.drawable.theme_4 -> ContextCompat.getColor(requireContext(), R.color.theme4_color)
             R.drawable.theme_5 -> ContextCompat.getColor(requireContext(), R.color.theme5_color)
-            else -> ContextCompat.getColor(requireContext(), R.color.app_primary_color)
+            else -> ContextCompat.getColor(requireContext(), R.color.theme1_color)
         }
 
         binding?.apply {

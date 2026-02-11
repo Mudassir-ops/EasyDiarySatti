@@ -28,6 +28,9 @@ abstract class RewardedManager {
         listener: RewardedOnLoadCallBack?,
     ) {
 
+        Log.d(TAG_ADS, "═══════════════════════════════════")
+        Log.d(TAG_ADS, "$adType -> loadRewarded: START")
+
         if (isRewardedLoaded()) {
             Log.i(TAG_ADS, "$adType -> loadRewarded: Already loaded")
             listener?.onResponse(true)
@@ -36,8 +39,6 @@ abstract class RewardedManager {
 
         if (isRewardedLoading) {
             Log.d(TAG_ADS, "$adType -> loadRewarded: Ad is already loading...")
-            // No need to invoke callback, in some cases (e.g. activity recreation) it interrupts our response, as we are waiting for response in Splash
-            // listener?.onResponse(false)  // Uncomment if u still need to listen this case
             return
         }
 
@@ -71,6 +72,8 @@ abstract class RewardedManager {
             return
         }
 
+        Log.d(TAG_ADS, "$adType -> loadRewarded: ✅ All checks passed!")
+        Log.d(TAG_ADS, "$adType -> loadRewarded: Ad ID = $rewardedId")
         Log.d(TAG_ADS, "$adType -> loadRewarded: Requesting admob server for ad...")
         isRewardedLoading = true
 
@@ -80,14 +83,23 @@ abstract class RewardedManager {
             AdRequest.Builder().build(),
             object : RewardedAdLoadCallback() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.e(TAG_ADS, "$adType -> loadRewarded: onAdFailedToLoad: ${adError.message}")
+                    Log.e(TAG_ADS, "═══════════════════════════════════")
+                    Log.e(TAG_ADS, "$adType -> ❌ onAdFailedToLoad")
+                    Log.e(TAG_ADS, "$adType -> Error Code: ${adError.code}")
+                    Log.e(TAG_ADS, "$adType -> Error Message: ${adError.message}")
+                    Log.e(TAG_ADS, "$adType -> Error Domain: ${adError.domain}")
+                    Log.e(TAG_ADS, "$adType -> Error Cause: ${adError.cause}")
+                    Log.e(TAG_ADS, "═══════════════════════════════════")
                     isRewardedLoading = false
                     mRewardedAd = null
                     listener?.onResponse(false)
                 }
 
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
-                    Log.i(TAG_ADS, "$adType -> loadRewarded: onAdLoaded")
+                    Log.i(TAG_ADS, "═══════════════════════════════════")
+                    Log.i(TAG_ADS, "$adType -> ✅ onAdLoaded SUCCESS!")
+                    Log.i(TAG_ADS, "$adType -> Ad object: $rewardedAd")
+                    Log.i(TAG_ADS, "═══════════════════════════════════")
                     isRewardedLoading = false
                     mRewardedAd = rewardedAd
                     listener?.onResponse(true)

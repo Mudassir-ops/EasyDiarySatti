@@ -48,25 +48,25 @@ class ChangePasswordFragment : Fragment(R.layout.fragment_change_password) {
 //        setupBgTheme()
         setupKeypad()
         updateUiState()
-setupNativeAd()
+//setupNativeAd()
         binding?.ivMenu?.setOnClickListener { findNavController().navigateUp() }
     }
-    private fun setupNativeAd() {
-        // 1. Observe the LiveData
-        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
-            if (nativeAd != null) {
-                val adSmallView = AdNativeSmallView(requireContext())
-                binding?.flAdplaceholder?.apply {
-                    removeAllViews()
-                    addView(adSmallView)
-                    adSmallView.setNativeAd(nativeAd)
-                }
-            }
-        }
-
-        // 2. Request the ad (using the ON_BOARDING or appropriate key)
-        nativeViewModel.loadNativeAd(NativeAdKey.CHANGE_PASSWORD)
-    }
+//    private fun setupNativeAd() {
+//        // 1. Observe the LiveData
+//        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+//            if (nativeAd != null) {
+//                val adSmallView = AdNativeSmallView(requireContext())
+//                binding?.flAdplaceholder?.apply {
+//                    removeAllViews()
+//                    addView(adSmallView)
+//                    adSmallView.setNativeAd(nativeAd)
+//                }
+//            }
+//        }
+//
+//        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+////        nativeViewModel.loadNativeAd(NativeAdKey.CHANGE_PASSWORD)
+//    }
     private fun setupBgTheme() {
         binding?.parentView?.loadBackground(
             resourceId = viewModel.getBgTheme(),

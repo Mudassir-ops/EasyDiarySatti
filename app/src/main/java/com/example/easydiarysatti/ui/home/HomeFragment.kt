@@ -39,13 +39,19 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
+import com.example.easydiarysatti.ads.appOpen.screen.AppOpenAdsConfig
+import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
 import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
+import jakarta.inject.Inject
 import kotlinx.coroutines.delay
+
 
 @AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
@@ -54,11 +60,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val mainViewModel by activityViewModels<MainViewModel>()
-    private val viewModelBanner by viewModels<ViewModelBanner>()
+    private val bannerViewModel by activityViewModels<ViewModelBanner>()
     private val viewModelNative by viewModels<ViewModelNative>()
     private var reviewTriggered = false
+    @Inject lateinit var sharedPref: SharedPreferenceUtils
     private lateinit var swipeHandler: ItemTouchHelper.SimpleCallback
-
+    // Inject your App Open configuration
+    @Inject
+    lateinit var appOpenAdsConfig: AppOpenAdsConfig
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(
             onNoteItemClick = { note ->
@@ -109,16 +118,17 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
 
-                // Safety check for AdViewHolder (though getSwipeDirs should prevent this)
+
                 if (position == RecyclerView.NO_POSITION || viewHolder is NotesItemAdapter.AdViewHolder) {
                     notesItemAdapter.notifyItemChanged(position)
                     return
                 }
 
-                val adLoaded = viewModelNative.adViewLiveData.value != null
+                val adLoaded = viewModelNative.adMapLiveData.value?.containsKey(NativeAdKey.HOME) == true
+
+
                 val noteIndex = if (adLoaded && position > 1) position - 1 else position
 
-                // Prevent out of bounds if list updates quickly
                 if (noteIndex < 0 || noteIndex >= notesItemAdapter.currentList.size) return
 
                 val note = notesItemAdapter.currentList[noteIndex]
@@ -129,9 +139,13 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 } else {
                     logAnalyticsEvent("Home_Favourite_Note", "swipe_toggle_fav")
                     viewModel.toggleFavorite(note)
+                    // 🔥 FORCE SNAP BACK
+                    swipeHandler.clearView(binding!!.rvNotes, viewHolder)
 
-                    // Snap back the note after favoriting
-                    notesItemAdapter.notifyItemChanged(position)
+                    viewHolder.itemView.animate()
+                        .translationX(0f)
+                        .setDuration(200)
+                        .start()
                 }
             }
 
@@ -253,11 +267,19 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         setupTodayDate()
         observeSortOrder()
         setupSwipeActions()
+
         setStyledDateTime(binding?.tvDate ?: return, R.color.track_color)
 
-        loadBanner()
-        initObservers()
+        appOpenAdsConfig.loadAppOpenAd(AppOpenAdKey.RESUME)
         viewModelNative.loadNativeAd(NativeAdKey.HOME)
+
+        initNativeObserver()
+        val adKey = if (sharedPref.isFirstTimeUser)
+            BannerAdKey.HOME_FIRST_TIME else BannerAdKey.HOME_RETURNING
+
+        val dummyAdView = com.google.android.gms.ads.AdView(requireContext())
+        bannerViewModel.loadBannerAd(dummyAdView, adKey, requireContext())
+        initBannerObserver()
     }
     private fun logAnalyticsEvent(eventName: String, label: String) {
         if (eventName.isEmpty()) return
@@ -385,30 +407,59 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-
-    private fun loadBanner() {
-        context?.let {
-            val adView = AdView(it)
-            viewModelBanner.loadBannerAd(adView, BannerAdKey.HOME, context ?: return@let)
-        }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // This is the "reset switch"
+        // It allows the shimmer and ad logic to run again when you navigate back
+        isAdProcessStarted = false
     }
+    // 1. Add this flag at the top of your Fragment class
+    private var isAdProcessStarted = false
 
-    private fun initObservers() {
-        viewModelBanner.adViewLiveData.observe(viewLifecycleOwner) {
-            binding?.bannerAdViewHome?.addCleanView(it)
-        }
-        viewModelBanner.loadFailedLiveData.observe(viewLifecycleOwner) {
-            binding?.bannerAdViewHome?.visibility = View.GONE
-        }
-        viewModelBanner.clearViewLiveData.observe(viewLifecycleOwner) {
-            binding?.bannerAdViewHome?.removeAllViews()
-        }
-        viewModelNative.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
-            if (nativeAd != null) {
-                notesItemAdapter.setNativeAd(nativeAd)
+    private fun initBannerObserver() {
+        bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            if (isAdProcessStarted) return@observe
+
+            // Check for the specific keys
+            val firstTimeAd = adMap[BannerAdKey.HOME_FIRST_TIME]
+            val returningAd = adMap[BannerAdKey.HOME_RETURNING]
+            val homeAd = firstTimeAd ?: returningAd
+
+            if (homeAd != null) {
+                isAdProcessStarted = true
+
+                // 1. Hide Shimmer
+                binding?.shimmerViewContainer?.apply {
+                    stopShimmer()
+                    visibility = View.GONE // This removes it from view
+                }
+
+                // 2. Show Ad Container
+                binding?.bannerAdViewHome?.apply {
+                    visibility = View.VISIBLE // This makes the ad appear
+                    removeAllViews()
+                    addCleanView(homeAd)
+                }
+                Log.d("AdDebug", "Home Banner VISIBLE now")
+            } else {
+                // Keep shimmer active while waiting
+                binding?.shimmerViewContainer?.visibility = View.VISIBLE
+                binding?.bannerAdViewHome?.visibility = View.GONE
             }
         }
     }
 
+    private fun initNativeObserver() {
+        viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            // Specifically look for the HOME_NATIVE ad in the map
+            val homeNativeAd = adMap[NativeAdKey.HOME]
+
+            if (homeNativeAd != null) {
+                // Injects the specific native ad into your RecyclerView adapter
+                notesItemAdapter.setNativeAd(homeNativeAd)
+                Log.d("AdDebug", "Home Native Ad updated from Map")
+            }
+        }
+    }
 
 }

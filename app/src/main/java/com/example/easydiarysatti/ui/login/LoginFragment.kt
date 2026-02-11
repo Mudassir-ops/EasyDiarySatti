@@ -40,7 +40,6 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
     private val binding by viewBinding(FragmentLoginBinding::bind)
     private var isVerified = false
     private var currentPin = StringBuilder()
-    private val nativeViewModel by viewModels<ViewModelNative>()
     private val dotsIds = listOf(R.id.dot1, R.id.dot2, R.id.dot3, R.id.dot4)
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
@@ -57,31 +56,10 @@ class LoginFragment : Fragment(R.layout.fragment_login) {
         clickListeners()
         setupBgTheme()
         updateDotsUi()
-        setupNativeAd()
         isVerified = false
         enabledDisabledButton(enabled = false)
     }
-    override fun onDestroyView() {
-        // 4. Destroy ad to prevent memory leaks when leaving the screen
-        nativeViewModel.destroyNative(NativeAdKey.LOGIN)
-        super.onDestroyView()
-    }
-    private fun setupNativeAd() {
-        // 1. Observe the LiveData
-        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
-            if (nativeAd != null) {
-                val adSmallView = AdNativeSmallView(requireContext())
-                binding?.flAdplaceholder?.apply {
-                    removeAllViews()
-                    addView(adSmallView)
-                    adSmallView.setNativeAd(nativeAd)
-                }
-            }
-        }
 
-        // 2. Request the ad (using the ON_BOARDING or appropriate key)
-        nativeViewModel.loadNativeAd(NativeAdKey.LOGIN)
-    }
     private fun setupBiometricAuth() {
         executor = ContextCompat.getMainExecutor(requireContext())
         biometricPrompt = BiometricPrompt(this, executor,

@@ -1,6 +1,9 @@
 package com.example.easydiarysatti.ui.dashboard
 
+import android.os.Handler
+import android.os.Looper
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -18,16 +21,17 @@ class MultiViewAdapter(
 
     // 1. Add NativeAd property
     private var nativeAd: NativeAd? = null
-
+    // Track if the 3-second delay has already passed for the current ad
+    private var isShimmerComplete = false
     companion object {
         const val TYPE_DATE = 0
         const val TYPE_IMAGE = 1
         const val TYPE_AD = 2 // New Type
     }
 
-    // 2. Add setter for the ad
     fun setNativeAd(ad: NativeAd) {
         this.nativeAd = ad
+        this.isShimmerComplete = false // Reset for new ad content
         notifyDataSetChanged()
     }
 
@@ -68,17 +72,51 @@ class MultiViewAdapter(
             else -> throw IllegalArgumentException("Unknown viewType $viewType")
         }
     }
-
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is AdViewHolder -> nativeAd?.let { holder.bind(it) }
+            is AdViewHolder -> holder.bind(nativeAd) // Pass the ad (could be null)
             is DateViewHolder -> holder.bind(getItem(position) as LibraryItem.DateItem)
             is ImageViewHolder -> holder.bind(getItem(position) as LibraryItem.ImagesItem)
         }
     }
+
     inner class AdViewHolder(val binding: ItemNativeAdContainerBinding) :
         RecyclerView.ViewHolder(binding.root) {
-        fun bind(ad: NativeAd) {
+
+        fun bind(ad: NativeAd?) {
+            if (ad != null) {
+                if (isShimmerComplete) {
+                    // 3. Shimmer time finished: Show the ad immediately
+                    showAdContent(ad)
+                } else {
+                    // 1. Ad is ready but we MUST show shimmer for 3-4 seconds first
+                    showShimmer()
+
+//                    Handler(Looper.getMainLooper()).postDelayed({
+                        isShimmerComplete = true
+                        // Ensure the holder is still visible/valid before updating
+                        if (adapterPosition != RecyclerView.NO_POSITION) {
+                            showAdContent(ad)
+                        }
+//                    }, 3500) // 3.5 seconds (the sweet spot between 3 and 4)
+                }
+            } else {
+                // Ad not loaded at all: Show shimmer
+                showShimmer()
+            }
+        }
+
+        private fun showShimmer() {
+            binding.flAdplaceholder.visibility = View.GONE
+            binding.shimmerViewContainer.visibility = View.VISIBLE
+            binding.shimmerViewContainer.startShimmer()
+        }
+
+        private fun showAdContent(ad: NativeAd) {
+            binding.shimmerViewContainer.stopShimmer()
+            binding.shimmerViewContainer.visibility = View.GONE
+            binding.flAdplaceholder.visibility = View.VISIBLE
+
             val adView = AdNativeSmallView(binding.root.context)
             binding.flAdplaceholder.removeAllViews()
             binding.flAdplaceholder.addView(adView)

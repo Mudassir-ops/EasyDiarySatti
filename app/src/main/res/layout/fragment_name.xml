@@ -1,31 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+<androidx.core.widget.NestedScrollView
     android:id="@+id/nestedScrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
+    android:fitsSystemWindows="true"
     android:scrollbars="vertical">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
-        <TextView
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNext"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginTop="40dp"
+            android:background="@color/app_primary_color"
+            android:backgroundTint="@color/app_primary_color"
             android:enabled="false"
             android:fontFamily="@font/outfit_medium"
             android:padding="@dimen/_10sdp"
             android:text="@string/next"
-            android:textColor="@color/app_primary_color"
+            android:layout_marginBottom="20dp"
+            android:textColor="@color/white"
             android:textSize="@dimen/_14ssp"
-            app:backgroundTint="@color/app_primary_color"
+         app:layout_constraintBottom_toTopOf="@id/shimmer_banner_container"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_chainStyle="spread_inside"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/edTextName"
             app:layout_constraintWidth_percent="0.85" />
 
         <androidx.appcompat.widget.AppCompatImageView
@@ -34,9 +43,10 @@
             android:layout_height="0dp"
             app:layout_constraintBottom_toTopOf="@+id/txtPermission"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHeight_percent="0.27"
+            app:layout_constraintHeight_percent="0.45"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnNext"
+            android:adjustViewBounds="true"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_chainStyle="packed"
             app:layout_constraintWidth_percent="0.8" />
 
@@ -49,7 +59,7 @@
             android:text="@string/start_writing"
             android:textAlignment="center"
             android:textColor="@color/black"
-            android:textSize="@dimen/_20sdp"
+            android:textSize="@dimen/_18sdp"
             app:layout_constraintBottom_toTopOf="@+id/txtFullName"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -61,7 +71,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
-            android:layout_marginTop="@dimen/_12sdp"
+            android:layout_marginTop="@dimen/_20sdp"
             android:fontFamily="@font/outfit_regular"
             android:text="@string/enter_your_name"
             android:textColor="@color/txt_color_gray"
@@ -87,21 +97,34 @@
             android:paddingEnd="@dimen/_10sdp"
             android:singleLine="true"
             android:textColor="@color/black"
+            app:layout_constraintBottom_toTopOf="@+id/btnNext"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/txtFullName"
             app:layout_constraintWidth_percent="0.9" />
 
 
-        <FrameLayout
-            android:id="@+id/fl_adplaceholder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/_5sdp"
-            android:background="@drawable/ad_bg"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.core.widget.NestedScrollView>
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmer_banner_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:shimmer_auto_start="true"
+        app:shimmer_base_alpha="0.7"
+        app:shimmer_duration="1200">
+
+        <FrameLayout
+            android:id="@+id/banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#DCDCDC"
+            android:minHeight="50dp" />
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

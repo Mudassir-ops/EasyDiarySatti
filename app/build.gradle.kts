@@ -29,8 +29,8 @@ android {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 23
-        versionName = "23.0"
+        versionCode = 24
+        versionName = "24.2"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")
@@ -45,103 +45,7 @@ android {
                 value = "ca-app-pub-6929888913467755~1203974256"
             )
 
-            // App Open Ad Before Main - Satti
-            resValue(
-                type = "string",
-                name = "admob_app_open_id",
-                value = "ca-app-pub-3940256099942544/9257395921"
-            )
 
-            // Banner Ad Home- Satti
-            resValue(
-                type = "string",
-                name = "admob_banner_home_id",
-                value = "ca-app-pub-3940256099942544/2014213617"
-            )
-            resValue(
-                type = "string",
-                name = "admob_banner_onboard",
-                value = "ca-app-pub-3940256099942544/2014213617"
-            )
-
-            // Interstitial Ads - Satti
-            resValue(
-                type = "string",
-                name = "admob_inter_before_main_id",
-                value = "ca-app-pub-3940256099942544/1033173712"
-            )
-
-            // Rewarded Ads Image Adding - Satti
-            resValue(
-                type = "string",
-                name = "admob_rewarded_images_more_than_two",
-                value = "ca-app-pub-3940256099942544/1712485313"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_login",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_permission",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_name",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_signup",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_language",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_home",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_library",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_calendar",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_profile",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_tags",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_edit_tag",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_remiander",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_change_password",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
             isMinifyEnabled = false
             isShrinkResources = false
             isDebuggable = true
@@ -166,112 +70,15 @@ android {
                 value = "ca-app-pub-6929888913467755~1203974256"
             )
 
-            //-->Real ads Ids Uncomment When Needed
-            // App Open Ad - Satti
-            resValue(
-                type = "string",
-                name = "admob_app_open_id",
-                value = "ca-app-pub-6929888913467755/8279156051"
-            )
-
-            // Banner Ad - Satti
-            resValue(
-                type = "string",
-                name = "admob_banner_home_id",
-                value = "ca-app-pub-6929888913467755/3876876618"
-            )
-            resValue(
-                type = "string",
-                name = "admob_banner_onboard",
-                value = "ca-app-pub-6929888913467755/3876876618"
-            )
-
-            // Interstitial Ads - Satti
-            resValue(
-                type = "string",
-                name = "admob_inter_before_main_id",
-                value = "ca-app-pub-6929888913467755/1142851070"
-            )
-
-            // Rewarded Ads Image Adding - Satti
-            resValue(
-                type = "string",
-                name = "admob_rewarded_images_more_than_two",
-                value = "ca-app-pub-6929888913467755/2643619090"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_login",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_permission",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_name",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_signup",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_language",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_home",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_library",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_calendar",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_profile",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_tags",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_edit_tag",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_remiander",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
-            resValue(
-                type = "string",
-                name = "admob_native_change_password",
-                value = "ca-app-pub-3940256099942544/2247696110"
-            )
+          
             signingConfig = signingConfigs.getByName("release")
 
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
 
     }
@@ -281,11 +88,12 @@ android {
     }
     kotlin {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
         dataBinding = true
     }
 }
@@ -301,6 +109,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.legacy.support.v4)
+    implementation(libs.navigation.fragment.ktx)
+    implementation(libs.navigation.ui.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -349,7 +159,7 @@ dependencies {
     //in app update
     implementation(libs.play.app.update)
     implementation(libs.app.update.ktx)
-
+    implementation(libs.billing.client)
     implementation(libs.play.services.ads)
     implementation(libs.androidx.biometric)
     implementation(libs.play.review)

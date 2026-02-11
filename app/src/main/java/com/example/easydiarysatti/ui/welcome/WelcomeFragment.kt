@@ -43,7 +43,7 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
             clickListeners()
         }
         if (internetManager.isInternetConnected) {
-            loadAppOpen()
+//            loadAppOpen()
             observeAdd()
         }
     }
@@ -73,35 +73,35 @@ class WelcomeFragment : Fragment(R.layout.fragment_welcome) {
     }
 
 
-    private fun loadAppOpen() {
-        false.enableButton()
-        appOpenAdsConfig.loadAppOpenAd(AppOpenAdKey.NAME_SCREEN, object : AppOpenOnLoadCallBack {
-            override fun onResponse(successfullyLoaded: Boolean, errorMessage: String?) {
-                if (successfullyLoaded) {
-                    appOpenAdsConfig.showAppOpenAd(
-                        activity ?: return,
-                        AppOpenAdKey.NAME_SCREEN,
-                        object :
-                            AppOpenOnShowCallBack {
-                            override fun onAdDismissedFullScreenContent() {
-                                onAppOpenResponse()
-                            }
-
-                            override fun onAdFailedToShow() {
-                                onAppOpenResponse()
-                            }
-
-                            override fun onAdClicked() {}
-                            override fun onAdShowedFullScreenContent() {}
-                            override fun onAdImpression() {}
-                            override fun onAdImpressionDelayed() {}
-                        })
-                } else {
-                    onAppOpenResponse()
-                }
-            }
-        })
-    }
+//    private fun loadAppOpen() {
+//        false.enableButton()
+//        appOpenAdsConfig.loadAppOpenAd(AppOpenAdKey.NAME_SCREEN, object : AppOpenOnLoadCallBack {
+//            override fun onResponse(successfullyLoaded: Boolean, errorMessage: String?) {
+//                if (successfullyLoaded) {
+//                    appOpenAdsConfig.showAppOpenAd(
+//                        activity ?: return,
+//                        AppOpenAdKey.NAME_SCREEN,
+//                        object :
+//                            AppOpenOnShowCallBack {
+//                            override fun onAdDismissedFullScreenContent() {
+//                                onAppOpenResponse()
+//                            }
+//
+//                            override fun onAdFailedToShow() {
+//                                onAppOpenResponse()
+//                            }
+//
+//                            override fun onAdClicked() {}
+//                            override fun onAdShowedFullScreenContent() {}
+//                            override fun onAdImpression() {}
+//                            override fun onAdImpressionDelayed() {}
+//                        })
+//                } else {
+//                    onAppOpenResponse()
+//                }
+//            }
+//        })
+//    }
 
     private fun onAppOpenResponse() {
         viewModelEntrance.onAdResponse()

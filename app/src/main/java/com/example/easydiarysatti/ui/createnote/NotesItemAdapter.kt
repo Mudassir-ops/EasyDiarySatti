@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.ui.createnote
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -84,11 +85,30 @@ class NotesItemAdapter(
     }
 
     inner class AdViewHolder(val binding: ItemNativeAdContainerBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(ad: NativeAd) {
-            val adView = AdNativeSmallView(binding.root.context)
-            binding.flAdplaceholder.removeAllViews()
-            binding.flAdplaceholder.addView(adView)
-            adView.setNativeAd(ad)
+        fun bind(ad: NativeAd?) {
+            if (ad != null) {
+                // 1. Hide the Shimmer
+                binding.shimmerViewContainer.apply {
+                    stopShimmer()
+                    visibility = View.GONE
+                }
+
+                // 2. Show and Fill Placeholder
+                binding.flAdplaceholder.apply {
+                    visibility = View.VISIBLE
+                    removeAllViews()
+                    val adView = AdNativeSmallView(binding.root.context)
+                    addView(adView)
+                    adView.setNativeAd(ad)
+                }
+            } else {
+                // 3. Keep Shimmer visible if ad is null
+                binding.shimmerViewContainer.apply {
+                    startShimmer()
+                    visibility = View.VISIBLE
+                }
+                binding.flAdplaceholder.visibility = View.GONE
+            }
         }
     }
 }

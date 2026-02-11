@@ -17,61 +17,43 @@ class UseCaseNative @Inject constructor(
     private val repositoryNativeImpl: RepositoryNativeImpl,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
     private val internetManager: InternetManager,
-    @ApplicationContext private val context: Context // Add @ApplicationContext here
+    @ApplicationContext private val context: Context
 ) {
 
     @Volatile
     private var isAdLoading = false
 
     private fun checkRemoteConfig(nativeAdKey: NativeAdKey): Boolean {
-        return when (nativeAdKey) {
-            NativeAdKey.LOGIN -> sharedPreferenceUtils.rcNativeLogin != 0
-            NativeAdKey.PERMISSION -> sharedPreferenceUtils.rcNativePermission != 0
-            NativeAdKey.NAME -> sharedPreferenceUtils.rcNativeName != 0
-            NativeAdKey.SIGNUP -> sharedPreferenceUtils.rcNativeSignup != 0
-            NativeAdKey.LANGUAGE -> sharedPreferenceUtils.rcNativeLanguage != 0
-            NativeAdKey.HOME -> sharedPreferenceUtils.rcNativeHome != 0
-            NativeAdKey.LIBRARY -> sharedPreferenceUtils.rcNativeLibrary != 0
-            NativeAdKey.CALENDAR -> sharedPreferenceUtils.rcNativeCalendar != 0
-            NativeAdKey.PROFILE -> sharedPreferenceUtils.rcNativeProfile != 0
-            NativeAdKey.TAGS -> sharedPreferenceUtils.rcNativeTags != 0
-            NativeAdKey.EDIT_TAG -> sharedPreferenceUtils.rcNativeEditTag != 0
-            NativeAdKey.REMINDER -> sharedPreferenceUtils.rcNativeReminder != 0
-            NativeAdKey.CHANGE_PASSWORD -> sharedPreferenceUtils.rcNativeChangePassword != 0
-
-        }
+        // Dynamic lookup: matches enum value (e.g., "nativeLogin") to JSON "name"
+        return sharedPreferenceUtils.getAdShowStatus(nativeAdKey.value)
     }
 
     private fun getAdId(nativeAdKey: NativeAdKey): String {
-        val resId = when (nativeAdKey) {
-            NativeAdKey.LOGIN -> R.string.admob_native_login
-            NativeAdKey.PERMISSION -> R.string.admob_native_permission
-            NativeAdKey.NAME -> R.string.admob_native_name
-            NativeAdKey.SIGNUP -> R.string.admob_native_signup
-            NativeAdKey.LANGUAGE -> R.string.admob_native_language
-            NativeAdKey.HOME -> R.string.admob_native_home
-            NativeAdKey.LIBRARY -> R.string.admob_native_library
-            NativeAdKey.CALENDAR -> R.string.admob_native_calendar
-            NativeAdKey.PROFILE -> R.string.admob_native_profile
-            NativeAdKey.TAGS -> R.string.admob_native_tags
-            NativeAdKey.EDIT_TAG -> R.string.admob_native_edit_tag
-            NativeAdKey.REMINDER -> R.string.admob_native_remiander
-            NativeAdKey.CHANGE_PASSWORD -> R.string.admob_native_change_password
-        }
-        return context.getString(resId).trim()
+        // Dynamic lookup: matches enum value to JSON "id"
+        return sharedPreferenceUtils.getAdId(nativeAdKey.value)
     }
 
-    fun loadNativeAd(nativeAdKey: NativeAdKey, callback: (ItemNativeAd?) -> Unit) {
-        validateAndLoadAd(nativeAdKey, callback) { adId ->
-            isAdLoading = true
-            repositoryNativeImpl.fetchNativeAd(adKey = nativeAdKey.value, adId = adId) {
-                isAdLoading = false
-                callback.invoke(it)
+    fun loadNativeAd(
+        nativeAdKey: NativeAdKey,
+        callback: (ItemNativeAd?) -> Unit
+    ) {
+        loadNativeAd(
+            nativeAdKey = nativeAdKey,
+            callback = callback,
+            loadAdAction = { adId ->
+                isAdLoading = true
+                repositoryNativeImpl.fetchNativeAd(
+                    adKey = nativeAdKey.value,
+                    adId = adId
+                ) { itemNativeAd ->
+                    isAdLoading = false
+                    callback.invoke(itemNativeAd)
+                }
             }
-        }
+        )
     }
 
-    private fun validateAndLoadAd(
+    private fun loadNativeAd(
         nativeAdKey: NativeAdKey,
         callback: (ItemNativeAd?) -> Unit,
         loadAdAction: (adId: String) -> Unit
@@ -91,18 +73,17 @@ class UseCaseNative @Inject constructor(
             }
 
             internetManager.isInternetConnected.not() -> {
-                Log.e(TAG_ADS, "${nativeAdKey.value} -> loadNative: Internet is not connected")
+                Log.e(TAG_ADS, "${nativeAdKey.value} -> loadNative: No Internet")
                 callback.invoke(null)
             }
 
             adId.isEmpty() -> {
-                Log.e(TAG_ADS, "${nativeAdKey.value} -> loadNative: Ad id is empty")
+                Log.e(TAG_ADS, "${nativeAdKey.value} -> loadNative: Ad id is empty in JSON")
                 callback.invoke(null)
             }
 
             isAdLoading -> {
                 Log.e(TAG_ADS, "${nativeAdKey.value} -> loadNative: Ad is already loading")
-                //callback.invoke(null)
             }
 
             else -> {
@@ -112,9 +93,6 @@ class UseCaseNative @Inject constructor(
     }
 
     fun destroyNative(nativeAdKey: NativeAdKey): Boolean {
-        val isDestroyed = repositoryNativeImpl.destroyNative(nativeAdKey.value)
-        if (isDestroyed)
-            Log.e(TAG_ADS, "${nativeAdKey.value} -> destroyNative: destroyed")
-        return isDestroyed
+        return repositoryNativeImpl.destroyNative(nativeAdKey.value)
     }
 }

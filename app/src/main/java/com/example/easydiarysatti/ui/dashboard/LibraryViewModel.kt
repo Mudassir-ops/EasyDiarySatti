@@ -24,65 +24,55 @@ class LibraryViewModel @Inject constructor(
 
     private val _allImagesState = MutableStateFlow<LibraryImagesState>(LibraryImagesState.Loading)
     val allImagesState: StateFlow<LibraryImagesState> = _allImagesState
+//
+//    init {
+//        observeAllImages()
+//    }
 
-    init {
-        observeAllImages()
-    }
-
-    fun observeAllImages() {
+    // LibraryViewModel.kt
+    fun observeAllImages(targetRow: Int) {
         createNoteRepository.observeAllImages()
-            .onStart {
-                _allImagesState.value = LibraryImagesState.Loading
-            }
-            .catch { e ->
-                _allImagesState.value = LibraryImagesState.Error(e.message ?: "Unknown error")
-            }
+            .onStart { _allImagesState.value = LibraryImagesState.Loading }
             .distinctUntilChanged()
             .onEach { notes ->
                 if (notes.isNullOrEmpty()) {
-                    _allImagesState.value = LibraryImagesState.Error("No images found")
+                    _allImagesState.value = LibraryImagesState.Error("No data")
                 } else {
-                    // 1. Create one single master list
-                    val finalItemsList = mutableListOf<LibraryItem>()
-
-                    // 2. Group and process the data
-                    val groupedMap = notes
-                        .filter { it.images?.isNotEmpty() == true }
+                    val baseItems = mutableListOf<LibraryItem>()
+                    val groupedMap = notes.filter { it.images?.isNotEmpty() == true }
                         .groupBy { it.creationTime.toDateString() }
 
                     groupedMap.forEach { (date, noteList) ->
-                        // Add Date Header
-                        finalItemsList.add(LibraryItem.DateItem(date))
-
-                        // Add Image Items
+                        baseItems.add(LibraryItem.DateItem(date))
                         noteList.forEach { note ->
-                            finalItemsList.add(
-                                LibraryItem.ImagesItem(
-                                    date = date,
-                                    imagePaths = note.images ?: emptyList(),
-                                    noteTitle = note.title ?: "no title",
-                                    noteId = note.noteId
-                                )
-                            )
+                            baseItems.add(LibraryItem.ImagesItem(date, note.images!!, note.title ?: "", note.noteId))
                         }
                     }
 
-                    // 3. Insert the Ad Item
-                    // Check if we have enough items to reach the 2nd row
-                    if (finalItemsList.size >= 3) {
-                        // Index 3 usually places it at the start of the 2nd row
-                        // (Row 1 = Date Header + 2/3 images)
-                        finalItemsList.add(3, LibraryItem.AdItem)
-                    } else if (finalItemsList.isNotEmpty()) {
-                        // If the list is short, just add it at the end
-                        finalItemsList.add(LibraryItem.AdItem)
+                    val finalItemsList = mutableListOf<LibraryItem>()
+
+                    // ADJUSTMENT: We want to skip (targetRow) full rows of content.
+                    // If targetRow is 2, we want 2 full rows (4 slots) to pass.
+                    val targetSlotCount = targetRow * 2
+
+                    var currentSlotCount = 0
+                    var adInserted = false
+
+                    for (item in baseItems) {
+                        val itemSpan = if (item is LibraryItem.DateItem) 2 else 1
+
+                        finalItemsList.add(item)
+                        currentSlotCount += itemSpan
+                        if (!adInserted && currentSlotCount == targetSlotCount) {
+                            finalItemsList.add(LibraryItem.AdItem)
+                            adInserted = true
+                        }
+
                     }
 
-                    // 4. Update the state with the complete list
                     _allImagesState.value = LibraryImagesState.Success(finalItemsList)
                 }
-            }
-            .launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
     }
 
     fun String?.toFormattedDate(): String {

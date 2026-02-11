@@ -62,24 +62,24 @@ class EditProfileFragment : Fragment(R.layout.fragment_edit_profile) {
 
         setupClickListeners()
         setupDefaultValues()
-        setupNativeAd()
+//        setupNativeAd()
     }
-    private fun setupNativeAd() {
-        // 1. Observe the LiveData
-        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
-            if (nativeAd != null) {
-                val adSmallView = AdNativeSmallView(requireContext())
-                binding.flAdplaceholder.apply {
-                    removeAllViews()
-                    addView(adSmallView)
-                    adSmallView.setNativeAd(nativeAd)
-                }
-            }
-        }
-
-        // 2. Request the ad (using the ON_BOARDING or appropriate key)
-        nativeViewModel.loadNativeAd(NativeAdKey.PERMISSION)
-    }
+//    private fun setupNativeAd() {
+//        // 1. Observe the LiveData
+//        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+//            if (nativeAd != null) {
+//                val adSmallView = AdNativeSmallView(requireContext())
+//                binding.flAdplaceholder.apply {
+//                    removeAllViews()
+//                    addView(adSmallView)
+//                    adSmallView.setNativeAd(nativeAd)
+//                }
+//            }
+//        }
+//
+//        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+////        nativeViewModel.loadNativeAd(NativeAdKey.PERMISSION)
+//    }
     private fun setupClickListeners() {
         // Using binding?.apply is safe here as it's called directly in onViewCreated
         binding?.apply {

@@ -1,10 +1,13 @@
 package com.example.easydiarysatti.ui.main
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.PickVisualMediaRequest
@@ -53,16 +56,27 @@ import java.util.LinkedList
 import javax.inject.Inject
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.viewModels
 import com.example.easydiarysatti.AppLogger
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
+import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowCallBack
+import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.ui.edittags.AddTagsFragment
 import com.example.easydiarysatti.utills.getCurrentThemeColor
 import com.google.firebase.analytics.FirebaseAnalytics
+import kotlin.getValue
 
 @AndroidEntryPoint
 class MainFragment : Fragment(R.layout.fragment_main) {
     private lateinit var calendarHost: NavHostFragment
     private lateinit var libraryHost: NavHostFragment
     private lateinit var homeHost: NavHostFragment
+    private lateinit var navController: NavController
+    private val viewModelNative: ViewModelNative by activityViewModels()
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private val viewModelCreateNote: CreateNotesViewModel by activityViewModels()
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
@@ -70,10 +84,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private val binding by viewBinding(FragmentMainBinding::bind)
     private lateinit var imagePicker: ImagePickerDelegate
     private var activeNavHost: NavHostFragment? = null
-
+    private val bannerViewModel by activityViewModels<ViewModelBanner>()
     // Backstack for Bottom Navigation IDs to maintain history
     private val backStack = LinkedList<Int>()
-
+    @Inject
+    lateinit var interstitialAdsConfig: InterstitialAdsConfig
     private val navHostListeners =
         mutableMapOf<NavHostFragment, NavController.OnDestinationChangedListener>()
 
@@ -198,7 +213,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         setClickListeners()
         setupDrawer()
         observeMainState()
-        loadRewardedAdd()
         binding?.apply {
             ViewCompat.setOnApplyWindowInsetsListener(createNoteBottomBar) { v, insets ->
                 val keyboardHeight = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
@@ -216,6 +230,18 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 insets
             }
         }
+//        binding?.ivBack?.setOnClickListener {
+//            handleBackLogic()
+//        }
+//
+//        // Handle the physical/system back button
+//        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+//            override fun handleOnBackPressed() {
+//                handleBackLogic()
+//            }
+//        })
+
+
     }
 
     private fun setupBottomNavBar() {
@@ -243,7 +269,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         }
                         R.id.btn_media -> {
                             logAnalyticsEvent("Add_Note_Media", "toolbar_click")
-                            showReward()
+                            pickImage()
+//                            showReward()
                         }
                         R.id.btn_text -> {
                             logAnalyticsEvent("Add_Note_Text", "toolbar_click")
@@ -284,10 +311,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     homeHost
                 }
                 R.id.btn_library -> {
+                    viewModelNative.loadNativeAd(NativeAdKey.LIBRARY)
                     logAnalyticsEvent("Home_Screen_Library", "tab_switch")
                     libraryHost
                 }
                 R.id.btn_calendar ->{
+                    preLoadNextAd(BannerAdKey.CALENDAR)
                     logAnalyticsEvent("Home_Screen_Calendar_Opened", "tab_switch")
                     calendarHost
                 }
@@ -484,9 +513,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
             ivRemainder.setOnClickListener {
                 logAnalyticsEvent("Home_Screen_Reminder", "icon_click")
+                viewModelNative.loadNativeAd(NativeAdKey.REMINDER_INTERVAL)
                 onRemainderClick()
             }
             icAddNotes.setOnClickListener {
+                preLoadNextAd(BannerAdKey.ADD_TASK)
                 logAnalyticsEvent("Home_Screen_Add_Note", "button_click")
                 createNotesViewModel.clearTags()
                 createNotesViewModel.clearImages()
@@ -497,8 +528,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     Bundle().apply {
                         putBoolean(FROM_SCREEN, true)
                     })
+
             }
         }
+    }
+    private fun preLoadNextAd(adKey: BannerAdKey) {
+        Log.d("AdsInformation", "NameFragment pre-loading ad for: ${adKey.value}")
+        val adView = com.google.android.gms.ads.AdView(requireContext())
+        bannerViewModel.loadBannerAd(adView, adKey, requireContext())
     }
     private fun logAnalyticsEvent(eventName: String, label: String) {
         if (eventName.isEmpty()) return
@@ -507,12 +544,39 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
         mFirebaseAnalytics.logEvent(eventName, params)
     }
+
+
+    private fun showCreateNoteExitAd() {
+        // 1. Bypass security before showing the ad
+        sessionManagerRepo.bypassSecurityLogin(true)
+
+        interstitialAdsConfig.showInterstitialWithDialog(
+            requireActivity(),
+            InterAdKey.ADD_TASK_INTER_BACKPRESS,
+            object : InterstitialOnShowCallBack {
+
+
+                override fun onAdFailedToShow() {
+                    // 3. Fallback: navigate even if ad fails
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navController.navigateUp()
+                }
+
+                override fun onAdImpressionDelayed() {
+                    // Safe-guard to ensure navigation happens
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navController.navigateUp()
+                }
+            }
+        )
+    }
     private fun onBackTriggered() {
         val currentHost = activeNavHost ?: return
-        val navController = currentHost.findNavController()
+         navController = currentHost.findNavController()
         val currentDestId = navController.currentDestination?.id
 
         when (currentDestId) {
+
             R.id.addTagsFragment -> {
 //                createNotesViewModel.sendAction(
 //                    action = CreateNotesState.AddTag(
@@ -520,7 +584,23 @@ class MainFragment : Fragment(R.layout.fragment_main) {
 //                        createNoteEntity = createNotesViewModel.noteState.value
 //                    )
 //                )
+
                 navController.navigateUp()
+
+
+            }         R.id.createNotesFragment -> {
+//                createNotesViewModel.sendAction(
+//                    action = CreateNotesState.AddTag(
+//                        tag = "Personal",
+//                        createNoteEntity = createNotesViewModel.noteState.value
+//                    )
+//                )
+
+            showCreateNoteExitAd()
+
+            navController.navigateUp()
+
+
             }
             else -> {
                 // First check internal backstack of the active nav host (e.g. Preview -> Home)
@@ -535,33 +615,35 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun handleBottomNavBackstack() {
-        // If the drawer is open, just close it and stop
+        // 1. Close drawer if open
         if (view != null && binding?.parentLayout?.isDrawerOpen(GravityCompat.START) == true) {
             binding?.parentLayout?.closeDrawer(GravityCompat.START)
             return
         }
 
+        // 2. If we have a history of tabs, go back to the previous tab
         if (backStack.size > 1) {
-            // Remove the current tab from history
             backStack.pop()
-
-            // Get the previous tab ID
             val previousTabId = backStack.peek()
-
             if (view != null && previousTabId != null) {
-                // This will trigger the listener in setupBottomNav
-                // and handle fragment switching automatically
                 binding?.bottomNav?.check(previousTabId)
             }
         } else {
-            // We are on the last remaining tab in the history (usually Home)
-            // Check if the current visible tab is NOT Home.
-            // If it's not Home, move to Home first. If it IS Home, show exit dialog.
+            // 3. We are on the last tab in the history
             if (binding?.bottomNav?.checkedButtonId != R.id.btnHome) {
+                // Move to Home if we aren't there
                 binding?.bottomNav?.check(R.id.btnHome)
             } else {
-                showFeedBackDialog {
-                    activity?.finish()
+                // 4. WE ARE ON HOME.
+                // Check if the Home NavHost has any internal fragments to pop
+                val homeNavController = homeHost.findNavController()
+                if (homeNavController.previousBackStackEntry != null) {
+                    homeNavController.popBackStack()
+                } else {
+                    // We are truly at the Home root: Show Exit Dialog
+                    showFeedBackDialog {
+                        activity?.finish()
+                    }
                 }
             }
         }
@@ -587,6 +669,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
         }
     }
+
     private fun setProfileHeader() {
         binding?.apply {
             headerTitle.text = ContextCompat.getString(context ?: return, R.string.edit_profile)
@@ -642,11 +725,26 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun onRemainderClick() {
-        (activity as? MainActivity)?.requestExactAlarmPermission {
-            activeNavHost?.findNavController()?.safeNav(
-                currentDestId = R.id.homeFragment,
-                actionId = R.id.action_homeFragment_to_remainderFragment
-            )
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            android.Manifest.permission.POST_NOTIFICATIONS
+        } else null
+
+        val proceedToReminder = {
+            (activity as? MainActivity)?.requestExactAlarmPermission {
+                activeNavHost?.findNavController()?.safeNav(
+                    currentDestId = R.id.homeFragment,
+                    actionId = R.id.action_homeFragment_to_remainderFragment
+                )
+            }
+        }
+
+        if (permission != null && ContextCompat.checkSelfPermission(requireContext(), permission) != PackageManager.PERMISSION_GRANTED) {
+            // Request notification permission first
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+                if (granted) proceedToReminder()
+            }.launch(permission)
+        } else {
+            proceedToReminder()
         }
     }
     // 1. Add this launcher at the top of MainFragment class
@@ -668,25 +766,52 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
-    // 2. Update the pickImage() function to use the new launcher
     private fun pickImage() {
+        val galleryPermission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            android.Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            android.Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+
         pickPhotDialog(
             sessionManagerRepo = sessionManagerRepo,
             cameraCallBack = {
-                logAnalyticsEvent("Add_Note_Take_a_Photo", "media_source")
-            sessionManagerRepo.bypassSecurityLogin(true)
-            imagePicker.pickFromCameraWithPermission() // Keep camera for single photos
-        }, galleryCallBack = {
-                logAnalyticsEvent("Add_Note_Upload_From_Gallery", "media_source")
-            // Trigger the Multi-Photo Picker instead of the old single picker
-            pickMultipleMedia.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-            )
-        }, onDismiss = {
-            if (view != null) {
-                binding?.bottomNavCreateNote?.clearChecked()
+                if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    logAnalyticsEvent("Add_Note_Take_a_Photo", "media_source")
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    imagePicker.pickFromCameraWithPermission()
+                } else {
+                    requestPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+                }
+            },
+            galleryCallBack = {
+                if (ContextCompat.checkSelfPermission(requireContext(), galleryPermission) == PackageManager.PERMISSION_GRANTED) {
+                    logAnalyticsEvent("Add_Note_Upload_From_Gallery", "media_source")
+                    pickMultipleMedia.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                } else {
+                    requestPermissionLauncher.launch(galleryPermission)
+                }
+            },
+            onDismiss = {
+                if (view != null) {
+                    binding?.bottomNavCreateNote?.clearChecked()
+                }
             }
-        })
+        )
+    }
+
+    // Add this launcher at the top level of MainFragment class
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // Permission granted, re-trigger the dialog so user can proceed
+            pickImage()
+        } else {
+//            showSnackbar(getString(R.string.permission_denied_msg)) // Helper to explain why it's needed
+        }
     }
     override fun onDestroyView() {
         super.onDestroyView()
@@ -697,13 +822,13 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun loadRewardedAdd() {
-        rewardedAdsConfig.loadRewardedAd(adType = RewardedAdKey.IMAGE_MORE_THAN_ONE)
+        rewardedAdsConfig.loadRewardedAd(adType = RewardedAdKey.VIDEO_PRO_BG)
     }
 
     private fun showReward() {
         rewardedAdsConfig.showRewardedAd(
             activity,
-            adType = RewardedAdKey.IMAGE_MORE_THAN_ONE,
+            adType = RewardedAdKey.VIDEO_PRO_BG,
             listener = object : RewardedOnShowCallBack {
                 override fun onAdFailedToShow() = pickImage()
                 override fun onUserEarnedReward() {

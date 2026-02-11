@@ -2,10 +2,15 @@ package com.example.easydiarysatti.ui.createnote
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -19,9 +24,12 @@ import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
 import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
 import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowCallBack
 import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
+import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.local.ReminderEntity
@@ -57,6 +65,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     private val binding by viewBinding(FragmentCreateNotesBinding::bind)
     private val viewModel: CreateNotesViewModel by activityViewModels()
+    private val bannerViewModel by activityViewModels<ViewModelBanner>()
     private val reminderViewModel by viewModels<RemainderViewModel>()
     private var createNoteEntity: CreateNoteEntity? = null
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
@@ -111,10 +120,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         super.onViewCreated(view, savedInstanceState)
         observeNote()
         observeNoteAction()
+        setupBannerObserver()
         clickListeners()
         adjustScreenKeyboard()
         setupImagesRecyclerview()
         setupDescriptionScroll()
+//        val currentAdView = com.google.android.gms.ads.AdView(requireContext())
+//        viewModelBanner.loadBannerAd(currentAdView, BannerAdKey.ADD_TASK, requireContext())
         logAnalyticsEvent("Add_Note_Screen", "fragment_open")
         listOf(
             CustomTagEntity(
@@ -125,8 +137,57 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         binding?.ivBottomArrow?.imageTintList=ColorStateList.valueOf(themeColor)
         setStyledDateTime(binding?.tvDate ?: return, R.color.grey)
         loadInterstitial()
+        interstitialAdsConfig.loadInterstitialAd(InterAdKey.ADD_TASK_INTER_BACKPRESS)
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (interstitialAdsConfig.isInterstitialLoaded()) {
+                    showBackPressInterstitial()
+                } else {
+                   navigateScreen()
+                }
+            }
+        })
 
     }
+
+
+    // 1. Define this variable at the top of your Fragment class (outside any function)
+    private var isAdLoaded = false
+
+    private fun setupBannerObserver() {
+        bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            // 2. ONLY proceed if we haven't already started loading the ad for this screen
+            if (isAdLoaded) return@observe
+
+            val preloadedAd = adMap[BannerAdKey.ADD_TASK]
+
+            if (preloadedAd != null) {
+                // 3. SET FLAG TO TRUE IMMEDIATELY
+                // This prevents the observer from entering this 'if' block ever again
+                isAdLoaded = true
+
+                binding?.bannerShimmerContainer?.visibility = View.VISIBLE
+                binding?.bannerShimmerContainer?.startShimmer()
+
+                    if (isAdded && binding != null) {
+                        binding?.bannerShimmerContainer?.stopShimmer()
+                        binding?.bannerShimmerContainer?.setShimmer(null)
+
+                        binding?.bannerContainerTop?.let { container ->
+                            container.setBackgroundColor(Color.TRANSPARENT)
+                            container.addCleanView(preloadedAd)
+                        }
+                        Log.d("AdDebug", "Shimmer off, Ad visible (Loaded only once)")
+                    }
+
+            } else {
+                // While we are waiting for the preloaded ad to appear in the map
+                binding?.bannerShimmerContainer?.visibility = View.GONE
+                Log.d("AdDebug", "ADD_TASK ad not found in map yet...")
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setupDescriptionScroll() {
         binding?.etDescription?.setOnTouchListener { view, event ->
@@ -529,7 +590,8 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     }
 
     private fun loadInterstitial() {
-        interstitialAdsConfig.loadInterstitialAd(InterAdKey.FEATURE_SAVE_NOTE)
+        interstitialAdsConfig.loadInterstitialAd(InterAdKey.ADD_NOTE_INTER_SAVE_BUTTON)
+
     }
 
     private fun checkInterstitial() {
@@ -538,17 +600,37 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             false -> navigateScreen()
         }
     }
+    private fun showBackPressInterstitial() {
+        // Prevent security login overlay during ad
+        sessionManagerRepo.bypassSecurityLogin(true)
 
+        interstitialAdsConfig.showInterstitialWithDialog(
+            requireActivity(),
+            InterAdKey.ADD_TASK_INTER_BACKPRESS, // Use your preferred key here
+            object : InterstitialOnShowCallBack {
+
+
+                override fun onAdFailedToShow() {
+                    navigateScreen()
+                }
+
+                override fun onAdImpressionDelayed() {
+                    navigateScreen()
+                    // Handle cases where impression is tracked late if necessary
+                }
+            }
+        )
+    }
     private fun showInterstitial() {
         // Set bypass to true so MainActivity.onResume doesn't show login
         sessionManagerRepo.bypassSecurityLogin(true)
 
-        interstitialAdsConfig.showInterstitialAd(
+        interstitialAdsConfig.showInterstitialWithDialog(
             requireActivity(),
-            InterAdKey.FEATURE_SAVE_NOTE,
+            InterAdKey.ADD_NOTE_INTER_SAVE_BUTTON,
             object : InterstitialOnShowCallBack {
                 override fun onAdFailedToShow() {
-                    sessionManagerRepo.bypassSecurityLogin(false)
+
                     navigateScreen()
                 }
                 override fun onAdImpressionDelayed() {

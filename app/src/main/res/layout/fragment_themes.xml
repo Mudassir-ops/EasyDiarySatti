@@ -61,7 +61,7 @@
         android:layout_height="0dp"
         android:layout_marginStart="@dimen/_20sdp"
         android:layout_marginEnd="@dimen/_15sdp"
-        android:layout_marginBottom="@dimen/_40sdp"
+        android:layout_marginBottom="@dimen/_20sdp"
         android:background="@drawable/btn_theme_unselected_bg_shape"
         android:fontFamily="@font/outfit_medium"
         android:text="@string/later"
@@ -78,7 +78,7 @@
         app:cornerRadius="@dimen/_3sdp"
 
         android:stateListAnimator="@null"
-        app:layout_constraintBottom_toBottomOf="parent"
+       app:layout_constraintBottom_toTopOf="@id/banner_shimmer_container"
         app:layout_constraintEnd_toStartOf="@+id/btnSelect"
         app:layout_constraintHeight_percent="0.06"
         app:layout_constraintStart_toStartOf="parent" />
@@ -101,5 +101,24 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnLater"
         app:layout_constraintTop_toTopOf="@+id/btnLater" />
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/banner_shimmer_container"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:shimmer_auto_start="true"
+        app:shimmer_base_alpha="0.7"
+        app:shimmer_duration="1200">
 
+        <FrameLayout
+            android:id="@+id/banner_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#DCDCDC"
+            android:minHeight="50dp" />
+
+    </com.facebook.shimmer.ShimmerFrameLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

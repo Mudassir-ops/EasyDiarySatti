@@ -130,7 +130,7 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             setupTagRv()
             observeAllNotes()
             setupBgTheme()
-setupNativeAd()
+//setupNativeAd()
             // UI Setup: Ensure rvTags is always VISIBLE
             val isFromSearch = arguments?.getBoolean(FROM_SCREEN) ?: false
             if (!isFromSearch) {
@@ -150,22 +150,22 @@ setupNativeAd()
         }
         homeViewModel.observeAllNotes()
     }
-    private fun setupNativeAd() {
-        // 1. Observe the LiveData
-        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
-            if (nativeAd != null) {
-                val adSmallView = AdNativeSmallView(requireContext())
-                binding?.flAdplaceholder?.apply {
-                    removeAllViews()
-                    addView(adSmallView)
-                    adSmallView.setNativeAd(nativeAd)
-                }
-            }
-        }
-
-        // 2. Request the ad (using the ON_BOARDING or appropriate key)
-        nativeViewModel.loadNativeAd(NativeAdKey.EDIT_TAG)
-    }
+//    private fun setupNativeAd() {
+//        // 1. Observe the LiveData
+//        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+//            if (nativeAd != null) {
+//                val adSmallView = AdNativeSmallView(requireContext())
+//                binding?.flAdplaceholder?.apply {
+//                    removeAllViews()
+//                    addView(adSmallView)
+//                    adSmallView.setNativeAd(nativeAd)
+//                }
+//            }
+//        }
+//
+//        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+////        nativeViewModel.loadNativeAd(NativeAdKey.EDIT_TAG)
+//    }
 
   fun handleSaveAction() {
         val currentNote = viewModel.noteState.value

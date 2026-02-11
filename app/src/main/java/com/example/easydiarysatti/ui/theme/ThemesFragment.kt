@@ -1,9 +1,12 @@
 package com.example.easydiarysatti.ui.theme
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -11,11 +14,10 @@ import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.appOpen.entrance.ViewModelEntrance
-import com.example.easydiarysatti.ads.appOpen.screen.AppOpenAdsConfig
-import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnLoadCallBack
-import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnShowCallBack
-import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
-import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.databinding.FragmentThemesBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.safeNav
@@ -24,15 +26,23 @@ import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.getValue
 import kotlin.math.abs
 
 @AndroidEntryPoint
 class ThemesFragment : Fragment(R.layout.fragment_themes) {
     private val viewModel by viewModels<ThemesViewModel>()
     private val viewModelEntrance by viewModels<ViewModelEntrance>()
+    // NEW: Banner ViewModel to show the ad pre-loaded by SignUpFragment
+    private val bannerViewModel by activityViewModels<ViewModelBanner>()
+
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private val binding by viewBinding(FragmentThemesBinding::bind)
     private var themeAdapter: ThemeAdapter? = null
+
+    @Inject lateinit var sharedPref: SharedPreferenceUtils
+    @Inject lateinit var sessionManagerRepo: SessionManagerRepo
+
     private val themesList: List<Int> by lazy {
         listOf(
             R.drawable.theme_2,
@@ -43,32 +53,23 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         )
     }
 
-    @Inject
-    lateinit var sessionManagerRepo: SessionManagerRepo
-
-    @Inject
-    lateinit var appOpenAdsConfig: AppOpenAdsConfig
-
-
-
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
         logAnalyticsEvent("On_Boarding_Choose_Your_Theme","open_screen")
-
         themeAdapter = ThemeAdapter(themes = themesList, onThemeClick = {})
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        setupBannerObserver() // 1. Setup Banner Display
+
+
+
         clickListener()
-        observeAdd()
         setupBgTheme()
-//        if (arguments?.getBoolean(FROM_ONBOARDING) == true) {
-//            loadAppOpen()
-//        }
+
         binding?.apply {
             themeViewPager.adapter = themeAdapter
             themeViewPager.offscreenPageLimit = 4
@@ -78,6 +79,94 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
             themeViewPager.setCurrentItem(1, false)
         }
     }
+
+    /* ---------- Banner Ad Display Logic ---------- */
+
+    // 1. Define this variable at the top of your Fragment class (not inside the function)
+    private var isAdProcessStarted = false
+
+    private fun setupBannerObserver() {
+        bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            // 2. SAFETY LOCK: If we already started the timer for this screen session, STOP here.
+            if (isAdProcessStarted) return@observe
+
+            // Specifically grab the ad preloaded for the THEME screen
+            val preloadedAd = adMap[BannerAdKey.THEME_SELECTION]
+
+            if (preloadedAd != null) {
+                // 3. ACTIVATE LOCK: Ensure this block only runs once per fragment lifecycle
+                isAdProcessStarted = true
+
+                // Ensure shimmer container is visible and animation is playing
+                binding?.bannerShimmerContainer?.visibility = View.VISIBLE
+                binding?.bannerShimmerContainer?.startShimmer()
+
+
+                    // Check if fragment is still attached to avoid crashes
+                    if (isAdded && binding != null) {
+
+                        // 5. TURN OFF SHIMMER: Stop the animation and clear the effect
+                        binding?.bannerShimmerContainer?.stopShimmer()
+                        binding?.bannerShimmerContainer?.setShimmer(null)
+
+                        binding?.bannerContainer?.let { container ->
+                            // Remove gray background so the shimmer has nothing to reflect off of
+                            container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                            container.addCleanView(preloadedAd)
+                            container.visibility = View.VISIBLE
+                        }
+                        Log.d("AdDebug", "Shimmer off, THEME_SELECTION Ad visible (One-time load)")
+                    }
+
+            } else {
+                // Keep container hidden while waiting for the ad to appear in the map
+                binding?.bannerShimmerContainer?.visibility = View.GONE
+                Log.d("AdDebug", "THEME_SELECTION ad not found in map yet...")
+            }
+        }
+    }
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Reset so the next time the fragment is created, the process can repeat
+        isAdProcessStarted = false
+    }
+    private fun clickListener() {
+        binding?.apply {
+            btnSelect.setOnClickListener {
+                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Select","select_click")
+
+                // Finalize Theme
+                val currentPosition = themeViewPager.currentItem
+                val selectedThemeResId = themesList[currentPosition]
+                sessionManagerRepo.setBgTheme(themeResId = selectedThemeResId)
+
+                moveToNextScreen()
+            }
+
+            btnLater.setOnClickListener {
+                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Later","later_click")
+                moveToNextScreen()
+            }
+
+            btnBack.setOnClickListener {
+                findNavController().navigateUp()
+            }
+        }
+    }
+
+    fun moveToNextScreen() {
+
+
+        if (arguments?.getBoolean(FROM_ONBOARDING) == true) {
+            sessionManagerRepo.setOnBoardingDoneOnce(isOnBoardingDoneOnce = true)
+        }
+
+        // Navigate to Main with PopUpToInclusive to clear the setup stack
+        findNavController().safeNav(
+            currentDestId = R.id.themesFragment,
+            actionId = R.id.action_themesFragment_to_mainFragment
+        )
+    }
     private fun logAnalyticsEvent(eventName: String, label: String) {
         if (eventName.isEmpty()) return
         val params = Bundle().apply {
@@ -85,6 +174,7 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         }
         mFirebaseAnalytics.logEvent(eventName, params)
     }
+
     private fun applyDynamicTheme(themeResId: Int?) {
         val themeColor = getThemeColor(themeResId)
         val themeColorStateList = android.content.res.ColorStateList.valueOf(themeColor)
@@ -128,67 +218,6 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         }
     }
 
-    private fun clickListener() {
-        binding?.apply {
-            btnSelect.setOnClickListener {
-                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Select","select_click")
-
-                val currentPosition = binding?.themeViewPager?.currentItem ?: 0
-                val selectedThemeResId = themesList[currentPosition]
-                sessionManagerRepo.setBgTheme(themeResId = selectedThemeResId)
-                moveToNextScreen()
-            }
-            btnLater.setOnClickListener {
-                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Later","later_click")
-                moveToNextScreen()
-            }
-            btnBack.setOnClickListener {
-                findNavController().navigateUp()
-            }
-        }
-    }
-
-    fun moveToNextScreen() {
-        if (arguments?.getBoolean(FROM_ONBOARDING) == true) {
-            sessionManagerRepo.setOnBoardingDoneOnce(isOnBoardingDoneOnce = true)
-        }
-        findNavController().safeNav(
-            currentDestId = R.id.themesFragment,
-            actionId = R.id.action_themesFragment_to_mainFragment
-        )
-    }
-
-    private fun loadAppOpen() {
-        false.enableButton()
-        appOpenAdsConfig.loadAppOpenAd(AppOpenAdKey.THEME, object : AppOpenOnLoadCallBack {
-            override fun onResponse(successfullyLoaded: Boolean, errorMessage: String?) {
-                if (successfullyLoaded) {
-                    appOpenAdsConfig.showAppOpenAd(activity ?: return, AppOpenAdKey.THEME, object :
-                        AppOpenOnShowCallBack {
-                        override fun onAdDismissedFullScreenContent() {
-                            onAppOpenResponse()
-                        }
-
-                        override fun onAdFailedToShow() {
-                            onAppOpenResponse()
-                        }
-
-                        override fun onAdClicked() {}
-                        override fun onAdShowedFullScreenContent() {}
-                        override fun onAdImpression() {}
-                        override fun onAdImpressionDelayed() {}
-                    })
-                } else {
-                    onAppOpenResponse()
-                }
-            }
-        })
-    }
-
-    private fun onAppOpenResponse() {
-        viewModelEntrance.onAdResponse()
-    }
-
     private fun Boolean.enableButton() {
         binding?.apply {
             btnSelect.isEnabled = this@enableButton
@@ -197,5 +226,10 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
             btnLater.alpha = if (this@enableButton) 1.0F else 0.5F
         }
     }
+    }
 
-}
+
+
+
+
+

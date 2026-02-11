@@ -9,34 +9,71 @@ import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
 import com.example.easydiarysatti.ads.appOpen.screen.manager.AppOpenManager
 import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import jakarta.inject.Inject
 
-class AppOpenAdsConfig(
+//class AppOpenAdsConfig(
+//    private val context: Context,
+//    private val sharedPreferenceUtils: SharedPreferenceUtils,
+//    private val internetManager: InternetManager
+//) : AppOpenManager() {
+//
+//    fun loadAppOpenAd(adType: AppOpenAdKey, listener: AppOpenOnLoadCallBack? = null) {
+//        var interAdId = ""
+//        var isRemoteEnable = false
+//
+//        when (adType) {
+//            AppOpenAdKey.THEME -> {
+//                interAdId = context.getString(R.string.admob_app_open_id)
+//                isRemoteEnable = sharedPreferenceUtils.rcAppOpen != 0
+//            }
+//
+//            AppOpenAdKey.NAME_SCREEN ->{
+//                interAdId = context.getString(R.string.admob_app_open_id)
+//                isRemoteEnable = sharedPreferenceUtils.rcAppOpen != 0
+//            }
+//        }
+//
+//        loadAppOpen(
+//            context = context,
+//            adType = adType.value,
+//            appOpenId = interAdId,
+//            adEnable = isRemoteEnable,
+//            isAppPurchased = sharedPreferenceUtils.isAppPurchased,
+//            isInternetConnected = internetManager.isInternetConnected,
+//            listener = listener
+//        )
+//    }
+//
+//    fun showAppOpenAd(
+//        activity: Activity?,
+//        adType: AppOpenAdKey,
+//        listener: AppOpenOnShowCallBack? = null
+//    ) {
+//        showAppOpen(
+//            activity = activity,
+//            adType = adType.value,
+//            isAppPurchased = sharedPreferenceUtils.isAppPurchased,
+//            listener
+//        )
+//    }
+//}
+
+class AppOpenAdsConfig @Inject constructor(
     private val context: Context,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
     private val internetManager: InternetManager
 ) : AppOpenManager() {
 
     fun loadAppOpenAd(adType: AppOpenAdKey, listener: AppOpenOnLoadCallBack? = null) {
-        var interAdId = ""
-        var isRemoteEnable = false
-
-        when (adType) {
-            AppOpenAdKey.THEME -> {
-                interAdId = context.getString(R.string.admob_app_open_id)
-                isRemoteEnable = sharedPreferenceUtils.rcAppOpen != 0
-            }
-
-            AppOpenAdKey.NAME_SCREEN ->{
-                interAdId = context.getString(R.string.admob_app_open_id)
-                isRemoteEnable = sharedPreferenceUtils.rcAppOpen != 0
-            }
-        }
+        // Fetch ID and Show Status directly from JSON
+        val adId = sharedPreferenceUtils.getAdId(adType.value)
+        val isRemoteEnable = sharedPreferenceUtils.getAdShowStatus(adType.value)
 
         loadAppOpen(
             context = context,
             adType = adType.value,
-            appOpenId = interAdId,
-            adEnable = isRemoteEnable,
+            appOpenId = adId,
+            adEnable = isRemoteEnable && adId.isNotEmpty(),
             isAppPurchased = sharedPreferenceUtils.isAppPurchased,
             isInternetConnected = internetManager.isInternetConnected,
             listener = listener
@@ -52,7 +89,7 @@ class AppOpenAdsConfig(
             activity = activity,
             adType = adType.value,
             isAppPurchased = sharedPreferenceUtils.isAppPurchased,
-            listener
+            listener = listener
         )
     }
 }

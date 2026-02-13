@@ -621,29 +621,32 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             return
         }
 
-        // 2. If we have a history of tabs, go back to the previous tab
-        if (backStack.size > 1) {
-            backStack.pop()
-            val previousTabId = backStack.peek()
-            if (view != null && previousTabId != null) {
-                binding?.bottomNav?.check(previousTabId)
-            }
-        } else {
-            // 3. We are on the last tab in the history
-            if (binding?.bottomNav?.checkedButtonId != R.id.btnHome) {
-                // Move to Home if we aren't there
-                binding?.bottomNav?.check(R.id.btnHome)
+        // 2. Check if the current tab is NOT Home
+        if (binding?.bottomNav?.checkedButtonId != R.id.btnHome) {
+
+            // If we have history in our manual backstack, go to the previous tab
+            if (backStack.size > 1) {
+                backStack.pop() // Remove current tab
+                val previousTabId = backStack.peek()
+                if (view != null && previousTabId != null) {
+                    binding?.bottomNav?.check(previousTabId)
+                }
             } else {
-                // 4. WE ARE ON HOME.
-                // Check if the Home NavHost has any internal fragments to pop
-                val homeNavController = homeHost.findNavController()
-                if (homeNavController.previousBackStackEntry != null) {
-                    homeNavController.popBackStack()
-                } else {
-                    // We are truly at the Home root: Show Exit Dialog
-                    showFeedBackDialog {
-                        activity?.finish()
-                    }
+                // No history, but not on Home? Jump to Home
+                binding?.bottomNav?.check(R.id.btnHome)
+            }
+
+        } else {
+            // 3. WE ARE ON THE HOME TAB
+            val homeNavController = homeHost.findNavController()
+
+            // If Home tab has internal fragments open, pop them first
+            if (homeNavController.previousBackStackEntry != null) {
+                homeNavController.popBackStack()
+            } else {
+                // WE ARE AT THE ROOT OF HOME: Show Exit Dialog
+                showFeedBackDialog {
+                    activity?.finish()
                 }
             }
         }

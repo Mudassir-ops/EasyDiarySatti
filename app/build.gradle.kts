@@ -29,8 +29,8 @@ android {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 24
-        versionName = "24.2"
+        versionCode = 25
+        versionName = "25.0"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")
@@ -42,7 +42,7 @@ android {
             resValue(
                 type = "string",
                 name = "admob_app_id",
-                value = "ca-app-pub-6929888913467755~1203974256"
+                value = "ca-app-pub-3940256099942544~3347511713"
             )
 
 

@@ -1,6 +1,7 @@
 package com.example.easydiarysatti.utills
 
 import android.app.Dialog
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.net.Uri
 import android.util.Log
@@ -327,7 +328,27 @@ inline fun Fragment.showEditTexDialog(
 
     }
 }
-
+fun Fragment.navigateToPlayStore() {
+    val packageName = requireContext().packageName
+    try {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName")))
+    } catch (e: Exception) {
+        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName")))
+    }
+}
+fun Fragment.sendEmailFeedback() {
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf("cisco7865@gmail.com"))
+        putExtra(Intent.EXTRA_SUBJECT, "App Feedback")
+        putExtra(Intent.EXTRA_TEXT, "")
+    }
+    try {
+        startActivity(intent)
+    } catch (e: Exception) {
+        Toast.makeText(context, "No email app found", Toast.LENGTH_SHORT).show()
+    }
+}
 inline fun Fragment.showFeedBackDialog(
     crossinline selectedEmotion: (EmojiInfo) -> Unit
 ) {
@@ -353,14 +374,18 @@ inline fun Fragment.showFeedBackDialog(
     }
 
     binding.apply {
-
-        btnCancel.setOnClickListener {
-            imageDialog.dismiss()
-        }
+        btnCancel.setOnClickListener { imageDialog.dismiss() }
 
         btnDone.setOnClickListener {
+            val rating = ratingBar.rating // Assuming ID is ratingBar
+
+            if (rating > 3) {
+                navigateToPlayStore()
+            } else {
+                sendEmailFeedback()
+            }
+
             imageDialog.dismiss()
-            activity?.finishAffinity()
         }
     }
 }

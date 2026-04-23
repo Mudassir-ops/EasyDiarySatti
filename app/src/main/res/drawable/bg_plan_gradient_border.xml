@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- bg_plan_gradient_border.xml -->
+<!-- Used as the outer background of the plan card in dialog_remove_ads_no_native -->
+<!-- Creates a 1dp gradient border (purple→pink) around the white inner content -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="0"
+        android:startColor="#A29DFB"
+        android:endColor="#FF8D95"
+        android:type="linear" />
+    <corners android:radius="16dp" />
+</shape>

@@ -108,17 +108,17 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         }
     }
 
-    private val noteBgList: List<Int?> by lazy {
-        listOf(
-            null,
-            R.drawable.background_1,
-            R.drawable.background_2,
-            R.drawable.background_3,
-            R.drawable.background_4,
-            R.drawable.background_5,
-            R.drawable.background_6,
-            R.drawable.background_7,
-            R.drawable.background_8,
+    private val noteBgList: MutableList<com.example.easydiarysatti.utills.BgItem?> by lazy {
+        mutableListOf(
+            null,                                                              // position 0 → upload button
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_1),
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_2),
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_3),
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_4),
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_5),
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_6),
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_7),
+            com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_8),
         )
     }
 
@@ -133,30 +133,59 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         )
     }
 
+    /**
+     * Drawer item list — positions must match the when(it) block in MainFragment.drawerItemAdapter.
+     *   0 → Edit Tags
+     *   1 → Draft          ← NEW
+     *   2 → Color Theme    (was 1)
+     *   3 → Reminders      (was 2)
+     *   4 → Diary Lock     (was 3)
+     *   5 → Language       (was 4)
+     *   6 → Privacy Policy (was 5)
+     *
+     * Add to strings.xml:  <string name="draft">Draft</string>
+     */
     private val mainDrawerItemList: List<DrawerItem> by lazy {
         listOf(
-            DrawerItem(
+            DrawerItem(                        // 0 — Edit Tags
                 bgTint = "#FFAC81",
                 imgRes = R.drawable.pencil_icon,
-                title = getString(R.string.edit_tags)
-            ), DrawerItem(
+                title  = getString(R.string.edit_tags2)
+            ),
+            DrawerItem(                        // 1 — Favorites (NEW)
+                bgTint = "#E8BA00",            // pink/red to match heart theme
+                imgRes = R.drawable.ic_file_favourite,
+                title  = getString(R.string.favorites)
+            ),
+            DrawerItem(                        // 1 — Draft (NEW)
+                bgTint = "#42ABD0",
+                imgRes = R.drawable.ic_draft_document1,
+                title  = getString(R.string.draft)
+            ),
+            DrawerItem(                        // 2 — Color Theme (was 1)
                 bgTint = "#5EE3A9",
                 imgRes = R.drawable.paint_icon,
-                title = getString(R.string.color_theme)
-            ), DrawerItem(
+                title  = getString(R.string.color_theme)
+            ),
+            DrawerItem(                        // 3 — Reminders (was 2)
                 bgTint = "#FFDE8B",
                 imgRes = R.drawable.bell_drawer,
-                title = getString(R.string.remainders)
-            ), DrawerItem(
-                bgTint = "#FF8D95", imgRes = R.drawable.lock, title = getString(R.string.dairy_lock)
-            ), DrawerItem(
+                title  = getString(R.string.remainders)
+            ),
+            DrawerItem(                        // 4 — Diary Lock (was 3)
+                bgTint = "#FF8D95",
+                imgRes = R.drawable.lock,
+                title  = getString(R.string.dairy_lock)
+            ),
+            DrawerItem(                        // 5 — Language (was 4)
                 bgTint = "#A29DFB",
                 imgRes = R.drawable.language_icon,
-                title = getString(R.string.langauge)
-            ), DrawerItem(
+                title  = getString(R.string.langauge)
+            ),
+            DrawerItem(                        // 6 — Privacy Policy (was 5)
                 bgTint = "#FFAC81",
                 imgRes = R.drawable.privacy_policy,
-                title = getString(R.string.privacy_policy)
+                title  = getString(R.string.privacy_policy)
             )
         )
     }
@@ -178,7 +207,7 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         handleIntent(intent)
     }
 
-    fun getBgThemes(): List<Int?> = noteBgList
+    fun getBgThemes(): MutableList<com.example.easydiarysatti.utills.BgItem?> = noteBgList
     fun getColorPalette(): List<Int>? = colorPaletteSatti
     fun getDrawerItemList(): List<DrawerItem> = mainDrawerItemList
     private fun setupStartGraph() {
@@ -274,7 +303,7 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         handleIntent(intent)
     }
 
-//    private fun handleIntent(intent: Intent?) {
+    //    private fun handleIntent(intent: Intent?) {
 //        val noteId = intent?.getIntExtra(REMAINDER_UNIQUE_ID, -1) ?: -1
 //        if (noteId != -1) {
 //            // Use your safeNav extension to go to the note screen
@@ -288,23 +317,23 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
 //        }
 //    }
 // Inside MainActivity.kt
-private fun handleIntent(intent: Intent?) {
-    val noteId = intent?.getIntExtra("REMAINDER_UNIQUE_ID", -1) ?: -1
-    if (noteId != -1) {
-        val navHostFragment = supportFragmentManager
-            .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+    private fun handleIntent(intent: Intent?) {
+        val noteId = intent?.getIntExtra("REMAINDER_UNIQUE_ID", -1) ?: -1
+        if (noteId != -1) {
+            val navHostFragment = supportFragmentManager
+                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
 
-        // Use global action instead of fragment ID to avoid crashes
-        try {
-            navHostFragment?.navController?.navigate(
-                R.id.action_global_remainderFragment,
-                Bundle().apply { putInt("noteId", noteId) }
-            )
-        } catch (e: Exception) {
-            Log.e("Nav", "Global nav failed: ${e.message}")
+            // Use global action instead of fragment ID to avoid crashes
+            try {
+                navHostFragment?.navController?.navigate(
+                    R.id.action_global_remainderFragment,
+                    Bundle().apply { putInt("noteId", noteId) }
+                )
+            } catch (e: Exception) {
+                Log.e("Nav", "Global nav failed: ${e.message}")
+            }
         }
     }
-}
     private fun showRestartSnackBar() {
         Snackbar.make(
             findViewById(android.R.id.content),
@@ -319,7 +348,7 @@ private fun handleIntent(intent: Intent?) {
     override fun onAdsLoad(canRequestAds: Boolean) {
         if (canRequestAds) {
             Log.d("ConsentCheck", "Ads can be requested. Initialize your Ads SDK here.")
-             MobileAds.initialize(this) {}
+            MobileAds.initialize(this) {}
         } else {
             Log.d("ConsentCheck", "Ads cannot be requested.")
         }

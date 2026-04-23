@@ -3,7 +3,6 @@ package com.example.easydiarysatti.ui.theme
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
@@ -31,12 +30,12 @@ import kotlin.math.abs
 
 @AndroidEntryPoint
 class ThemesFragment : Fragment(R.layout.fragment_themes) {
+
     private val viewModel by viewModels<ThemesViewModel>()
     private val viewModelEntrance by viewModels<ViewModelEntrance>()
-    // NEW: Banner ViewModel to show the ad pre-loaded by SignUpFragment
     private val bannerViewModel by activityViewModels<ViewModelBanner>()
 
-    lateinit var mFirebaseAnalytics : FirebaseAnalytics
+    lateinit var mFirebaseAnalytics: FirebaseAnalytics
     private val binding by viewBinding(FragmentThemesBinding::bind)
     private var themeAdapter: ThemeAdapter? = null
 
@@ -56,17 +55,13 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
-        logAnalyticsEvent("On_Boarding_Choose_Your_Theme","open_screen")
+        logAnalyticsEvent("On_Boarding_Choose_Your_Theme", "open_screen")
         themeAdapter = ThemeAdapter(themes = themesList, onThemeClick = {})
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        setupBannerObserver() // 1. Setup Banner Display
-
-
-
+        setupBannerObserver()
         clickListener()
         setupBgTheme()
 
@@ -80,74 +75,56 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         }
     }
 
-    /* ---------- Banner Ad Display Logic ---------- */
-
-    // 1. Define this variable at the top of your Fragment class (not inside the function)
     private var isAdProcessStarted = false
 
     private fun setupBannerObserver() {
+        if (!sharedPref.getAdShowStatus(BannerAdKey.THEME_SELECTION.value)) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
-            // 2. SAFETY LOCK: If we already started the timer for this screen session, STOP here.
             if (isAdProcessStarted) return@observe
-
-            // Specifically grab the ad preloaded for the THEME screen
             val preloadedAd = adMap[BannerAdKey.THEME_SELECTION]
-
             if (preloadedAd != null) {
-                // 3. ACTIVATE LOCK: Ensure this block only runs once per fragment lifecycle
                 isAdProcessStarted = true
-
-                // Ensure shimmer container is visible and animation is playing
                 binding?.bannerShimmerContainer?.visibility = View.VISIBLE
                 binding?.bannerShimmerContainer?.startShimmer()
-
-
-                    // Check if fragment is still attached to avoid crashes
-                    if (isAdded && binding != null) {
-
-                        // 5. TURN OFF SHIMMER: Stop the animation and clear the effect
-                        binding?.bannerShimmerContainer?.stopShimmer()
-                        binding?.bannerShimmerContainer?.setShimmer(null)
-
-                        binding?.bannerContainer?.let { container ->
-                            // Remove gray background so the shimmer has nothing to reflect off of
-                            container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                            container.addCleanView(preloadedAd)
-                            container.visibility = View.VISIBLE
-                        }
-                        Log.d("AdDebug", "Shimmer off, THEME_SELECTION Ad visible (One-time load)")
+                if (isAdded && binding != null) {
+                    binding?.bannerShimmerContainer?.stopShimmer()
+                    binding?.bannerShimmerContainer?.setShimmer(null)
+                    binding?.bannerContainer?.let { container ->
+                        container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        container.addCleanView(preloadedAd)
+                        container.visibility = View.VISIBLE
                     }
-
+                    Log.d("AdDebug", "Shimmer off, THEME_SELECTION Ad visible")
+                }
             } else {
-                // Keep container hidden while waiting for the ad to appear in the map
                 binding?.bannerShimmerContainer?.visibility = View.GONE
-                Log.d("AdDebug", "THEME_SELECTION ad not found in map yet...")
+                binding?.bannerContainer?.visibility = View.GONE
             }
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
-        // Reset so the next time the fragment is created, the process can repeat
         isAdProcessStarted = false
     }
+
     private fun clickListener() {
         binding?.apply {
             btnSelect.setOnClickListener {
-                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Select","select_click")
-
-                // Finalize Theme
+                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Select", "select_click")
                 val currentPosition = themeViewPager.currentItem
                 val selectedThemeResId = themesList[currentPosition]
                 sessionManagerRepo.setBgTheme(themeResId = selectedThemeResId)
-
                 moveToNextScreen()
             }
-
             btnLater.setOnClickListener {
-                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Later","later_click")
+                logAnalyticsEvent("On_Boarding_Choose_Your_Theme_Later", "later_click")
                 moveToNextScreen()
             }
-
             btnBack.setOnClickListener {
                 findNavController().navigateUp()
             }
@@ -155,45 +132,48 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
     }
 
     fun moveToNextScreen() {
-
-
         if (arguments?.getBoolean(FROM_ONBOARDING) == true) {
             sessionManagerRepo.setOnBoardingDoneOnce(isOnBoardingDoneOnce = true)
         }
 
-        // Navigate to Main with PopUpToInclusive to clear the setup stack
-        findNavController().safeNav(
-            currentDestId = R.id.themesFragment,
-            actionId = R.id.action_themesFragment_to_mainFragment
-        )
+        // Plan: Onboarding Paywall — show on last slide of onboarding before home screen (first time user)
+        // Key: splash_onboarding_paywall_screen_display from onboarding_paywall_config
+        val shouldShowOnboardingPaywall = sharedPref.getAdExtraData(
+            "onboarding_paywall_config",
+            "splash_onboarding_paywall_screen_display"
+        ) == "true"
+
+        if (sharedPref.isFirstTimeUser && shouldShowOnboardingPaywall && !sharedPref.isAppPurchased) {
+            // Plan: First time user → show onboarding paywall after theme screen
+            findNavController().safeNav(
+                currentDestId = R.id.themesFragment,
+                actionId = R.id.action_themesFragment_to_onboardingPaywallFragment
+            )
+        } else {
+            // Returning user OR paywall disabled OR already purchased → go to Main
+            findNavController().safeNav(
+                currentDestId = R.id.themesFragment,
+                actionId = R.id.action_themesFragment_to_mainFragment
+            )
+        }
     }
+
     private fun logAnalyticsEvent(eventName: String, label: String) {
         if (eventName.isEmpty()) return
-        val params = Bundle().apply {
-            putString("action_label", label)
-        }
+        val params = Bundle().apply { putString("action_label", label) }
         mFirebaseAnalytics.logEvent(eventName, params)
     }
 
     private fun applyDynamicTheme(themeResId: Int?) {
         val themeColor = getThemeColor(themeResId)
         val themeColorStateList = android.content.res.ColorStateList.valueOf(themeColor)
-
         binding?.apply {
-            // 1. Filled Button (btnSelect)
-            // We update the background tint so the whole button takes the theme color
             btnSelect.backgroundTintList = themeColorStateList
-
-            // 2. Unselected/Outline Button (btnLater)
-            // Since you have app:backgroundTint="@null", we update the Stroke (border)
-            // and the Text color to match the theme.
             btnLater.strokeColor = themeColorStateList
             btnLater.setTextColor(themeColor)
-
-            // ... (Keep your existing logic for btnNext, dots, etc.)
         }
     }
-    // Helper to get color once for various UI elements
+
     private fun getThemeColor(themeResId: Int?): Int {
         return when (themeResId) {
             R.drawable.theme_1 -> ContextCompat.getColor(requireContext(), R.color.theme1_color)
@@ -204,16 +184,16 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
             else -> ContextCompat.getColor(requireContext(), R.color.app_primary_color)
         }
     }
+
     private fun setupBgTheme() {
         val currentTheme = sessionManagerRepo.getBgTheme()
         applyDynamicTheme(currentTheme)
     }
+
     private fun observeAdd() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModelEntrance.openAddState.flowWithLifecycle(viewLifecycleOwner.lifecycle).collect {
-                if (it) {
-                    true.enableButton()
-                }
+                if (it) true.enableButton()
             }
         }
     }
@@ -226,7 +206,7 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
             btnLater.alpha = if (this@enableButton) 1.0F else 0.5F
         }
     }
-    }
+}
 
 
 

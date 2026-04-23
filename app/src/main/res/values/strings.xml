@@ -57,6 +57,7 @@
     <string name="reminder">Reminder</string>
     <string name="how_you_feeling_today">How You Feeling Today?</string>
     <string name="personal"># Personal</string>
+    <string name="personal1">Type a tag (e.g. #Work, #Personal)</string>
     <string name="no_data_in_library">No data found in library</string>
     <string name="tags">Tags</string>
     <string name="no_notes_for_current_day">No notes for selected day</string>
@@ -68,6 +69,7 @@
     <string name="satti">Satti</string>
     <string name="account_settings">Account Settings</string>
     <string name="edit_tags">Edit Tags</string>
+    <string name="edit_tags2">Manage Tags</string>
     <string name="color_theme">Color Theme</string>
     <string name="remainders">Reminders</string>
     <string name="dairy_lock">Dairy Lock</string>
@@ -123,6 +125,7 @@
     <string name="welcome_back">Welcome Back,%1$s</string>
     <string name="coming_soon">Coming Soon</string>
     <string name="privacy_policy_link">https://sites.google.com/view/easy-diary-journal-with-lock/home</string>
+    <string name="terms_link">https://payments.google.com/payments/apis-secure/u/0/get_legal_document?ldl=en_GB&amp;ldo=0&amp;ldt=buyertos</string>
 
 
     <string name="entrance_screen">Entrance Screen</string>
@@ -151,5 +154,124 @@
     <string name="onboard_desc_2"> <b>Save moments</b>, attach photos, organize entries with tags, and <b>relive your favorite memories</b> anytime.</string>
     <string name="onboard_desc_3">Keep your <b>personal diary notes safe</b> with secure lock protection and <b>complete privacy control</b>.</string>
     <string name="edit_profile">Edit Profile</string>
+    <string name="subscription_disclaimer">Subscriptions are managed via your Google Play Billing and will renew automatically unless cancelled at least 24 hours before the current period ends. After purchase, you can manage your subscriptions in your Account Settings.</string>
+    <string name="today_get_full_access">Today: Get Full Access</string>
+    <string name="get_full_access_to_all_premium_features">Get full access to all premium features</string>
+    <string name="day_2_trial_reminder">Day 2: Trial Reminder</string>
+    <string name="get_a_reminder_before_your_free_trial_ends">Get a reminder before your free trial ends</string>
+    <string name="day_3_trial_ends">Day 3: Trial Ends</string>
+    <string name="your_subscription_will_start_on_jun_21_cancel_anytime">Your subscription will start on Jun 21. Cancel anytime.</string>
+    <string name="install_the_app">Install the App</string>
+    <string name="you_successfully_installed_app">You successfully installed app</string>
+    <string name="start_free_trial">
+    <font color="#323C4B">Start </font>
+    <font color="#42ABD0">Free Trial</font>
 
+    </string>
+    <string name="how_does_your_free_trial_work">How does your free trial work?</string>
+    <string name="_7_days_free_then_139_99_per_year">7 days free, then $ 139.99 per year</string>
+    <string name="advanced_lock_protection">Advanced Lock Protection</string>
+    <string name="pin_amp_biometric_security"><![CDATA[PIN & biometric security]]></string>
+    <string name="cloud_backup">Cloud Backup</string>
+    <string name="sync_save_your_entries"><![CDATA[Sync & save your entries]]></string>
+    <string name="smart_reminders">Smart Reminders</string>
+    <string name="stay_on_track_daily">Stay on track daily</string>
+    <string name="ad_free_experience">Ad-Free Experience</string>
+    <string name="enjoy_without_ads">Enjoy without ads</string>
+    <string name="premium_themes_amp_colors"><![CDATA[Premium Themes & Colors]]></string>
+    <string name="unlock_exclusive_designs">Unlock exclusive designs</string>
+    <string name="most_popular">Most Popular</string>
+    <string name="unlock_premium">
+    <font color="#417AC9">Unlock </font>
+    <font color="#F45464">Premium</font>
+</string>
+    <string name="cancel_anytime">Cancel anytime</string>
+    <string name="terms_amp_conditions"><![CDATA[Terms & Conditions]]></string>
+    <string name="best_deal">Best Deal</string>
+    <string name="exit_app">Exit App?</string>
+    <string name="are_you_sure_you_want_to_leave_ndaily_journal">Are you sure you want to leave\nDaily Journal?</string>
+    <string name="stay">Stay</string>
+    <string name="exit">Exit</string>
+    <string name="enjoying_daily_njournal">Enjoying Daily\nJournal?</string>
+    <string name="your_feedback_helps_us_improve_nyour_journaling_experience">Your feedback helps us improve\nyour journaling experience.</string>
+    <string name="rate_now">Rate Now</string>
+    <string name="maybe_later">Maybe Later</string>
+    <string name="exit_anyway">Exit Anyway</string>
+
+
+    <!-- Draft screen strings -->
+    <string name="draft">Drafts</string>
+    <string name="draft_notes_title">Draft Notes</string>
+    <string name="draft_subtitle">Your unspoken words, held in gentle\nsuspension. Refine them when you are ready.</string>
+    <string name="draft_card_body">Capture the essence of your day before it fades into the archive.</string>
+    <string name="no_drafts_yet">No Drafts Yet</string>
+    <string name="no_drafts_subtitle">Your unfinished notes will\nappear here</string>
+    <string name="create_note_cta">Create Note</string>
+    <string name="end_of_archive">END OF ARCHIVE</string>
+    <string name="draft_notes">Draft Notes</string>
+    <string name="tag_already_exists">A tag with this name already exists</string>
+        <plurals name="pending_thoughts">
+            <item quantity="one">%d pending thought</item>
+
+            <item quantity="other">%d pending thoughts</item>
+        </plurals>
+
+    <string name="organize_your_thoughts_with_tags">Organize your thoughts with tags</string>
+<!--    <string name="add_a_new_tag">Add a new tag…</string>-->
+<!--    <string name="create">Create</string>-->
+<!--    <string name="selected_tags">SELECTED TAGS</string>-->
+<!--    <string name="all_tags">ALL TAGS</string>-->
+<!--    <string name="save_tags">Save Tags</string>-->
+    <string name="favorites">Favorites</string>
+    <string name="favorites_empty_title">Your favorite moments will\nsparkle here.</string>
+    <string name="favorites_empty_subtitle">Tap the heart icon on any diary entry to\nadd it to your favorites.</string>
+
+
+
+    <!-- Confirmation dialog -->
+    <string name="dialog_delete_title">Permanently Delete Notes?</string>
+    <string name="dialog_delete_subtitle">You\'re about to delete \'%d\' note. This action cannot be reversed.</string>
+    <string name="dialog_unfav_title">Remove from Favorites?</string>
+    <string name="dialog_unfav_subtitle">This note will be removed from your favorites list.</string>
+    <string name="dialog_fav_title">Add to Favorites?</string>
+    <string name="dialog_fav_subtitle">This note will be added to your favorites list.</string>
+    <string name="add_to_favorites">Add to Favorites</string>
+    <string name="remove">Remove</string>
+    <string name="delete">Delete</string>
+
+    <!-- Multi-select -->
+    <string name="selected_count">%d selected</string>
+
+    <plurals name="dialog_delete_subtitle">
+        <item quantity="one">You\'re about to delete \'1\' note. This action cannot be reversed.</item>
+        <item quantity="other">You\'re about to delete \'%d\' notes. This action cannot be reversed.</item>
+    </plurals>
+
+    <!-- Add these entries to your res/values/strings.xml -->
+
+    <string name="organize_thoughts_with_tags">Organize your thoughts with tags</string>
+    <string name="add_a_new_tag">Add a new tag…</string>
+    <string name="create">Create</string>
+    <string name="save_tags">Add Tags</string>
+    <string name="selected_tags">SELECTED TAGS</string>
+    <string name="all_tags">ALL TAGS</string>
+    <string name="no_tags_yet">No tags yet. Create your first tag above!</string>
+    <string name="don_t_lose_your_thoughts">Don’t lose your thoughts!</string>
+    <string name="your_note_isn_t_saved_yet_would_you_like_nto_keep_it">Your note isn’t saved yet. Would you like\nto keep it?</string>
+    <string name="keep_editing">Keep Editing</string>
+    <string name="back_to_home"><u>Back to Home</u></string>
+    <string name="save_as_draft">Save as Draft</string>
+    <string name="draft_deleted">Draft deleted</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="add_tag">Add tag</string>
+    <string name="share">Share</string>
+    <string name="entry_options">ENTRY OPTIONS</string>
+    <string name="favorite">Favorite</string>
+    <string name="favorite_subtitle">Save to your curated highlights</string>
+    <string name="share_subtitle">Send as PDF or text link</string>
+    <string name="delete_subtitle">Remove this entry permanently</string>
+    <!-- Add to res/values/strings.xml -->
+    <string name="rewarded_loading_title">Preparing your reward… 🎁</string>
+    <string name="rewarded_loading_subtitle">The video ad is loading.\nIt will start shortly.</string>
 </resources>
+

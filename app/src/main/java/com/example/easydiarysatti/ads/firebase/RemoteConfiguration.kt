@@ -26,7 +26,7 @@ class RemoteConfiguration @Inject constructor(
     init {
         val configSettings = remoteConfigSettings {
             setFetchTimeoutInSeconds(10)
-            // 0L for Debug to get instant changes, 3600L for Release
+            // 0L for Debug instant refresh, 3600L for Release (1 hour cache)
             setMinimumFetchIntervalInSeconds(if (BuildConfig.DEBUG) 0L else 3600L)
         }
         remoteConfig.setConfigSettingsAsync(configSettings)
@@ -56,57 +56,98 @@ class RemoteConfiguration @Inject constructor(
 
     private fun fetchRemoteValues(callback: ((Boolean) -> Unit)?) {
         remoteConfig.fetchAndActivate().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                updateRemoteValues()
-            }
+            if (task.isSuccessful) updateRemoteValues()
             callback?.invoke(task.isSuccessful)
         }
     }
+
     private fun updateRemoteValues() {
         try {
-            // 1. Fetch and save the Onboarding display flag
-            val showOnboarding = remoteConfig.getBoolean("onboarding_slides_display")
-            sharedPreferenceUtils.isOnboardingEnabled = showOnboarding
-            Log.d(TAG_REMOTE, "RemoteConfig: Onboarding Enabled = $showOnboarding")
-            val showPermission = remoteConfig.getBoolean("permission_screen_display")
-            sharedPreferenceUtils.isPermissionEnabled = showPermission
+            // ── Onboarding flow screen toggles (plan: Remote Config booleans) ──
+            // Key: onboarding_slides_display  → controls isOnboardingEnabled
+            sharedPreferenceUtils.isOnboardingEnabled =
+                remoteConfig.getBoolean("onboarding_slides_display")
+
+            // Key: permission_screen_display  → controls isPermissionEnabled
+            sharedPreferenceUtils.isPermissionEnabled =
+                remoteConfig.getBoolean("permission_screen_display")
+
+            // Key: start_writing_display  → controls isNameWritingEnabled
+            sharedPreferenceUtils.isNameWritingEnabled =
+                remoteConfig.getBoolean("start_writing_display")
+
+            // Key: pin_setup_screen_display  → controls isPinSetupEnabled
+            sharedPreferenceUtils.isPinSetupEnabled =
+                remoteConfig.getBoolean("pin_setup_screen_display")
+
+            // Key: choose_your_theme_screen_display  → controls isThemeSelectionEnabled
+            sharedPreferenceUtils.isThemeSelectionEnabled =
+                remoteConfig.getBoolean("choose_your_theme_screen_display")
+
+            // ── Splash timeout ────────────────────────────────────────────────
+            // Key: splash_timeout  (Long, ms)
             val remoteTimeout = remoteConfig.getLong("splash_timeout")
             if (remoteTimeout > 0) {
                 sharedPreferenceUtils.splashTimeout = remoteTimeout
             }
-            val showNameWriting = remoteConfig.getBoolean("start_writing_display")
-            sharedPreferenceUtils.isNameWritingEnabled = showNameWriting
 
-            val showPinSetup = remoteConfig.getBoolean("pin_setup_screen_display")
-            sharedPreferenceUtils.isPinSetupEnabled = showPinSetup
-
-            val showThemeSelection = remoteConfig.getBoolean("choose_your_theme_screen_display")
-            sharedPreferenceUtils.isThemeSelectionEnabled = showThemeSelection
+            // ── Library native ad frequency ───────────────────────────────────
+            // Key: library_native_ad_after_items  (String number, e.g. "2")
             val libraryAdFrequency = remoteConfig.getString("library_native_ad_after_items")
-            if (libraryAdFrequency.isNotEmpty()) {
-                sharedPreferenceUtils.libraryNativeAdAfterItems = libraryAdFrequency
-            } else {
-                sharedPreferenceUtils.libraryNativeAdAfterItems = "2" // Fallback default
-            }
-            Log.d(TAG_REMOTE, "RemoteConfig: Flags Updated -> Onboard: $showOnboarding, Permission: $showPermission, Name: $showNameWriting, Pin: $showPinSetup, Theme: $showThemeSelection")
-            // 2. Fetch and save the Ads JSON logic
-            val isIAPPlan = remoteConfig.getBoolean("is_iap_plan_active")
-            val jsonKey = if (isIAPPlan) {
-                if (BuildConfig.DEBUG) "dairy_ads_iap_debug" else "dairy_ads_iap_release"
-            } else {
-                if (BuildConfig.DEBUG) "dairy_ads_debug" else "dairy_ads_release"
+            sharedPreferenceUtils.libraryNativeAdAfterItems =
+                if (libraryAdFrequency.isNotEmpty()) libraryAdFrequency else "2"
+
+            // ── Internet Connectivity Popup toggle ────────────────────────────
+            // Key:     "internet_connectivity_display"
+            // Type:    Boolean
+            // Default: true
+            // Effect:  true  → show no-internet popup at FTU (Add Note) and RU (Home)
+            //          false → popup is suppressed app-wide
+            sharedPreferenceUtils.internetConnectivityDisplay =
+                         remoteConfig.getLong("internet_connectivity_display")
+            Log.d(
+                TAG_REMOTE,
+                "RemoteConfig: Flags Updated → " +
+                        "Onboard=${sharedPreferenceUtils.isOnboardingEnabled}, " +
+                        "Permission=${sharedPreferenceUtils.isPermissionEnabled}, " +
+                        "Name=${sharedPreferenceUtils.isNameWritingEnabled}, " +
+                        "Pin=${sharedPreferenceUtils.isPinSetupEnabled}, " +
+                        "Theme=${sharedPreferenceUtils.isThemeSelectionEnabled}, " +
+                        "Timeout=${sharedPreferenceUtils.splashTimeout}, " +
+                        "InternetPopup=${sharedPreferenceUtils.internetConnectivityDisplay}"
+
+            )
+
+            // ── IAA JSON (interstitials, app-opens, banners, natives) ─────────
+            // Debug key:   dairy_ads_debug
+            // Release key: dairy_ads_release
+            val iaaKey  = if (BuildConfig.DEBUG) "dairy_ads_debug" else "dairy_ads_release"
+            val iaaJson = remoteConfig.getString(iaaKey)
+            if (iaaJson.isNotEmpty()) {
+                sharedPreferenceUtils.iaaJson = iaaJson
+                Log.d(TAG_REMOTE, "RemoteConfig: IAA JSON updated (key=$iaaKey)")
             }
 
-            val adsJsonString = remoteConfig.getString(jsonKey)
-
-            if (adsJsonString.isNotEmpty()) {
-                sharedPreferenceUtils.adsJson = adsJsonString
-                Log.d(TAG_REMOTE, "RemoteConfig: Loaded plan key: $jsonKey")
+            // ── IAP JSON (paywalls, remove-ads, rewarded gates) ───────────────
+            // Debug key:   dairy_ads_iap_debug
+            // Release key: dairy_ads_iap_release
+            //
+            // This JSON must contain Items with these names (from plan):
+            //   onboarding_paywall_config  → Onboarding Paywall
+            //   splash_paywall_config      → Splash Paywall
+            //   main_paywall_config        → Main Paywall
+            //   remove_ads_inter_ad_cross_ipu → Remove Ads Only popup
+            //   free_add_note_save_quota   → Rewarded gate: save note
+            //   free_add_note_media_quota  → Rewarded gate: media note
+            val iapKey  = if (BuildConfig.DEBUG) "dairy_ads_iap_debug" else "dairy_ads_iap_release"
+            val iapJson = remoteConfig.getString(iapKey)
+            if (iapJson.isNotEmpty()) {
+                sharedPreferenceUtils.iapJson = iapJson
+                Log.d(TAG_REMOTE, "RemoteConfig: IAP JSON updated (key=$iapKey)")
             }
 
         } catch (ex: Exception) {
-            // Ensure you have a reference to your exception recorder or replace with Log.e
-            Log.e(TAG_REMOTE, "RemoteConfiguration: updateRemoteValues JSON Error: ${ex.message}")
+            Log.e(TAG_REMOTE, "RemoteConfiguration: updateRemoteValues error: ${ex.message}")
         }
     }
 }

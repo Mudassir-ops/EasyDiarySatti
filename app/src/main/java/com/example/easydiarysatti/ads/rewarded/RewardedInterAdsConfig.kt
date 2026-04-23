@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import androidx.annotation.StringRes
 import com.example.easydiarysatti.ads.manager.InternetManager
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.rewarded.callbacks.RewardedOnLoadCallBack
 import com.example.easydiarysatti.ads.rewarded.callbacks.RewardedOnShowCallBack
@@ -12,7 +13,7 @@ import com.example.easydiarysatti.ads.rewarded.managers.RewardedInterManager
 import javax.inject.Inject
 
 class RewardedInterAdsConfig @Inject constructor(
-    private val context: Context?,
+    @ApplicationContext private val context: Context?,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
     private val internetManager: InternetManager
 ) : RewardedInterManager() {

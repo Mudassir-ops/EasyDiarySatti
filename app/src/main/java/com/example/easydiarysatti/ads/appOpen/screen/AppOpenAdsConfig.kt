@@ -85,6 +85,20 @@ class AppOpenAdsConfig @Inject constructor(
         adType: AppOpenAdKey,
         listener: AppOpenOnShowCallBack? = null
     ) {
+        // ── Frequency gate for the RESUME slot ───────────────────────────────
+        // Applies the Remote Config rule (off / always / 24h / session-N) before
+        // attempting to display the ad.  Other slots (SPLASH_FIRST_TIME,
+        // SPLASH_RETURN_USER) are not affected — they control their own logic
+        // in the Splash screen.
+        if (adType == AppOpenAdKey.RESUME) {
+            if (!sharedPreferenceUtils.shouldShowAppOpenOnResume()) {
+                // Frequency rule says "not yet" — fire the fail callback so the
+                // caller (EasyDiaryApplication) still reloads the ad for next time.
+                listener?.onAdFailedToShow()
+                return
+            }
+        }
+
         showAppOpen(
             activity = activity,
             adType = adType.value,

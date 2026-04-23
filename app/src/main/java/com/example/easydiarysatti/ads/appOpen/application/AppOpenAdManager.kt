@@ -14,6 +14,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.appopen.AppOpenAd
+import com.example.easydiarysatti.ads.AdShowingTracker
 import java.util.Date
 
 
@@ -78,9 +79,17 @@ abstract class AppOpenAdManager {
             return
         }
 
+        // Hard gate — checked at the last possible moment before ad.show().
+        // No call path (Application, Config, or otherwise) can bypass this.
+        if (AdShowingTracker.isAdShowing) {
+            Log.d("AppOpenAdManager", "$adType -> suppressed: another full-screen ad is showing")
+            listener?.onAdFailedToShow()
+            return
+        }
+
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
-                appOpenAdMap.remove(adType) // 4. Only clear the ad that was shown
+                appOpenAdMap.remove(adType)
                 listener?.onAdDismissedFullScreenContent()
             }
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {

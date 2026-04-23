@@ -18,7 +18,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("/Users/mudassirsatti/AndroidStudioProjects/EasyDiarySatti/easydairy123.jks")
+            storeFile = file("D:\\atonomus.ai projects\\EasyDiarySatti-master\\easydairy123.jks")
             storePassword = "easydairy123"
             keyAlias = "key0"
             keyPassword = "easydairy123"
@@ -29,8 +29,8 @@ android {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 25
-        versionName = "25.0"
+        versionCode = 26
+        versionName = "26.0"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")
@@ -111,6 +111,7 @@ dependencies {
     implementation(libs.androidx.legacy.support.v4)
     implementation(libs.navigation.fragment.ktx)
     implementation(libs.navigation.ui.ktx)
+    implementation(libs.androidx.cardview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -164,6 +165,8 @@ dependencies {
     implementation(libs.androidx.biometric)
     implementation(libs.play.review)
     implementation(libs.play.review.ktx)
+    implementation(platform(libs.adapty.bom))
+    implementation(libs.adapty.sdk)
 }
 
 kapt {

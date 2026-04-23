@@ -82,7 +82,7 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_person_svg"
-           />
+            />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -100,6 +100,32 @@
         app:layout_constraintStart_toStartOf="@id/profile_layout"
         app:layout_constraintTop_toBottomOf="@+id/profile_layout" />
 
+    <!-- Pro Card Slider: ViewPager2 with 2 cards, auto-slides every 2 seconds -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/proCardViewPager"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_120sdp"
+        android:layout_marginHorizontal="@dimen/_5sdp"
+        android:layout_marginTop="@dimen/_12sdp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tvName" />
+
+    <!-- Dot indicators -->
+    <LinearLayout
+        android:id="@+id/proCardDots"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_8sdp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/proCardViewPager" />
+
+
+
+
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/labelAccountSettings"
         android:layout_width="wrap_content"
@@ -112,7 +138,7 @@
         android:textColor="@color/drawer_color"
         android:textSize="@dimen/_14ssp"
         app:layout_constraintStart_toStartOf="@+id/iv_back"
-        app:layout_constraintTop_toBottomOf="@+id/tvName" />
+        app:layout_constraintTop_toBottomOf="@+id/proCardDots" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/drawerItems"

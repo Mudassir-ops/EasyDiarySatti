@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    dialog_exit_with_rating.xml
+    Matches design: "Enjoying Daily Journal?" — Variant B (With Rating)
+    Image ref: Background_Border_Shadow.png
+
+    Layout:
+      - Off-white/cream card (#F5F0EB background), large rounded corners
+      - Top: red heart icon in soft teal/blue circle
+      - Title: "Enjoying Daily Journal?" bold, centered, dark
+      - Subtitle: gray, centered
+      - Star rating row (5 stars, unfilled teal outline style)
+      - [Rate Now] — filled teal pill
+      - "Maybe Later"   "Exit Anyway" — two text links side by side
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginStart="24dp"
+    android:layout_marginEnd="24dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="16dp"
+        app:cardBackgroundColor="#F5F0EC">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="28dp">
+
+            <!-- Heart icon in soft teal circle -->
+            <FrameLayout
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_marginBottom="20dp">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_circle_blue_light" />
+
+                <ImageView
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_heart_filled"
+                    android:contentDescription="Heart"
+                    app:tint="#E53935" />
+            </FrameLayout>
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:fontFamily="@font/outfit_bold"
+                android:text="@string/enjoying_daily_njournal"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A1A"
+                android:lineSpacingMultiplier="1.15"
+                android:layout_marginBottom="10dp" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:fontFamily="@font/outfit_regular"
+                android:text="@string/your_feedback_helps_us_improve_nyour_journaling_experience"
+                android:textSize="13sp"
+                android:textColor="#888888"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Star Rating Bar — teal outline style -->
+            <RatingBar
+                android:id="@+id/ratingBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:stepSize="1.0"
+                android:rating="4"
+                android:layout_marginBottom="24dp"
+                android:progressTint="@color/app_primary_color"
+                android:secondaryProgressTint="#CCCCCC"
+                style="?android:attr/ratingBarStyle" />
+
+            <!-- Rate Now — filled teal pill -->
+            <Button
+                android:id="@+id/btnRateNow"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginBottom="16dp"
+                android:text="@string/rate_now"
+                android:textAllCaps="false"
+                android:textSize="16sp"
+                android:fontFamily="@font/outfit_bold"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="@color/app_primary_color"
+                android:stateListAnimator="@null"
+                app:cornerRadius="26dp"
+                style="@style/Widget.MaterialComponents.Button" />
+
+            <!-- Two text buttons side by side: Maybe Later | Exit Anyway -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center">
+
+                <TextView
+                    android:id="@+id/tvMaybeLater"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/maybe_later"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/outfit_medium"
+                    android:textColor="#888888"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+                <TextView
+                    android:id="@+id/tvExitAnyway"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/exit_anyway"
+                    android:textSize="14sp"
+                    android:fontFamily="@font/outfit_medium"
+                    android:textColor="#888888"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

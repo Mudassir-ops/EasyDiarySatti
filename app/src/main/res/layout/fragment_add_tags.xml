@@ -1,141 +1,260 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+    fragment_add_tags.xml
+    ─────────────────────
+    Two modes:
+
+    SELECT mode (isFromDrawer = false)
+      • drawerToolbar is GONE  → header is owned by MainFragment's toolbar
+      • scrollView starts at the very top (GONE view has 0 height in constraints)
+      • btnNext (Save Tags) is visible
+
+    MANAGE mode (isFromDrawer = true)
+      • drawerToolbar is VISIBLE → fragment owns its own themed toolbar
+      • scrollView is pushed below the toolbar
+      • btnNext is GONE  (edits are immediate — no save needed)
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/parentView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
+    android:backgroundTint="@color/white"
     tools:context=".ui.edittags.AddTagsFragment">
 
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/headerLayout"
+    <!--
+        ── Drawer toolbar (manage mode only) ──────────────────────────────────
+        Visible only when the fragment is opened from the drawer ("Edit Tags").
+        Background is applied programmatically via Glide to match the app theme.
+        When GONE, ConstraintLayout collapses it to 0 dp so the scrollView
+        naturally starts at the top of the screen, preserving select-mode layout.
+    -->
+    <LinearLayout
+        android:id="@+id/drawerToolbar"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_height="60dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="8dp"
+        android:visibility="gone"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_percent="0.1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        tools:visibility="visible">
 
+        <!-- Back button -->
         <androidx.appcompat.widget.AppCompatImageView
-            android:id="@+id/iv_back"
-            android:layout_width="@dimen/_22sdp"
-            android:layout_height="@dimen/_22sdp"
-            android:layout_marginStart="@dimen/_20sdp"
-            android:elevation="@dimen/_100sdp"
+            android:id="@+id/ivDrawerBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="10dp"
             android:scaleType="fitXY"
-            app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/headerTitle"
-            app:srcCompat="@drawable/back_icon"
+            android:src="@drawable/back_icon"
             app:tint="@color/white" />
 
+        <!-- "Edit Tags" title -->
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/headerTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="0dp"
-            android:layout_marginTop="@dimen/_20sdp"
-            android:elevation="@dimen/_5sdp"
-            android:fontFamily="@font/outfit_semibold"
-            android:text="@string/tags"
-            android:textAlignment="center"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_18ssp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/btnNext"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="20dp"
-            android:text="@string/save"
-            android:textColor="@color/white"
-            android:textSize="@dimen/_14ssp"
-            app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
-            app:layout_constraintTop_toTopOf="@+id/headerTitle"
-            app:layout_constraintEnd_toEndOf="parent" />
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:background="@drawable/main_bg_shape"
-        app:layout_constraintBottom_toTopOf="@+id/fl_adplaceholder"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/headerLayout">
-
-        <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/tv_onGoing_item_label_1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_15sdp"
-            android:elevation="@dimen/_5sdp"
-            android:fontFamily="@font/outfit_bold"
-            android:text="@string/tags"
-            android:textAlignment="center"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_18ssp"
-            app:layout_constraintStart_toStartOf="@+id/etTagsView"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/etTagsView"
+            android:id="@+id/tvDrawerTitle"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginHorizontal="@dimen/_20sdp"
-            android:layout_marginTop="@dimen/_10sdp"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusBottomEnd="@dimen/_8sdp"
-            app:boxCornerRadiusBottomStart="@dimen/_8sdp"
-            app:boxCornerRadiusTopEnd="@dimen/_8sdp"
-            app:boxCornerRadiusTopStart="@dimen/_8sdp"
-            app:boxStrokeColor="@color/tag_bg_color"
-            app:boxStrokeWidth="@dimen/_1sdp"
-            app:hintEnabled="true"
-            app:hintTextAppearance="@style/HintTextStyle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_onGoing_item_label_1">
+            android:layout_weight="1"
+            android:fontFamily="@font/outfit_semibold"
+            android:gravity="center"
+            android:text="@string/edit_tags2"
+            android:textColor="@color/white"
+            android:textSize="@dimen/_18ssp" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/et_tags"
+        <!-- Search icon -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivDrawerSearch"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/search_tags"
+            android:padding="10dp"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_search"
+            app:tint="@color/white" />
+
+    </LinearLayout>
+
+    <!-- ── Save Tags button (select mode only) ─────────────────────────────── -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="28dp"
+        android:fontFamily="@font/outfit_medium"
+        android:paddingVertical="16dp"
+        android:text="@string/save_tags"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_14ssp"
+        app:backgroundTint="@color/app_primary_color"
+        app:cornerRadius="@dimen/_12sdp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!--
+        ── Scrollable body ─────────────────────────────────────────────────────
+        Top constraint is always tied to the BOTTOM of drawerToolbar.
+        • GONE  toolbar → collapses to 0 dp → scrollView reaches the very top ✓
+        • VISIBLE toolbar → scrollView is pushed below the 60 dp toolbar       ✓
+    -->
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:background="@color/white"
+        app:layout_constraintBottom_toTopOf="@+id/btnNext"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/drawerToolbar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@color/white"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="20dp"
+            android:paddingBottom="16dp">
+
+            <!-- Subtitle -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_subtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/outfit"
-                android:maxLength="15"
+                android:text="@string/organize_thoughts_with_tags"
                 android:textColor="@color/black"
-                android:textColorHint="#ACB2BD"
+                android:textSize="@dimen/_16ssp" />
+
+            <!-- Input row: EditText + Create button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/etTagsView"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="10dp"
+                    app:boxBackgroundColor="@color/tag_input_bg"
+                    app:boxBackgroundMode="filled"
+                    app:boxCornerRadiusBottomEnd="50dp"
+                    app:boxCornerRadiusBottomStart="50dp"
+                    app:boxCornerRadiusTopEnd="50dp"
+                    app:boxCornerRadiusTopStart="50dp"
+                    app:boxStrokeWidth="0dp"
+                    app:boxStrokeWidthFocused="0dp"
+                    app:hintEnabled="false">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_tags"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:fontFamily="@font/outfit"
+                        android:hint="@string/add_a_new_tag"
+                        android:maxLength="30"
+                        android:paddingHorizontal="18dp"
+                        android:paddingVertical="14dp"
+                        android:textColor="@color/black"
+                        android:textColorHint="#ACB2BD"
+                        android:textSize="@dimen/_14ssp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCreate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/outfit_medium"
+                    android:paddingHorizontal="20dp"
+                    android:paddingVertical="14dp"
+                    android:text="@string/create"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/_14ssp"
+                    app:backgroundTint="@color/app_primary_color"
+                    app:cornerRadius="50dp" />
+
+            </LinearLayout>
+
+            <!-- SELECTED TAGS label — hidden when nothing is selected -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_selected_tags_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/outfit_semibold"
+                android:letterSpacing="0.08"
+                android:text="@string/selected_tags"
+                android:textColor="#888888"
+                android:textSize="@dimen/_12ssp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <!-- Removable chips for currently-selected tags (select mode only) -->
+            <com.google.android.material.chip.ChipGroup
+                android:id="@+id/chipGroupSelected"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:visibility="gone"
+                app:chipSpacingHorizontal="8dp"
+                app:chipSpacingVertical="6dp"
+                tools:visibility="visible" />
+
+            <!-- ALL TAGS label — always visible -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_all_tags_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:fontFamily="@font/outfit_semibold"
+                android:letterSpacing="0.08"
+                android:text="@string/all_tags"
+                android:textColor="#888888"
+                android:textSize="@dimen/_12ssp" />
+
+            <!-- 2-column tag grid -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:nestedScrollingEnabled="false"
+                app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                app:spanCount="2"
+                tools:itemCount="8"
+                tools:listitem="@layout/item_tag_chip" />
+
+            <!-- Empty state -->
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/tv_empty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:fontFamily="@font/outfit"
+                android:gravity="center"
+                android:text="@string/no_tags_yet"
+                android:textColor="#ACB2BD"
                 android:textSize="@dimen/_14ssp"
-                app:hintTextAppearance="@style/HintTextStyle" />
-        </com.google.android.material.textfield.TextInputLayout>
+                android:visibility="gone" />
 
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvTags"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginTop="@dimen/_20sdp"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/etTagsView"
-            app:layout_constraintStart_toStartOf="@+id/etTagsView"
-            app:layout_constraintTop_toBottomOf="@+id/etTagsView"
-            tools:listitem="@layout/item_tags" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-    <FrameLayout
-        android:id="@+id/fl_adplaceholder"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/_5sdp"
-        android:background="@drawable/ad_bg"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

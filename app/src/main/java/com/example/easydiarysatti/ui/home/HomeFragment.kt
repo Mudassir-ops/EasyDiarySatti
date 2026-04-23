@@ -3,20 +3,36 @@ package com.example.easydiarysatti.ui.home
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.appOpen.screen.AppOpenAdsConfig
+import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
 import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
 import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.ads.utils.addCleanView
+import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentHomeBinding
 import com.example.easydiarysatti.monthlyFormatDate
 import com.example.easydiarysatti.safeNav
@@ -25,87 +41,247 @@ import com.example.easydiarysatti.ui.createnote.CreateNotesViewModel
 import com.example.easydiarysatti.ui.createnote.NotesItemAdapter
 import com.example.easydiarysatti.ui.main.MainState
 import com.example.easydiarysatti.ui.main.MainViewModel
+import com.example.easydiarysatti.utills.ConfirmationDialog
+import com.example.easydiarysatti.utills.InternetConnectivityDialog
 import com.example.easydiarysatti.viewBinding
 import com.example.easydiarysatti.visible
-import com.google.android.gms.ads.AdView
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import androidx.recyclerview.widget.ItemTouchHelper
-import androidx.recyclerview.widget.RecyclerView
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import android.net.Uri
-import android.os.Handler
-import android.os.Looper
-import android.util.Log
-import android.view.ViewGroup
-import android.widget.Toast
-import androidx.core.content.ContextCompat
-import com.example.easydiarysatti.ads.appOpen.screen.AppOpenAdsConfig
-import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
-import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
-import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
-import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.google.firebase.analytics.FirebaseAnalytics
+import dagger.hilt.android.AndroidEntryPoint
 import jakarta.inject.Inject
 import kotlinx.coroutines.delay
-
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class HomeFragment : Fragment(R.layout.fragment_home) {
+
     private val binding by viewBinding(FragmentHomeBinding::bind)
     private val viewModel by viewModels<HomeViewModel>()
-    lateinit var mFirebaseAnalytics : FirebaseAnalytics
+    lateinit var mFirebaseAnalytics: FirebaseAnalytics
     private val createNotesViewModel by activityViewModels<CreateNotesViewModel>()
     private val mainViewModel by activityViewModels<MainViewModel>()
     private val bannerViewModel by activityViewModels<ViewModelBanner>()
     private val viewModelNative by viewModels<ViewModelNative>()
     private var reviewTriggered = false
+
     @Inject lateinit var sharedPref: SharedPreferenceUtils
+    @Inject lateinit var appOpenAdsConfig: AppOpenAdsConfig
+    @Inject lateinit var internetManager: InternetManager
+
     private lateinit var swipeHandler: ItemTouchHelper.SimpleCallback
-    // Inject your App Open configuration
-    @Inject
-    lateinit var appOpenAdsConfig: AppOpenAdsConfig
+
+    // ── Multi-select state ───────────────────────────────────────────────────
+    var isSelectionMode = false
+        private set
+
+    private val selectedNoteIds = mutableSetOf<Long>()
+
+    /**
+     * Set by MainFragment after this fragment is created.
+     * Called whenever selection mode is entered/exited OR the count changes.
+     *   isActive  = true  → selection mode ON  (show iv_delete_all in toolbar)
+     *   isActive  = false → selection mode OFF (hide iv_delete_all)
+     *   count             → number of currently selected notes (for display)
+     */
+    var onSelectionChanged: ((isActive: Boolean, count: Int) -> Unit)? = null
+
+    // ── Adapter ──────────────────────────────────────────────────────────────
     private val notesItemAdapter: NotesItemAdapter by lazy {
         NotesItemAdapter(
             onNoteItemClick = { note ->
-                createNotesViewModel.clearTags()
-                createNotesViewModel.clearImages()
-                createNotesViewModel.setupNoteEntity(createNoteEntity = null)
-                createNotesViewModel.setupNoteEntity(createNoteEntity = note)
-                moveToNextScreen()
+                if (isSelectionMode) {
+                    toggleNoteSelection(note.noteId)
+                } else {
+                    createNotesViewModel.clearTags()
+                    createNotesViewModel.clearImages()
+                    createNotesViewModel.setupNoteEntity(createNoteEntity = null)
+                    createNotesViewModel.setupNoteEntity(createNoteEntity = note)
+                    moveToNextScreen()
+                }
             },
             onNoteItemLongClick = { note ->
-                findNavController().safeNav(
-                    currentDestId = R.id.homeFragment,
-                    actionId = R.id.action_homeFragment_to_previewFragment2,
-                    bundle = Bundle().apply {
-                        putLong(NOTE_ID, note.noteId)
-                        putBoolean(FROM_SCREEN, true)
-                    }
-                )
+                if (!isSelectionMode) {
+                    enterSelectionMode(note.noteId)
+                } else {
+                    findNavController().safeNav(
+                        currentDestId = R.id.homeFragment,
+                        actionId = R.id.action_homeFragment_to_previewFragment2,
+                        bundle = Bundle().apply {
+                            putLong(NOTE_ID, note.noteId)
+                            putBoolean(FROM_SCREEN, true)
+                        }
+                    )
+                }
             },
-            onFavClick = { note ->
-
-                viewModel.toggleFavorite(note)
-                // Optional: Show feedback
-            },
-            onDeleteClick = { note ->
-                viewModel.deleteNote(note)
+            onFavClick = { note -> viewModel.toggleFavorite(note) },
+            onDeleteClick = { note -> viewModel.deleteNote(note) },
+                    onMoreOptionClick = { view, note ->
+                showPopupMenu(view, note)
             }
         )
     }
 
+    // ────────────────────────────────────────────────────────────────────────
+    //  Multi-select helpers
+    // ────────────────────────────────────────────────────────────────────────
+
+    private fun enterSelectionMode(firstNoteId: Long) {
+        isSelectionMode = true
+        selectedNoteIds.clear()
+        selectedNoteIds.add(firstNoteId)
+        notesItemAdapter.setSelectedIds(selectedNoteIds)
+        // Notify MainFragment: show delete icon in its toolbar
+        onSelectionChanged?.invoke(true, selectedNoteIds.size)
+    }
+
+    fun exitSelectionMode() {
+        isSelectionMode = false
+        selectedNoteIds.clear()
+        notesItemAdapter.setSelectedIds(emptySet())
+        // Notify MainFragment: hide delete icon
+        onSelectionChanged?.invoke(false, 0)
+    }
+
+    private fun toggleNoteSelection(noteId: Long) {
+        if (selectedNoteIds.contains(noteId)) {
+            selectedNoteIds.remove(noteId)
+        } else {
+            selectedNoteIds.add(noteId)
+        }
+
+        if (selectedNoteIds.isEmpty()) {
+            exitSelectionMode()
+            return
+        }
+
+        notesItemAdapter.setSelectedIds(selectedNoteIds)
+        // Notify MainFragment: update count
+        onSelectionChanged?.invoke(true, selectedNoteIds.size)
+    }
+    private fun showPopupMenu(view: View, note: CreateNoteEntity) {
+        val wrapper = androidx.appcompat.view.ContextThemeWrapper(
+            requireContext(),
+            R.style.PopupMenuStyle          // ← controls background color
+        )
+        val popup = androidx.appcompat.widget.PopupMenu(wrapper, view, android.view.Gravity.END)
+
+        popup.menuInflater.inflate(R.menu.note_item_menu, popup.menu)
+
+        // Force icons to show — PopupMenu hides them by default
+        try {
+            val fieldPopup = androidx.appcompat.widget.PopupMenu::class.java
+                .getDeclaredField("mPopup")
+            fieldPopup.isAccessible = true
+            val menuPopupHelper = fieldPopup.get(popup)
+            val classPopupHelper = Class.forName(menuPopupHelper.javaClass.name)
+            val setForceIcons = classPopupHelper
+                .getMethod("setForceShowIcon", Boolean::class.java)
+            setForceIcons.invoke(menuPopupHelper, true)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+
+                R.id.menu_add_tag -> {
+                    logAnalyticsEvent("Note_Item_Menu_AddTag", "popup_menu")
+                    navigateToNote(note, openTags = true)
+                    true
+                }
+
+                R.id.menu_duplicate -> {
+                    logAnalyticsEvent("Note_Item_Menu_Duplicate", "popup_menu")
+                    viewModel.duplicateNote(note)
+                    true
+                }
+
+                R.id.menu_edit -> {
+                    logAnalyticsEvent("Note_Item_Menu_Edit", "popup_menu")
+                    navigateToNote(note, openTags = false)
+                    true
+                }
+
+                R.id.menu_share -> {
+                    logAnalyticsEvent("Note_Item_Menu_Share", "popup_menu")
+                    shareNoteText(note)
+                    true
+                }
+
+                R.id.menu_delete -> {
+                    logAnalyticsEvent("Note_Item_Menu_Delete", "popup_menu")
+                    ConfirmationDialog.showDelete(
+                        fm        = childFragmentManager,
+                        count     = 1,
+                        onConfirm = { viewModel.deleteNote(note) }
+                    )
+                    true
+                }
+
+                else -> false
+            }
+        }
+        popup.show()
+    }
+    /**
+     * Called by MainFragment when the user taps iv_delete_all in the header.
+     * Shows a confirmation dialog then bulk-deletes all selected notes.
+     */
+    fun deleteSelectedNotes() {
+        val count = selectedNoteIds.size
+        if (count == 0) return
+
+        ConfirmationDialog.showDelete(
+            fm        = childFragmentManager,
+            count     = count,
+            onConfirm = {
+                val notesToDelete = notesItemAdapter.currentList
+                    .filter { selectedNoteIds.contains(it.noteId) }
+                notesToDelete.forEach { viewModel.deleteNote(it) }
+                exitSelectionMode()
+                logAnalyticsEvent("Home_Bulk_Delete", "multi_delete")
+            },
+            onCancel  = {
+                // Cancel or dismiss without confirming: deselect all notes
+                exitSelectionMode()
+            }
+        )
+    }
+
+
+    private fun navigateToNote(note: CreateNoteEntity, openTags: Boolean) {
+        createNotesViewModel.setupNoteEntity(note)
+        findNavController().navigate(
+            R.id.action_homeFragment_to_createNotesFragment2,
+            Bundle().apply {
+                putLong(com.example.easydiarysatti.NOTE_ID, note.noteId)
+                putBoolean("OPEN_TAGS_DIRECTLY", openTags)
+            }
+        )
+    }
+
+    private fun shareNoteText(note: CreateNoteEntity) {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_SUBJECT, note.title)
+            putExtra(Intent.EXTRA_TEXT, "${note.title}\n\n${note.text}")
+        }
+        startActivity(Intent.createChooser(shareIntent, "Share Note via"))
+    }
+    // ────────────────────────────────────────────────────────────────────────
+    //  Swipe actions (with confirmation dialogs)
+    // ────────────────────────────────────────────────────────────────────────
+
     private fun setupSwipeActions() {
         swipeHandler = object : ItemTouchHelper.SimpleCallback(
-            0,
-            ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+            0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         ) {
-            // 1. THIS IS THE KEY: Disable swiping for AdViewHolders
-            override fun getSwipeDirs(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-                if (viewHolder is NotesItemAdapter.AdViewHolder) return 0 // Return 0 to disable all swipe directions
+            override fun getSwipeDirs(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder
+            ): Int {
+                if (isSelectionMode) return 0
+                if (viewHolder is NotesItemAdapter.AdViewHolder) return 0
                 return super.getSwipeDirs(recyclerView, viewHolder)
             }
 
@@ -118,137 +294,98 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.bindingAdapterPosition
 
-
-                if (position == RecyclerView.NO_POSITION || viewHolder is NotesItemAdapter.AdViewHolder) {
+                if (position == RecyclerView.NO_POSITION ||
+                    viewHolder is NotesItemAdapter.AdViewHolder
+                ) {
                     notesItemAdapter.notifyItemChanged(position)
                     return
                 }
 
-                val adLoaded = viewModelNative.adMapLiveData.value?.containsKey(NativeAdKey.HOME) == true
-
-
+                val adLoaded =
+                    viewModelNative.adMapLiveData.value?.containsKey(NativeAdKey.HOME) == true
                 val noteIndex = if (adLoaded && position > 1) position - 1 else position
 
-                if (noteIndex < 0 || noteIndex >= notesItemAdapter.currentList.size) return
+                if (noteIndex < 0 || noteIndex >= notesItemAdapter.currentList.size) {
+                    notesItemAdapter.notifyItemChanged(position)
+                    return
+                }
 
                 val note = notesItemAdapter.currentList[noteIndex]
-
+                // Snap item back — dialog handles the action
+                notesItemAdapter.notifyItemChanged(position)
                 if (direction == ItemTouchHelper.LEFT) {
-                    logAnalyticsEvent("Home_Delete_Note", "delete_click")
-                    viewModel.deleteNote(note)
+                    logAnalyticsEvent("Home_Delete_Note_Swipe", "swipe_delete")
+                    ConfirmationDialog.showDelete(
+                        fm = childFragmentManager,
+                        count = 1,
+                        onConfirm = {
+                            viewModel.deleteNote(note)
+                            logAnalyticsEvent("Home_Delete_Note", "delete_confirm")
+                        }
+                        // No onCancel needed for single-swipe delete
+                    )
                 } else {
-                    logAnalyticsEvent("Home_Favourite_Note", "swipe_toggle_fav")
-                    viewModel.toggleFavorite(note)
-                    // 🔥 FORCE SNAP BACK
-                    swipeHandler.clearView(binding!!.rvNotes, viewHolder)
-
-                    viewHolder.itemView.animate()
-                        .translationX(0f)
-                        .setDuration(200)
-                        .start()
+                    logAnalyticsEvent("Home_Favourite_Note_Swipe", "swipe_fav")
+                    ConfirmationDialog.showFavorite(
+                        fm = childFragmentManager,
+                        isFav = note.isFavorite,
+                        onConfirm = {
+                            viewModel.toggleFavorite(note)
+                            logAnalyticsEvent("Home_Favourite_Note", "fav_confirm")
+                        }
+                    )
                 }
+
+
             }
 
             override fun onChildDraw(
                 c: Canvas,
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
-                dX: Float,
-                dY: Float,
+                dX: Float, dY: Float,
                 actionState: Int,
                 isCurrentlyActive: Boolean
             ) {
-                // 2. Prevent background colors from drawing behind the Ad
                 if (viewHolder !is NotesItemAdapter.AdViewHolder) {
                     drawSwipeBackground(c, viewHolder, dX)
                 }
                 super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             }
         }
-
         ItemTouchHelper(swipeHandler).attachToRecyclerView(binding?.rvNotes)
     }
-
 
     private fun drawSwipeBackground(c: Canvas, viewHolder: RecyclerView.ViewHolder, dX: Float) {
         val itemView = viewHolder.itemView
         val itemHeight = itemView.bottom - itemView.top
-
         val deleteIcon = ContextCompat.getDrawable(requireContext(), R.drawable.delete_ic)
-        val favIcon = ContextCompat.getDrawable(requireContext(), R.drawable.fav_ic)
-
+        val favIcon    = ContextCompat.getDrawable(requireContext(), R.drawable.fav_ic)
         val intrinsicHeight = deleteIcon?.intrinsicHeight ?: 0
-        val intrinsicWidth = deleteIcon?.intrinsicWidth ?: 0
+        val intrinsicWidth  = deleteIcon?.intrinsicWidth  ?: 0
 
-        if (dX > 0) { // Right Swipe (Favorite)
+        if (dX > 0) {
             val background = ColorDrawable(Color.parseColor("#E8BA00"))
             background.setBounds(itemView.left, itemView.top, itemView.left + dX.toInt(), itemView.bottom)
             background.draw(c)
-
-            val iconTop = itemView.top + (itemHeight - intrinsicHeight) / 2
+            val iconTop  = itemView.top + (itemHeight - intrinsicHeight) / 2
             val iconLeft = itemView.left + 60
             favIcon?.setBounds(iconLeft, iconTop, iconLeft + intrinsicWidth, iconTop + intrinsicHeight)
             favIcon?.draw(c)
-
-        } else if (dX < 0) { // Left Swipe (Delete)
+        } else if (dX < 0) {
             val background = ColorDrawable(Color.parseColor("#E80200"))
             background.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
             background.draw(c)
-
-            val iconTop = itemView.top + (itemHeight - intrinsicHeight) / 2
+            val iconTop   = itemView.top + (itemHeight - intrinsicHeight) / 2
             val iconRight = itemView.right - 60
             deleteIcon?.setBounds(iconRight - intrinsicWidth, iconTop, iconRight, iconTop + intrinsicHeight)
             deleteIcon?.draw(c)
         }
     }
-    abstract class SwipeActionCallback(context: Context) : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
 
-        private val deleteIcon = ContextCompat.getDrawable(context, R.drawable.delete_ic)
-        private val favIcon = ContextCompat.getDrawable(context, R.drawable.fav_ic)
-        private val intrinsicWidth = deleteIcon?.intrinsicWidth ?: 0
-        private val intrinsicHeight = deleteIcon?.intrinsicHeight ?: 0
-
-        // Background colors
-        private val deleteBackground = ColorDrawable(Color.parseColor("#EF4444")) // Red
-        private val favBackground = ColorDrawable(Color.parseColor("#E80200"))    // Amber
-
-        override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
-
-        override fun onChildDraw(
-            c: Canvas, recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder,
-            dX: Float, dY: Float, actionState: Int, isCurrentlyActive: Boolean
-        ) {
-            val itemView = viewHolder.itemView
-            val itemHeight = itemView.bottom - itemView.top
-
-            if (dX > 0) { // Swiping Right (Favorite)
-                favBackground.setBounds(itemView.left, itemView.top, itemView.left + dX.toInt(), itemView.bottom)
-                favBackground.draw(c)
-
-                // Draw Fav Icon
-                val iconTop = itemView.top + (itemHeight - intrinsicHeight) / 2
-                val iconLeft = itemView.left + 40
-                val iconRight = itemView.left + 40 + intrinsicWidth
-                val iconBottom = iconTop + intrinsicHeight
-                favIcon?.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-                favIcon?.draw(c)
-
-            } else if (dX < 0) { // Swiping Left (Delete)
-                deleteBackground.setBounds(itemView.right + dX.toInt(), itemView.top, itemView.right, itemView.bottom)
-                deleteBackground.draw(c)
-
-                // Draw Delete Icon
-                val iconTop = itemView.top + (itemHeight - intrinsicHeight) / 2
-                val iconRight = itemView.right - 40
-                val iconLeft = itemView.right - 40 - intrinsicWidth
-                val iconBottom = iconTop + intrinsicHeight
-                deleteIcon?.setBounds(iconLeft, iconTop, iconRight, iconBottom)
-                deleteIcon?.draw(c)
-            }
-
-            super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
-        }
-    }
+    // ────────────────────────────────────────────────────────────────────────
+    //  Lifecycle
+    // ────────────────────────────────────────────────────────────────────────
 
     override fun onResume() {
         super.onResume()
@@ -258,9 +395,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
-        val eventParams = Bundle()
-        eventParams.putString("HomeScreen", "open_screen")
-        mFirebaseAnalytics.logEvent("Home_Screen", eventParams)
+        mFirebaseAnalytics.logEvent("Home_Screen", Bundle().apply {
+            putString("HomeScreen", "open_screen")
+        })
+
         clickListener()
         setupRecyclerView()
         observeAllNotes()
@@ -272,27 +410,45 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         appOpenAdsConfig.loadAppOpenAd(AppOpenAdKey.RESUME)
         viewModelNative.loadNativeAd(NativeAdKey.HOME)
-
         initNativeObserver()
+
         val adKey = if (sharedPref.isFirstTimeUser)
             BannerAdKey.HOME_FIRST_TIME else BannerAdKey.HOME_RETURNING
-
         val dummyAdView = com.google.android.gms.ads.AdView(requireContext())
         bannerViewModel.loadBannerAd(dummyAdView, adKey, requireContext())
         initBannerObserver()
+        showInternetPopupIfNeeded()
     }
-    private fun logAnalyticsEvent(eventName: String, label: String) {
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        isAdProcessStarted = false
+        if (isSelectionMode) exitSelectionMode()
+    }
+
+    // ────────────────────────────────────────────────────────────────────────
+    //  Existing helpers (unchanged)
+    // ────────────────────────────────────────────────────────────────────────
+
+    private fun showInternetPopupIfNeeded() {
+        InternetConnectivityDialog.showIfNeeded(
+            context            = requireContext(),
+            sharedPref         = sharedPref,
+            screenId           = InternetConnectivityDialog.SCREEN_HOME,
+            isInternetConnected = internetManager.isInternetConnected
+        )
+    }
+
+    fun logAnalyticsEvent(eventName: String, label: String) {
         if (eventName.isEmpty()) return
-        val params = Bundle().apply {
+        mFirebaseAnalytics.logEvent(eventName, Bundle().apply {
             putString("action_label", label)
-        }
-        mFirebaseAnalytics.logEvent(eventName, params)
+        })
     }
+
     private fun clickListener() {
         binding?.apply {
-            ivSorting.setOnClickListener {
-                viewModel.updateSortOrder()
-            }
+            ivSorting.setOnClickListener { viewModel.updateSortOrder() }
         }
     }
 
@@ -309,6 +465,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             hasFixedSize()
         }
     }
+
     private fun observeAllNotes() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.allNotesState
@@ -319,35 +476,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                             binding?.visible(hasNotes = true)
                             notesItemAdapter.submitList(state.notes)
 
-                            // 🔥 Show review only once & only when attached
                             if (!state.notes.isNullOrEmpty() && !reviewTriggered) {
                                 reviewTriggered = true
-
                                 viewLifecycleOwner.lifecycleScope.launch {
                                     delay(1500)
-
-                                    // SAFETY CHECK
-                                    if (isAdded && activity != null) {
-                                        launchInAppReview(requireActivity())
-                                    }
+                                    if (isAdded && activity != null) launchInAppReview(requireActivity())
                                 }
                             }
 
                             if (state.notes.isNullOrEmpty()) return@collect
-
-                            if (viewModel.currentSortOrder) {
-                                binding?.rvNotes?.smoothScrollToPosition(
-                                    state.notes.size - 1
-                                )
-                            } else {
+                            if (viewModel.currentSortOrder)
+                                binding?.rvNotes?.smoothScrollToPosition(state.notes.size - 1)
+                            else
                                 binding?.rvNotes?.smoothScrollToPosition(0)
-                            }
                         }
-
-                        is HomeNotesState.Error -> {
-                            binding?.visible(hasNotes = false)
-                        }
-
+                        is HomeNotesState.Error -> binding?.visible(hasNotes = false)
                         else -> Unit
                     }
                 }
@@ -356,21 +499,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     fun launchInAppReview(activity: Activity) {
         val manager = ReviewManagerFactory.create(activity)
-        val request = manager.requestReviewFlow()
-
-        request.addOnCompleteListener { task ->
+        manager.requestReviewFlow().addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                // We can get the ReviewInfo object
-                val reviewInfo = task.result
-
-                // Launch the in-app review flow
-                val flow = manager.launchReviewFlow(activity, reviewInfo)
-                flow.addOnCompleteListener {
-                    // The review flow has finished, but the user may not have left a review
-                    Log.d("Review", "Review flow complete")
-                }
+                manager.launchReviewFlow(activity, task.result)
+                    .addOnCompleteListener { Log.d("Review", "Review flow complete") }
             } else {
-                // Fallback option (e.g., open Play Store page)
                 openPlayStore(activity)
             }
         }
@@ -385,12 +518,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             Toast.makeText(context, "Play Store not found", Toast.LENGTH_SHORT).show()
         }
     }
+
     private fun setupTodayDate() {
-        binding?.tvDate?.apply {
-            val currentTimestamp = System.currentTimeMillis()
-            val formattedDate = context?.monthlyFormatDate(currentTimestamp)
-            text = formattedDate
-        }
+        binding?.tvDate?.text = context?.monthlyFormatDate(System.currentTimeMillis())
     }
 
     private fun observeSortOrder() {
@@ -407,59 +537,65 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        // This is the "reset switch"
-        // It allows the shimmer and ad logic to run again when you navigate back
-        isAdProcessStarted = false
-    }
-    // 1. Add this flag at the top of your Fragment class
     private var isAdProcessStarted = false
 
     private fun initBannerObserver() {
+        if (!sharedPref.getAdShowStatus(BannerAdKey.START_WRITING.value)) {
+            binding?.shimmerViewContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            binding?.bannerAdViewHome?.visibility = View.GONE
+            return
+        }
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             if (isAdProcessStarted) return@observe
-
-            // Check for the specific keys
-            val firstTimeAd = adMap[BannerAdKey.HOME_FIRST_TIME]
-            val returningAd = adMap[BannerAdKey.HOME_RETURNING]
-            val homeAd = firstTimeAd ?: returningAd
-
+            val homeAd = adMap[BannerAdKey.HOME_FIRST_TIME] ?: adMap[BannerAdKey.HOME_RETURNING]
             if (homeAd != null) {
                 isAdProcessStarted = true
-
-                // 1. Hide Shimmer
-                binding?.shimmerViewContainer?.apply {
-                    stopShimmer()
-                    visibility = View.GONE // This removes it from view
-                }
-
-                // 2. Show Ad Container
+                binding?.shimmerViewContainer?.apply { stopShimmer(); visibility = View.GONE }
                 binding?.bannerAdViewHome?.apply {
-                    visibility = View.VISIBLE // This makes the ad appear
+                    visibility = View.VISIBLE
                     removeAllViews()
                     addCleanView(homeAd)
                 }
-                Log.d("AdDebug", "Home Banner VISIBLE now")
             } else {
-                // Keep shimmer active while waiting
                 binding?.shimmerViewContainer?.visibility = View.VISIBLE
                 binding?.bannerAdViewHome?.visibility = View.GONE
+                binding?.bannerContainer?.visibility = View.GONE
             }
         }
     }
 
     private fun initNativeObserver() {
         viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
-            // Specifically look for the HOME_NATIVE ad in the map
             val homeNativeAd = adMap[NativeAdKey.HOME]
-
             if (homeNativeAd != null) {
-                // Injects the specific native ad into your RecyclerView adapter
                 notesItemAdapter.setNativeAd(homeNativeAd)
                 Log.d("AdDebug", "Home Native Ad updated from Map")
             }
         }
     }
 
+    abstract class SwipeActionCallback(context: Context) :
+        ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+        private val deleteIcon  = ContextCompat.getDrawable(context, R.drawable.delete_ic)
+        private val favIcon     = ContextCompat.getDrawable(context, R.drawable.fav_ic)
+        private val intrinsicWidth  = deleteIcon?.intrinsicWidth  ?: 0
+        private val intrinsicHeight = deleteIcon?.intrinsicHeight ?: 0
+        private val deleteBackground = ColorDrawable(Color.parseColor("#EF4444"))
+        private val favBackground    = ColorDrawable(Color.parseColor("#E80200"))
+        override fun onMove(rv: RecyclerView, vh: RecyclerView.ViewHolder, t: RecyclerView.ViewHolder) = false
+        override fun onChildDraw(c: Canvas, rv: RecyclerView, vh: RecyclerView.ViewHolder, dX: Float, dY: Float, actionState: Int, isActive: Boolean) {
+            val iv = vh.itemView; val h = iv.bottom - iv.top
+            if (dX > 0) {
+                favBackground.setBounds(iv.left, iv.top, iv.left + dX.toInt(), iv.bottom); favBackground.draw(c)
+                val top = iv.top + (h - intrinsicHeight) / 2
+                favIcon?.setBounds(iv.left + 40, top, iv.left + 40 + intrinsicWidth, top + intrinsicHeight); favIcon?.draw(c)
+            } else if (dX < 0) {
+                deleteBackground.setBounds(iv.right + dX.toInt(), iv.top, iv.right, iv.bottom); deleteBackground.draw(c)
+                val top = iv.top + (h - intrinsicHeight) / 2
+                deleteIcon?.setBounds(iv.right - 40 - intrinsicWidth, top, iv.right - 40, top + intrinsicHeight); deleteIcon?.draw(c)
+            }
+            super.onChildDraw(c, rv, vh, dX, dY, actionState, isActive)
+        }
+    }
 }

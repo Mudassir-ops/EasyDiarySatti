@@ -11,7 +11,7 @@
     </data>
 
     <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
+        android:id="@+id/cardRoot"  android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/_8sdp"
         app:cardCornerRadius="@dimen/_10sdp"
@@ -109,10 +109,18 @@
                 android:textColor="@color/tag_txt_color"
                 android:textSize="@dimen/_12ssp"
                 app:layout_constraintBottom_toBottomOf="@+id/tv_note_header"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/iv_more_options"
                 app:layout_constraintStart_toEndOf="@+id/tv_note_header"
                 app:layout_constraintTop_toTopOf="@+id/tv_note_header" />
-
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_more_options"
+                android:layout_width="@dimen/_24sdp"
+                android:layout_height="@dimen/_24sdp"
+                android:padding="@dimen/_4sdp"
+                android:src="@drawable/kabab"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:tint="@color/tag_txt_color" />
             <androidx.constraintlayout.helper.widget.Flow
                 android:id="@+id/flow"
                 android:layout_width="0dp"

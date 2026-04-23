@@ -75,6 +75,11 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     private var isAdProcessStarted = false
 
     private fun setupBannerObserver() {
+        if (!sharedPreferenceUtils.getAdShowStatus(BannerAdKey.PIN_SETUP.value)) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             // 2. SAFETY LOCK: If we already started the timer for this screen, STOP here.
             if (isAdProcessStarted) return@observe
@@ -109,6 +114,7 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             } else {
                 // Keep container hidden while waiting for the ad to appear in the map
                 binding?.bannerShimmerContainer?.visibility = View.GONE
+                binding?.bannerContainer?.visibility = View.GONE
                 Log.d("AdDebug", "PIN_SETUP ad not found in map yet...")
             }
         }

@@ -1,6 +1,8 @@
 package com.example.easydiarysatti.ui.name
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -42,6 +44,12 @@ class NameFragment : Fragment(R.layout.fragment_name) {
 
     @Inject lateinit var sharedPref: SharedPreferenceUtils // Inject Preferences
 
+    // Named Handler + Runnable so the pending postDelayed can be cancelled in
+    // onDestroyView. Without this, the 100ms callback fires on a destroyed view,
+    // binding.nestedScrollView calls getViewLifecycleOwner() → IllegalStateException.
+    private val keyboardHandler = Handler(Looper.getMainLooper())
+    private var keyboardRunnable: Runnable? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
@@ -74,6 +82,11 @@ class NameFragment : Fragment(R.layout.fragment_name) {
 //    private var isAdProcessStarted = false
 
     private fun setupBannerObserver() {
+        if (!sharedPref.getAdShowStatus(BannerAdKey.START_WRITING.value)) {
+            binding?.shimmerBannerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             // 2. SAFETY LOCK: If we already started the shimmer/load process, ignore all future updates
 //            if (isAdProcessStarted) return@observe
@@ -90,25 +103,26 @@ class NameFragment : Fragment(R.layout.fragment_name) {
                 binding?.shimmerBannerContainer?.startShimmer()
 
 
-                    // Check if fragment is still alive to avoid crashes
-                    if (isAdded && binding != null) {
+                // Check if fragment is still alive to avoid crashes
+                if (isAdded && binding != null) {
 
-                        // 5. TURN OFF SHIMMER: Stop animation and clear it
-                        binding?.shimmerBannerContainer?.stopShimmer()
-                        binding?.shimmerBannerContainer?.setShimmer(null)
+                    // 5. TURN OFF SHIMMER: Stop animation and clear it
+                    binding?.shimmerBannerContainer?.stopShimmer()
+                    binding?.shimmerBannerContainer?.setShimmer(null)
 
-                        binding?.bannerContainer?.let { container ->
-                            // Remove gray placeholder color and add the ad
-                            container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                            container.addCleanView(preloadedAd)
-                            container.visibility = View.VISIBLE
-                        }
-                        Log.d("AdDebug", "Shimmer off, Preloaded Ad visible (One-time load)")
+                    binding?.bannerContainer?.let { container ->
+                        // Remove gray placeholder color and add the ad
+                        container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        container.addCleanView(preloadedAd)
+                        container.visibility = View.VISIBLE
                     }
+                    Log.d("AdDebug", "Shimmer off, Preloaded Ad visible (One-time load)")
+                }
 
             } else {
                 // If the ad isn't ready, keep the container hidden for now
                 binding?.shimmerBannerContainer?.visibility = View.GONE
+                binding?.bannerContainer?.visibility = View.GONE
                 Log.d("AdDebug", "START_WRITING ad not found in map yet...")
             }
         }
@@ -160,16 +174,26 @@ class NameFragment : Fragment(R.layout.fragment_name) {
     private fun handleKeyboard() {
         setKeyboardVisibilityListener { isVisible ->
             if (isVisible) {
-                binding?.nestedScrollView?.postDelayed({
-                    // Scroll to the bottom of the EditText, NOT the whole root height
-                    // This prevents the ScrollView from trying to scroll "past" the banner
+                keyboardRunnable?.let { keyboardHandler.removeCallbacks(it) }
+                keyboardRunnable = Runnable {
+                    if (!isAdded || view == null) return@Runnable
                     val scrollPos = binding?.edTextName?.bottom ?: 0
                     binding?.nestedScrollView?.smoothScrollTo(0, scrollPos)
-                }, 100)
+                }.also { keyboardHandler.postDelayed(it, 100) }
             } else {
-                binding?.nestedScrollView?.smoothScrollTo(0, 0)
+                keyboardRunnable?.let { keyboardHandler.removeCallbacks(it) }
+                keyboardRunnable = null
+                if (isAdded && view != null) {
+                    binding?.nestedScrollView?.smoothScrollTo(0, 0)
+                }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        keyboardRunnable?.let { keyboardHandler.removeCallbacks(it) }
+        keyboardRunnable = null
     }
 
     private fun clickListener() {
@@ -190,8 +214,13 @@ class NameFragment : Fragment(R.layout.fragment_name) {
             }
             edTextName.doOnTextChanged { text, _, _, _ ->
                 val isValid = !text.isNullOrEmpty()
-                btnNext.isEnabled = isValid
-                btnNext.alpha = if (isValid) 1f else 0.6f
+                if(isValid){
+                    btnNext.visibility= View.VISIBLE
+                }else{
+                    btnNext.visibility= View.GONE
+                }
+
+//                btnNext.alpha = if (isValid) 1f else 0.6f
             }
         }
     }

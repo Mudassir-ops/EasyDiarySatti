@@ -1,9 +1,12 @@
 package com.example.easydiarysatti.di
 
 import android.content.Context
+import androidx.room.migration.Migration
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.easydiarysatti.data.local.CreateNoteDao
+import com.example.easydiarysatti.data.local.GlobalTagDao          // ← add import
 import com.example.easydiarysatti.data.local.EasyDiaryDatabase
 import dagger.Module
 import dagger.Provides
@@ -24,13 +27,27 @@ object RoomModule {
             "easy_diary_database"
         )
             .setJournalMode(RoomDatabase.JournalMode.TRUNCATE)
+            .addMigrations(MIGRATION_19_20)
             .fallbackToDestructiveMigrationOnDowngrade()
-            .fallbackToDestructiveMigration().build()
+            .fallbackToDestructiveMigration()
+            .build()
     }
 
     @Provides
     @Singleton
     fun provideNoteDao(database: EasyDiaryDatabase): CreateNoteDao {
         return database.createNoteDao()
+    }
+
+    @Provides                                                        // ← add this block
+    @Singleton
+    fun provideGlobalTagDao(database: EasyDiaryDatabase): GlobalTagDao {
+        return database.globalTagDao()
+    }
+}
+
+val MIGRATION_19_20 = object : Migration(22, 23) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        // Intentionally empty — only TypeConverter signatures changed.
     }
 }

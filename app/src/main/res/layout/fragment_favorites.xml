@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    fragment_favorites.xml
+    ─────────────────────────────────────────────────
+    Two states controlled in FavoritesFragment:
+      • emptyStateLayout  → shown when no favorites exist  (Image 1)
+      • rvFavorites       → shown when favorites exist     (Image 2)
+
+    Header matches the reference: ← back arrow + "Favorites" title centered.
+    FAB (+) always shown bottom-right (both states).
+-->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_bg_color">
+
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@drawable/theme_1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_scrollFlags="scroll|enterAlways">
+
+        <!-- Back arrow -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivBack"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
+            android:padding="@dimen/_8sdp"
+            android:src="@drawable/back_icon"
+            app:tint="@color/white" />
+
+        <!-- Title -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/outfit_semibold"
+            android:text="@string/favorites"
+            android:textColor="@color/white"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:textSize="20sp"
+            app:fontFamily="@font/outfit_bold" />
+
+
+    </LinearLayout>
+    <!-- ── Header ─────────────────────────────────────────────────────── -->
+
+
+    <!-- ── Empty state ────────────────────────────────────────────────── -->
+    <LinearLayout
+        android:id="@+id/emptyStateLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingHorizontal="@dimen/_30sdp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        app:layout_constraintVertical_bias="0.4"
+        tools:visibility="visible">
+
+        <!-- Illustration circle -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivEmptyIllustration"
+            android:layout_width="@dimen/_180sdp"
+            android:layout_height="@dimen/_200sdp"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/ic_favorites_empty" />
+
+        <!-- Bold headline -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvEmptyTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:fontFamily="@font/outfit_bold"
+            android:gravity="center"
+            android:text="@string/favorites_empty_title"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_18ssp" />
+
+        <!-- Sub-text -->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/tvEmptySubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:fontFamily="@font/outfit"
+            android:gravity="center"
+            android:text="@string/favorites_empty_subtitle"
+            android:textColor="@color/pin_border"
+            android:textSize="@dimen/_13ssp" />
+
+    </LinearLayout>
+
+    <!-- ── Favorites list ─────────────────────────────────────────────── -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvFavorites"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="@dimen/_16sdp"
+        android:layout_marginTop="@dimen/_12sdp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar"
+        tools:listitem="@layout/item_favorite_note"
+        tools:visibility="visible" />
+
+    <!-- ── FAB ────────────────────────────────────────────────────────── -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabAddNote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/_20sdp"
+        android:layout_marginBottom="@dimen/_30sdp"
+        android:contentDescription="@string/add_note"
+        app:backgroundTint="@color/app_primary_color"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:tint="@color/white"
+        app:srcCompat="@drawable/ic_add"
+        app:fabSize="normal"
+        app:shapeAppearanceOverlay="@style/ShapeAppearance.Circle" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

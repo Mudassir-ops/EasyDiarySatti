@@ -13,6 +13,7 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.example.easydiarysatti.ads.AdShowingTracker
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 
 abstract class InterstitialManager {
@@ -138,20 +139,30 @@ abstract class InterstitialManager {
         Log.d(TAG_ADS, "$adType -> showInterstitial: showing ad")
 
         mInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+
+            override fun onAdShowedFullScreenContent() {
+                // Ad is physically on screen — block app-open ad immediately.
+                AdShowingTracker.isAdShowing = true
+                Log.d(TAG_ADS, "$adType -> showInterstitial: onAdShowedFullScreenContent")
+                listener?.onAdShowedFullScreenContent()
+            }
+
             override fun onAdDismissedFullScreenContent() {
-                Log.d(
-                    TAG_ADS,
-                    "$adType -> showInterstitial: onAdDismissedFullScreenContent: called"
-                )
+                // Null HERE (not in onAdImpression) so isInterstitialLoaded() stays
+                // true while the ad is still visible. On Android 11, nulling in
+                // onAdImpression caused the next showInterstitialWithDialog call to
+                // think no ad was loaded and fire onAdFailedToShow immediately,
+                // leaving the user stuck on CreateNotesFragment.
+                mInterstitialAd = null
+                AdShowingTracker.clearWithDelay()
+                Log.d(TAG_ADS, "$adType -> showInterstitial: onAdDismissedFullScreenContent")
                 listener?.onAdDismissedFullScreenContent()
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                Log.e(
-                    TAG_ADS,
-                    "$adType -> showInterstitial: onAdFailedToShowFullScreenContent: ${adError.code} -- ${adError.message}"
-                )
                 mInterstitialAd = null
+                AdShowingTracker.clearWithDelay()
+                Log.e(TAG_ADS, "$adType -> showInterstitial: onAdFailedToShowFullScreenContent: ${adError.code}")
                 listener?.onAdFailedToShow()
             }
 
@@ -159,21 +170,18 @@ abstract class InterstitialManager {
                 listener?.onAdClicked()
             }
 
-            override fun onAdShowedFullScreenContent() {
-                Log.d(TAG_ADS, "$adType -> showInterstitial: onAdShowedFullScreenContent: called")
-                listener?.onAdShowedFullScreenContent()
-            }
-
             override fun onAdImpression() {
-                Log.v(TAG_ADS, "$adType -> showInterstitial: onAdImpression: called")
-                mInterstitialAd = null
+                // Do NOT null mInterstitialAd here — ad is still showing.
+                // Do NOT postDelayed onAdImpressionDelayed — on Android 11 this
+                // 300ms callback fires into the NEXT ad's lifecycle, calling
+                // checkRemoveAdsPopupOrNavigate() at the wrong time.
+                Log.v(TAG_ADS, "$adType -> showInterstitial: onAdImpression")
                 listener?.onAdImpression()
-                Handler(Looper.getMainLooper()).postDelayed(
-                    { listener?.onAdImpressionDelayed() },
-                    300
-                )
             }
         }
+        // Set BEFORE show() so ProcessLifecycleOwner.onStop sees the flag
+        // immediately when the interstitial Activity launches.
+        AdShowingTracker.isAdShowing = true
         mInterstitialAd?.show(activity)
     }
 

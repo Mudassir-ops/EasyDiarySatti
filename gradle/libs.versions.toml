@@ -38,10 +38,11 @@ firebaseAnalytics = "23.0.0"
 appUpdateVersion = "2.1.0"
 biometric = "1.1.0"
 play-review = "2.0.2"
-billing = "8.3.0"
+billing = "6.2.1"
 navigationFragmentKtxVersion = "2.9.7"
 navigationUiKtxVersion = "2.9.7"
-
+cardview = "1.0.0"
+adapty = "3.7.0"
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 colorpickerview = { module = "com.github.skydoves:colorpickerview", version.ref = "colorpickerview" }
@@ -87,6 +88,9 @@ billing-client = { group = "com.android.billingclient", name = "billing", versio
 play-review-ktx = { group = "com.google.android.play", name = "review-ktx", version.ref = "play-review" }
 navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtxVersion" }
 navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtxVersion" }
+androidx-cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
+adapty-bom = { module = "io.adapty:adapty-bom", version.ref = "adapty" }
+adapty-sdk = { module = "io.adapty:android-sdk" }
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

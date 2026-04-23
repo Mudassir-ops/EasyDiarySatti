@@ -26,16 +26,21 @@ interface EasyDiaryLocalDataSource {
         noteId: Long,
         newTags: List<CustomTagEntity>
     )
-
     suspend fun updateImageForNote(
         noteId: Long,
         newImages: List<String>
     )
-
     suspend fun deleteNote(note: CreateNoteEntity)
+
+    // ── NEW ───────────────────────────────────────────────────────────────────
+    fun getDraftNotes(): Flow<List<CreateNoteEntity>>
+    suspend fun publishDraft(noteId: Long)
+    // ─────────────────────────────────────────────────────────────────────────
+
     suspend fun insertReminder(reminderEntity: ReminderEntity): Long
     suspend fun deleteReminder(reminderEntity: ReminderEntity)
     suspend fun updateReminder(reminderEntity: ReminderEntity)
     fun observeReminder(): Flow<List<ReminderEntity>?>
-
 }
+
+

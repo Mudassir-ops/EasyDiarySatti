@@ -26,7 +26,8 @@
                 android:layout_marginBottom="20dp"
                 android:background="@color/app_primary_color"
                 android:backgroundTint="@color/app_primary_color"
-                android:enabled="false"
+
+                android:visibility="gone"
                 android:fontFamily="@font/outfit_medium"
                 android:padding="@dimen/_10sdp"
                 android:text="@string/next"

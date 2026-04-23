@@ -1,5 +1,8 @@
 package com.example.easydiarysatti.ui.splash
+
+import android.content.Context
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
@@ -22,18 +25,20 @@ import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowC
 import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
 import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.databinding.FragmentSplashBinding
+import com.example.easydiarysatti.viewBinding
 import com.google.android.gms.ads.AdView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 import javax.inject.Inject
 import kotlin.getValue
 
-
 @AndroidEntryPoint
 class SplashFragment : Fragment(R.layout.fragment_splash) {
 
     private val viewModel: SplashViewModel by viewModels()
     private val bannerViewModel by activityViewModels<ViewModelBanner>()
+    private val binding by viewBinding(FragmentSplashBinding::bind)
 
     private var isNavigatedInternal = false
     private val TAG_ADS = "AdsInformation"
@@ -45,9 +50,25 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
     @Inject lateinit var remoteConfig: RemoteConfiguration
 
     private var timeoutJob: Job? = null
+    private var splashTimer: CountDownTimer? = null
+
+    private var adReadyToShow: Boolean = false
+    private var timerFinished: Boolean = false
+
+    // Navigation action decided by the ViewModel while the progress bar is running.
+    // Stored here so startProgressBar.onFinish() can fire it — ensuring the bar
+    // always completes fully before leaving splash, even with no internet.
+    private var pendingNavigation: (() -> Unit)? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val appPrefs = requireContext().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        if (!appPrefs.getBoolean("app_launched_before", false)) {
+            sharedPref.isFirstTimeUser = true
+            appPrefs.edit().putBoolean("app_launched_before", true).apply()
+            Log.d(TAG_ADS, "First launch — isFirstTimeUser = true")
+        }
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
@@ -55,63 +76,244 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
                     Log.d(TAG_ADS, "SplashState Observed: $state")
                     when (state) {
                         is SplashState.ShowAd -> fetchConfigAndStartAds()
-                        // This handles the new "Controlled Flow" logic
-                        is SplashState.NavigateToOnboarding -> handleControlledNavigation()
-                        is SplashState.NavigateToLogin -> {
 
-
-
-                            // Now navigate to the Login/Home screen
-                            navigateTo(R.id.action_splashFragment_to_loginFragment)
+                        is SplashState.NavigateToOnboarding -> {
+                            startProgressBar()
+                            pendingNavigation = { handleControlledNavigation() }
+                            if (timerFinished) firePendingNavigation()
                         }
+
+                        is SplashState.NavigateToLogin -> {
+                            startProgressBar()
+                            pendingNavigation = {
+                                val shouldShowSplash = sharedPref.shouldShowSplashPaywall()
+                                if (!sharedPref.isFirstTimeUser && shouldShowSplash) {
+                                    navigateTo(R.id.action_splashFragment_to_splashPaywallFragment)
+                                } else {
+                                    navigateTo(R.id.action_splashFragment_to_loginFragment)
+                                }
+                            }
+                            if (timerFinished) firePendingNavigation()
+                        }
+
                         is SplashState.Idle -> Unit
                     }
                 }
             }
         }
 
-
         viewModel.startLogic(internetManager.isInternetConnected)
+    }
 
+    /**
+     * HOW THE PROGRESS BAR + AD FLOW WORKS TOGETHER:
+     *
+     * The progress bar timer and the ad loading run IN PARALLEL — they start at the same time.
+     * This ensures the 5-second bar is always smooth regardless of network speed.
+     *
+     * Two things must both be true before the ad shows:
+     *   1. timerFinished = true  (5-second bar completed)
+     *   2. adReadyToShow = true  (remote config fetched + ad loaded)
+     *
+     * Whichever finishes last triggers the show. This means:
+     *   - Fast network: ad loads in 1s, timer finishes at 5s → show at 5s ✓
+     *   - Slow network: timer finishes at 5s, ad loads at 7s → show at 7s ✓
+     *   - Ad fails:     adReadyToShow never set → timeout job navigates away ✓
+     *
+     * The timeout job (splashTimeout ms) is the final safety net — if the ad never
+     * loads, we don't wait forever.
+     */
+    private fun fetchConfigAndStartAds() {
+        Log.d(TAG_ADS, "Step 1: Starting progress bar + ad load in parallel")
+
+        adReadyToShow = false
+        timerFinished = false
+
+        // Start progress bar immediately — always runs for 5 seconds
+        startProgressBar()
+
+        // Safety net timeout
+        val dynamicTimeout = sharedPref.splashTimeout
+        timeoutJob = lifecycleScope.launch {
+            delay(dynamicTimeout)
+            if (!isNavigatedInternal) {
+                Log.d(TAG_ADS, "Splash timeout ($dynamicTimeout ms) — navigating away")
+                splashTimer?.cancel()
+                viewModel.onAdFinished()
+            }
+        }
+
+        // No internet — skip remote config, navigate after bar completes
+        if (!internetManager.isInternetConnected) {
+            Log.d(TAG_ADS, "No internet — skipping ads, waiting for progress bar")
+            adReadyToShow = true
+            pendingAdShow = { viewModel.onAdFinished() }
+            if (timerFinished) showPendingAd()
+            return
+        }
+
+        // Has internet — fetch remote config then load ad, both parallel with the bar
+        remoteConfig.checkRemoteConfig { success ->
+            lifecycleScope.launch(Dispatchers.Main) {
+                if (success) {
+                    startAdFlow()
+                } else {
+                    Log.d(TAG_ADS, "Remote config failed — skipping ads")
+                    adReadyToShow = true
+                    pendingAdShow = { viewModel.onAdFinished() }
+                    if (timerFinished) showPendingAd()
+                }
+            }
+        }
+    }
+
+    private fun startProgressBar() {
+        val bar = binding?.splashProgressBar ?: return
+        bar.progress = 0
+        bar.visibility = View.VISIBLE
+
+        splashTimer = object : CountDownTimer(5000, 50) {
+            override fun onTick(millisUntilFinished: Long) {
+                val elapsed = 5000 - millisUntilFinished
+                val progressPercentage = (elapsed / 50).toInt()
+                bar.progress = progressPercentage * 10
+            }
+
+            override fun onFinish() {
+                bar.progress = 1000
+                timerFinished = true
+                Log.d(TAG_ADS, "Progress bar done. adReadyToShow=$adReadyToShow pendingNavigation=${pendingNavigation != null}")
+
+                when {
+                    // Ad flow: both timer and ad are ready → show ad
+                    adReadyToShow -> showPendingAd()
+                    // Non-ad flow (no internet / navigate states): fire buffered navigation
+                    pendingNavigation != null -> firePendingNavigation()
+                    // else: ad not ready yet — wait for ad load callback
+                }
+            }
+        }.start()
+    }
+
+    private fun firePendingNavigation() {
+        pendingNavigation?.invoke()
+        pendingNavigation = null
+    }
+
+    // Holds the action to show the ad — set once the ad is loaded and ready
+    private var pendingAdShow: (() -> Unit)? = null
+
+    private fun showPendingAd() {
+        // Both timer and ad are ready — cancel timeout and show
+        timeoutJob?.cancel()
+        pendingAdShow?.invoke()
+        pendingAdShow = null
+    }
+
+    private fun startAdFlow() {
+        val isFirstTime = sharedPref.isFirstTimeUser
+        val interKey   = if (isFirstTime) InterAdKey.SPLASH_INTER_FIRST_TIME else InterAdKey.SPLASH_INTER_RETURN_USER
+        val appOpenKey = if (isFirstTime) AppOpenAdKey.SPLASH_FIRST_TIME else AppOpenAdKey.SPLASH_RETURN_USER
+
+        if (sharedPref.getAdShowStatus(interKey.value)) {
+            loadInterstitial(interKey, appOpenKey)
+        } else if (sharedPref.getAdShowStatus(appOpenKey.value)) {
+            loadAppOpen(appOpenKey)
+        } else {
+            // No ad enabled — wait for timer to finish then navigate
+            adReadyToShow = true
+            pendingAdShow = { viewModel.onAdFinished() }
+            if (timerFinished) showPendingAd()
+        }
+    }
+
+    private fun loadInterstitial(adKey: InterAdKey, fallbackKey: AppOpenAdKey) {
+        interAdsConfig.loadInterstitialAd(adKey, object : InterstitialOnLoadCallBack {
+            override fun onResponse(successfullyLoaded: Boolean) {
+                if (successfullyLoaded && isAdded) {
+                    // Ad is ready — store the show action and trigger if timer already done
+                    adReadyToShow = true
+                    pendingAdShow = {
+                        interAdsConfig.showInterstitialWithDialog(requireActivity(), adKey, object : InterstitialOnShowCallBack {
+                            override fun onAdDismissedFullScreenContent() { viewModel.onAdFinished() }
+                            override fun onAdFailedToShow() { viewModel.onAdFinished() }
+                        })
+                    }
+                    Log.d(TAG_ADS, "Interstitial ready. timerFinished=$timerFinished")
+                    if (timerFinished) showPendingAd()
+                } else {
+                    // Interstitial failed — fall back to app open
+                    loadAppOpen(fallbackKey)
+                }
+            }
+        })
+    }
+
+    private fun loadAppOpen(adKey: AppOpenAdKey) {
+        if (!sharedPref.getAdShowStatus(adKey.value)) {
+            // App open also disabled — wait for timer then navigate
+            adReadyToShow = true
+            pendingAdShow = { viewModel.onAdFinished() }
+            if (timerFinished) showPendingAd()
+            return
+        }
+        appOpenAdsConfig.loadAppOpenAd(adKey, object : AppOpenOnLoadCallBack {
+            override fun onResponse(successfullyLoaded: Boolean, errorMessage: String?) {
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (successfullyLoaded && isAdded && activity != null) {
+                        adReadyToShow = true
+                        pendingAdShow = {
+                            appOpenAdsConfig.showAppOpenAd(requireActivity(), adKey, object : AppOpenOnShowCallBack {
+                                override fun onAdDismissedFullScreenContent() { viewModel.onAdFinished() }
+                                override fun onAdFailedToShow() { viewModel.onAdFinished() }
+                            })
+                        }
+                        Log.d(TAG_ADS, "AppOpen ready. timerFinished=$timerFinished")
+                        if (timerFinished) showPendingAd()
+                    } else {
+                        // Both ads failed — wait for timer then navigate
+                        adReadyToShow = true
+                        pendingAdShow = { viewModel.onAdFinished() }
+                        if (timerFinished) showPendingAd()
+                    }
+                }
+            }
+        })
     }
 
     private fun handleControlledNavigation() {
-
         when {
-            // 1. Check Onboarding
             sharedPref.isOnboardingEnabled -> {
                 preLoadBanner(BannerAdKey.ON_BOARDING)
                 navigateTo(R.id.action_splashFragment_to_onBoardingFragment)
             }
-
-            // 2. Check Permission (If Onboarding skipped)
             sharedPref.isPermissionEnabled -> {
                 preLoadBanner(BannerAdKey.PERMISSION)
                 navigateTo(R.id.action_splashFragment_to_permissionFragment)
             }
-
-            // 3. Check Start Writing (If Onboarding & Permission skipped)
             sharedPref.isNameWritingEnabled -> {
                 preLoadBanner(BannerAdKey.START_WRITING)
                 navigateTo(R.id.action_splashFragment_to_nameSetupFragment)
             }
-
-            // 4. Check Pin Setup
             sharedPref.isPinSetupEnabled -> {
                 preLoadBanner(BannerAdKey.PIN_SETUP)
                 navigateTo(R.id.action_splashFragment_to_pinSetupFragment)
             }
-
-            // 5. Check Theme Selection
             sharedPref.isThemeSelectionEnabled -> {
                 preLoadBanner(BannerAdKey.THEME_SELECTION)
                 navigateTo(R.id.action_splashFragment_to_themeFragment)
             }
-
-            // 6. All Skips -> Go to Home
             else -> {
-                sharedPref.isFirstTimeUser = false
-                navigateTo(R.id.action_splashFragment_to_mainFragment)
+                val shouldShowOnboardingPaywall = sharedPref.getAdExtraData(
+                    "onboarding_paywall_config",
+                    "splash_onboarding_paywall_screen_display"
+                ) == "true"
+                if (sharedPref.isFirstTimeUser && shouldShowOnboardingPaywall && !sharedPref.isAppPurchased) {
+                    navigateTo(R.id.action_splashFragment_to_onboardingPaywallFragment)
+                } else {
+                    sharedPref.isFirstTimeUser = false
+                    navigateTo(R.id.action_splashFragment_to_mainFragment)
+                }
             }
         }
     }
@@ -122,92 +324,12 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         bannerViewModel.loadBannerAd(dummyAdView, adKey, requireContext())
     }
 
-    private fun fetchConfigAndStartAds() {
-        Log.d(TAG_ADS, "Step 1: Fetching Remote Config...")
-
-        // Use the dynamic value from SharedPreferences
-        val dynamicTimeout = sharedPref.splashTimeout
-
-        timeoutJob = lifecycleScope.launch {
-            delay(dynamicTimeout)
-            if (!isNavigatedInternal) {
-                Log.d(TAG_ADS, "Splash Timeout reached after $dynamicTimeout ms. Moving to next screen.")
-                viewModel.onAdFinished()
-            }
-        }
-
-        remoteConfig.checkRemoteConfig { success ->
-            lifecycleScope.launch(Dispatchers.Main) {
-                if (success) startAdFlow() else viewModel.onAdFinished()
-            }
-        }
-    }
-    private fun startAdFlow() {
-        val isFirstTime = sharedPref.isFirstTimeUser
-        val interKey = if (isFirstTime) InterAdKey.SPLASH_INTER_FIRST_TIME else InterAdKey.SPLASH_INTER_RETURN_USER
-        val appOpenKey = if (isFirstTime) AppOpenAdKey.SPLASH_FIRST_TIME else AppOpenAdKey.SPLASH_RETURN_USER
-
-        if (sharedPref.getAdShowStatus(interKey.value)) {
-            loadInterstitial(interKey, appOpenKey)
-        } else if (sharedPref.getAdShowStatus(appOpenKey.value)) {
-            loadAppOpen(appOpenKey)
-        } else {
-            viewModel.onAdFinished()
-        }
-    }
-
-    private fun loadInterstitial(adKey: InterAdKey, fallbackKey: AppOpenAdKey) {
-        interAdsConfig.loadInterstitialAd(adKey, object : InterstitialOnLoadCallBack {
-            override fun onResponse(successfullyLoaded: Boolean) {
-                if (successfullyLoaded && isAdded) {
-                    timeoutJob?.cancel()
-                    interAdsConfig.showInterstitialWithDialog(requireActivity(), adKey, object : InterstitialOnShowCallBack {
-                        override fun onAdDismissedFullScreenContent() { viewModel.onAdFinished() }
-                        override fun onAdFailedToShow() { viewModel.onAdFinished() }
-                    })
-                } else {
-                    loadAppOpen(fallbackKey)
-                }
-            }
-        })
-    }
-
-    private fun loadAppOpen(adKey: AppOpenAdKey) {
-        // Safety check: is the specific Splash App Open enabled?
-        if (!sharedPref.getAdShowStatus(adKey.value)) {
-            viewModel.onAdFinished()
-            return
-        }
-
-        appOpenAdsConfig.loadAppOpenAd(adKey, object : AppOpenOnLoadCallBack {
-            override fun onResponse(successfullyLoaded: Boolean, errorMessage: String?) {
-                lifecycleScope.launch(Dispatchers.Main) {
-                    if (successfullyLoaded && isAdded && activity != null) {
-                        timeoutJob?.cancel()
-
-                        // This calls showAppOpen(activity, adKey.value)
-                        // It will pull from the Map using the Splash key!
-                        appOpenAdsConfig.showAppOpenAd(requireActivity(), adKey, object : AppOpenOnShowCallBack {
-                            override fun onAdDismissedFullScreenContent() {
-                                viewModel.onAdFinished()
-                            }
-                            override fun onAdFailedToShow() {
-                                viewModel.onAdFinished()
-                            }
-                        })
-                    } else {
-                        // If App Open fails to load, go to Home
-                        viewModel.onAdFinished()
-                    }
-                }
-            }
-        })
-    }
     private fun navigateTo(actionId: Int) {
         if (isNavigatedInternal || !isAdded) return
         try {
             isNavigatedInternal = true
             timeoutJob?.cancel()
+            splashTimer?.cancel()
             findNavController().navigate(actionId)
         } catch (e: Exception) {
             Log.e(TAG_ADS, "Navigation Error: ${e.message}")
@@ -217,5 +339,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
     override fun onDestroyView() {
         super.onDestroyView()
         timeoutJob?.cancel()
+        splashTimer?.cancel()
     }
 }

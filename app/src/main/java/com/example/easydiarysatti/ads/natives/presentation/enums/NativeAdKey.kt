@@ -4,5 +4,6 @@ enum class NativeAdKey(val value: String) {
     HOME("home_native"),
     LIBRARY("library_native"),
     REMINDER_INTERVAL("reminder_interval_native"),
-    EXIT("exit_native")
+    EXIT("exit_native"),
+    REMOVE_ADS_NATIVE("remove_ads_native")
 }

@@ -25,7 +25,8 @@ interface SessionManagerRepo {
     fun setOnBoardingDoneOnce(isOnBoardingDoneOnce: Boolean)
     fun isOnBoardingDoneOnce(): Boolean?
 
-
+    fun setRewardedJustShown(value: Boolean)
+    fun wasRewardedJustShown(): Boolean
     fun setRequireLogin(value: Boolean)
     fun shouldRequireLogin(): Boolean
     fun clearRequireLogin()
@@ -33,4 +34,6 @@ interface SessionManagerRepo {
     fun getLastDestination(): Int
     fun bypassSecurityLogin(value: Boolean)
     fun isBypassSecurityLogin(): Boolean
+    fun getGlobalTags(): List<String>
+    fun saveGlobalTags(tags: List<String>)
 }

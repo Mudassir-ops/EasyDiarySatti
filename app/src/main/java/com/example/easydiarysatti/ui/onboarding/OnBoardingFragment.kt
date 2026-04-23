@@ -64,6 +64,11 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
 //    private var isAdProcessStarted = false
 
     private fun setupBannerObserver() {
+        if (!sharedPreferenceUtils.getAdShowStatus(BannerAdKey.ON_BOARDING.value)) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             // 2. SAFETY LOCK: If we already started the timer for this screen, STOP here.
 //            if (isAdProcessStarted) return@observe
@@ -79,25 +84,26 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
                 binding?.bannerShimmerContainer?.visibility = View.VISIBLE
                 binding?.bannerShimmerContainer?.startShimmer()
 
-                    // Check if fragment is still attached to avoid crashes
-                    if (isAdded && binding != null) {
+                // Check if fragment is still attached to avoid crashes
+                if (isAdded && binding != null) {
 
-                        // 5. TURN OFF SHIMMER: Stop animation and clear the effect
-                        binding?.bannerShimmerContainer?.stopShimmer()
-                        binding?.bannerShimmerContainer?.setShimmer(null)
+                    // 5. TURN OFF SHIMMER: Stop animation and clear the effect
+                    binding?.bannerShimmerContainer?.stopShimmer()
+                    binding?.bannerShimmerContainer?.setShimmer(null)
 
-                        binding?.bannerContainer?.let { container ->
-                            // Remove gray background and show the ad
-                            container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
-                            container.addCleanView(preloadedAd)
-                            container.visibility = View.VISIBLE
-                        }
-                        Log.d("AdDebug", "Shimmer off, ON_BOARDING Ad visible (One-time load)")
+                    binding?.bannerContainer?.let { container ->
+                        // Remove gray background and show the ad
+                        container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        container.addCleanView(preloadedAd)
+                        container.visibility = View.VISIBLE
                     }
+                    Log.d("AdDebug", "Shimmer off, ON_BOARDING Ad visible (One-time load)")
+                }
 
             } else {
                 // Keep container hidden while waiting for the ad to appear in the map
                 binding?.bannerShimmerContainer?.visibility = View.GONE
+                binding?.bannerContainer?.visibility = View.GONE
                 Log.d("AdDebug", "ON_BOARDING ad not found in map yet...")
             }
         }
@@ -108,14 +114,14 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
     /* ---------- Waterfall Skip Logic ---------- */
 
     private fun navigateToNextScreen() {
-        // Read flags from SharedPrefs (synced from Remote Config)
         val showPermission = sharedPreferenceUtils.isPermissionEnabled
+                && !sharedPreferenceUtils.isPermissionDone  // skip if already done/skipped
         val showWriting = sharedPreferenceUtils.isNameWritingEnabled
         val showPin = sharedPreferenceUtils.isPinSetupEnabled
         val showTheme = sharedPreferenceUtils.isThemeSelectionEnabled
 
         when {
-            // Path 1: Permission Screen is Enabled
+            // Path 1: Permission screen — only if enabled AND not already done/skipped
             showPermission -> {
                 preLoadNextBanner(BannerAdKey.PERMISSION)
                 findNavController().safeNav(R.id.onBoardingFragment, R.id.action_onBoardingFragment_to_permissionFragment)

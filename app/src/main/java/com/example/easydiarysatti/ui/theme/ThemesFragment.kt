@@ -15,6 +15,7 @@ import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.appOpen.entrance.ViewModelEntrance
 import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
 import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.databinding.FragmentThemesBinding
@@ -41,7 +42,7 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
 
     @Inject lateinit var sharedPref: SharedPreferenceUtils
     @Inject lateinit var sessionManagerRepo: SessionManagerRepo
-
+    @Inject lateinit var internetManager: InternetManager
     private val themesList: List<Int> by lazy {
         listOf(
             R.drawable.theme_2,
@@ -78,7 +79,7 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
     private var isAdProcessStarted = false
 
     private fun setupBannerObserver() {
-        if (!sharedPref.getAdShowStatus(BannerAdKey.THEME_SELECTION.value)) {
+        if (sharedPref.isAppPurchased||!internetManager.isInternetConnected || !sharedPref.getAdShowStatus(BannerAdKey.THEME_SELECTION.value)) {
             binding?.bannerShimmerContainer?.visibility = View.GONE
             binding?.bannerContainer?.visibility = View.GONE
             return
@@ -131,26 +132,35 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         }
     }
 
+    /**
+     * Waterfall Navigation driven by the onboarding flow JSON.
+     *
+     * Theme is always the last onboarding screen before home (in every case
+     * that includes it), so nextScreenAfter("theme") will always return "home"
+     * or null. We still go through the helper for consistency and future-proofing.
+     *
+     * Onboarding paywall logic (unchanged): if this is the first-time user path
+     * and the paywall is enabled, intercept here before going home.
+     */
     fun moveToNextScreen() {
         if (arguments?.getBoolean(FROM_ONBOARDING) == true) {
             sessionManagerRepo.setOnBoardingDoneOnce(isOnBoardingDoneOnce = true)
         }
 
-        // Plan: Onboarding Paywall — show on last slide of onboarding before home screen (first time user)
-        // Key: splash_onboarding_paywall_screen_display from onboarding_paywall_config
         val shouldShowOnboardingPaywall = sharedPref.getAdExtraData(
             "onboarding_paywall_config",
             "splash_onboarding_paywall_screen_display"
         ) == "true"
 
         if (sharedPref.isFirstTimeUser && shouldShowOnboardingPaywall && !sharedPref.isAppPurchased) {
-            // Plan: First time user → show onboarding paywall after theme screen
             findNavController().safeNav(
                 currentDestId = R.id.themesFragment,
                 actionId = R.id.action_themesFragment_to_onboardingPaywallFragment
             )
         } else {
-            // Returning user OR paywall disabled OR already purchased → go to Main
+            // Theme is always the last screen in the flow before home,
+            // so mark setup complete and navigate to Main.
+            sharedPref.isFirstTimeUser = false
             findNavController().safeNav(
                 currentDestId = R.id.themesFragment,
                 actionId = R.id.action_themesFragment_to_mainFragment
@@ -207,9 +217,3 @@ class ThemesFragment : Fragment(R.layout.fragment_themes) {
         }
     }
 }
-
-
-
-
-
-

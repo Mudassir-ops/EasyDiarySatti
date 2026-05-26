@@ -1,19 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-    fragment_add_tags.xml
-    ─────────────────────
-    Two modes:
-
-    SELECT mode (isFromDrawer = false)
-      • drawerToolbar is GONE  → header is owned by MainFragment's toolbar
-      • scrollView starts at the very top (GONE view has 0 height in constraints)
-      • btnNext (Save Tags) is visible
-
-    MANAGE mode (isFromDrawer = true)
-      • drawerToolbar is VISIBLE → fragment owns its own themed toolbar
-      • scrollView is pushed below the toolbar
-      • btnNext is GONE  (edits are immediate — no save needed)
--->
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -23,15 +8,10 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     android:backgroundTint="@color/white"
+    android:isScrollContainer="false"
     tools:context=".ui.edittags.AddTagsFragment">
 
-    <!--
-        ── Drawer toolbar (manage mode only) ──────────────────────────────────
-        Visible only when the fragment is opened from the drawer ("Edit Tags").
-        Background is applied programmatically via Glide to match the app theme.
-        When GONE, ConstraintLayout collapses it to 0 dp so the scrollView
-        naturally starts at the top of the screen, preserving select-mode layout.
-    -->
+    <!-- Drawer toolbar (manage mode only) -->
     <LinearLayout
         android:id="@+id/drawerToolbar"
         android:layout_width="match_parent"
@@ -46,7 +26,6 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:visibility="visible">
 
-        <!-- Back button -->
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivDrawerBack"
             android:layout_width="44dp"
@@ -57,7 +36,6 @@
             android:src="@drawable/back_icon"
             app:tint="@color/white" />
 
-        <!-- "Edit Tags" title -->
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/tvDrawerTitle"
             android:layout_width="0dp"
@@ -69,7 +47,6 @@
             android:textColor="@color/white"
             android:textSize="@dimen/_18ssp" />
 
-        <!-- Search icon -->
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/ivDrawerSearch"
             android:layout_width="44dp"
@@ -78,54 +55,38 @@
             android:contentDescription="@string/search_tags"
             android:padding="10dp"
             android:scaleType="fitXY"
+            android:visibility="gone"
             android:src="@drawable/ic_search"
             app:tint="@color/white" />
 
     </LinearLayout>
 
-    <!-- ── Save Tags button (select mode only) ─────────────────────────────── -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnNext"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginBottom="28dp"
-        android:fontFamily="@font/outfit_medium"
-        android:paddingVertical="16dp"
-        android:text="@string/save_tags"
-        android:textColor="@color/white"
-        android:textSize="@dimen/_14ssp"
-        app:backgroundTint="@color/app_primary_color"
-        app:cornerRadius="@dimen/_12sdp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <!--
-        ── Scrollable body ─────────────────────────────────────────────────────
-        Top constraint is always tied to the BOTTOM of drawerToolbar.
-        • GONE  toolbar → collapses to 0 dp → scrollView reaches the very top ✓
-        • VISIBLE toolbar → scrollView is pushed below the 60 dp toolbar       ✓
+        NestedScrollView fills the space between drawerToolbar (top) and
+        parent bottom. Bottom padding is adjusted in code when keyboard opens
+        so content is never hidden. btnNext floats on top via elevation.
     -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:fillViewport="true"
         android:background="@color/white"
-        app:layout_constraintBottom_toTopOf="@+id/btnNext"
+        android:clipToPadding="false"
+        android:isScrollContainer="false"
+        app:layout_constraintBottom_toTopOf="@id/btnNext"
+
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/drawerToolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
             android:background="@color/white"
             android:paddingHorizontal="20dp"
             android:paddingTop="20dp"
-            android:paddingBottom="16dp">
+            android:paddingBottom="10dp">
 
             <!-- Subtitle -->
             <com.google.android.material.textview.MaterialTextView
@@ -139,6 +100,7 @@
 
             <!-- Input row: EditText + Create button -->
             <LinearLayout
+                android:id="@+id/inputRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -192,7 +154,7 @@
 
             </LinearLayout>
 
-            <!-- SELECTED TAGS label — hidden when nothing is selected -->
+            <!-- SELECTED TAGS label -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_selected_tags_label"
                 android:layout_width="wrap_content"
@@ -206,7 +168,7 @@
                 android:visibility="gone"
                 tools:visibility="visible" />
 
-            <!-- Removable chips for currently-selected tags (select mode only) -->
+            <!-- Removable chips -->
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupSelected"
                 android:layout_width="match_parent"
@@ -217,7 +179,7 @@
                 app:chipSpacingVertical="6dp"
                 tools:visibility="visible" />
 
-            <!-- ALL TAGS label — always visible -->
+            <!-- ALL TAGS label -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/tv_all_tags_label"
                 android:layout_width="wrap_content"
@@ -256,5 +218,29 @@
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
+
+    <!--
+        btnNext floats above the scrollView via elevation.
+        Its bottom margin is adjusted in code when keyboard opens.
+    -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnNext"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="20dp"
+        android:layout_marginBottom="28dp"
+        android:elevation="8dp"
+        android:layout_marginTop="@dimen/_5sdp"
+        app:layout_constraintTop_toBottomOf="@id/scrollView"
+        android:fontFamily="@font/outfit_medium"
+        android:paddingVertical="16dp"
+        android:text="@string/save_tags"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_14ssp"
+        app:backgroundTint="@color/app_primary_color"
+        app:cornerRadius="@dimen/_12sdp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

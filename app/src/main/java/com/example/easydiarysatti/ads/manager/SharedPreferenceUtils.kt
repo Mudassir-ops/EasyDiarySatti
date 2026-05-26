@@ -2,6 +2,7 @@ package com.example.easydiarysatti.ads.manager
 
 import android.content.SharedPreferences
 import jakarta.inject.Inject
+import org.json.JSONArray
 import org.json.JSONObject
 
 
@@ -11,11 +12,6 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
     private val billingRequireKey        = "isAppPurchased"
     private val firstTimeUserKey         = "is_first_time_user"
     private val adsJsonKey               = "ads_json_data"
-    private val onboardingDisplayKey     = "onboarding_slides_display"
-    private val permissionDisplayKey     = "permission_screen_display"
-    private val nameDisplayKey           = "start_writing_display"
-    private val pinSetupScreenDisplay    = "pin_setup_screen_display"
-    private val themeScreenDisplay       = "choose_your_theme_screen_display"
     private val libraryAdFrequencyKey    = "library_native_ad_after_items"
 
     // ─── All names that live in iapJson ──────────────────────────────────────
@@ -25,7 +21,7 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
         "main_paywall_config",
         "remove_ads_inter_ad_cross_ipu",
         "free_add_note_save_quota",
-        "exit_popup_config"           // ← NEW
+        "exit_popup_config"
     )
 
     // ─── JSON storage ────────────────────────────────────────────────────────
@@ -37,12 +33,56 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
         get() = sharedPreferences.getString("iap_json_data", DEFAULT_IAP_JSON) ?: DEFAULT_IAP_JSON
         set(value) = sharedPreferences.edit().putString("iap_json_data", value).apply()
 
+    // ─── Onboarding Flow JSON ─────────────────────────────────────────────────
+    /**
+     * Stores the full onboarding_flow JSON received from Remote Config.
+     * Default is the hardcoded JSON matching the current "case_full" behaviour
+     * so the app works correctly before the first Remote Config fetch.
+     */
+    var onboardingFlowJson: String
+        get() = sharedPreferences.getString("onboarding_flow_json", DEFAULT_ONBOARDING_FLOW_JSON)
+            ?: DEFAULT_ONBOARDING_FLOW_JSON
+        set(value) = sharedPreferences.edit().putString("onboarding_flow_json", value).apply()
+
     companion object {
         /**
-         * Default IAP JSON — includes exit_popup_config (Variant A, enabled).
-         * Keep in sync with Firebase Remote Config keys dairy_ads_iap_debug /
-         * dairy_ads_iap_release.
+         * Default onboarding flow JSON.
+         * Mirrors the JSON provided in the product spec — case_full for first open,
+         * case_pin_lock for returning open.
          */
+        val DEFAULT_ONBOARDING_FLOW_JSON = """
+            {
+              "onboarding_flow": {
+                "first_open": {
+                  "active_case": "case_full",
+                  "cases": {
+                    "case_full": ["onboarding_slides","permission","name","pin","theme","home"],
+                    "case_no_permission": ["onboarding_slides","name","pin","theme","home"],
+                    "case_no_name": ["onboarding_slides","permission","pin","theme","home"],
+                    "case_no_pin": ["onboarding_slides","permission","name","theme","home"],
+                    "case_no_theme": ["onboarding_slides","permission","name","pin","home"],
+                    "case_no_permission_no_name": ["onboarding_slides","pin","theme","home"],
+                    "case_no_permission_no_pin": ["onboarding_slides","name","theme","home"],
+                    "case_no_permission_no_theme": ["onboarding_slides","name","pin","home"],
+                    "case_no_name_no_pin": ["onboarding_slides","permission","theme","home"],
+                    "case_no_name_no_theme": ["onboarding_slides","permission","pin","home"],
+                    "case_no_pin_no_theme": ["onboarding_slides","permission","name","home"],
+                    "case_slides_only": ["onboarding_slides","home"],
+                    "case_no_onboarding_slides": ["permission","name","pin","theme","home"],
+                    "case_minimal": ["home"]
+                  }
+                },
+                "returning_open": {
+                  "active_case": "case_pin_lock",
+                  "cases": {
+                    "case_pin_lock": ["login","home"],
+                    "case_no_lock": ["home"]
+                  }
+                }
+              }
+            }
+        """.trimIndent()
+
         val DEFAULT_IAP_JSON = """
             {
               "Items": [
@@ -85,15 +125,101 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
             }
         """.trimIndent()
 
-        // Keep the string in one place so AppOpenAdsConfig can reference it
-        // without importing AppOpenAdKey (which is in the ads module).
         const val AppOpenAdKey_RESUME_VALUE = "app_open_resume"
+
+        // ── Screen name constants (match the JSON string values exactly) ─────
+        const val SCREEN_ONBOARDING_SLIDES = "onboarding_slides"
+        const val SCREEN_PERMISSION        = "permission"
+        const val SCREEN_NAME              = "name"
+        const val SCREEN_PIN               = "pin"
+        const val SCREEN_THEME             = "theme"
+        const val SCREEN_HOME              = "home"
+        const val SCREEN_LOGIN             = "login"
     }
+
+    // ─── Onboarding Flow JSON helpers ─────────────────────────────────────────
+
+    /**
+     * Parses [onboardingFlowJson] and returns the active screen sequence for
+     * the first-open flow as an ordered list of screen name strings.
+     *
+     * e.g. ["onboarding_slides", "permission", "name", "pin", "theme", "home"]
+     *
+     * Falls back to ["onboarding_slides", "home"] on any parse error.
+     */
+    fun getFirstOpenScreenFlow(): List<String> {
+        return getActiveFlowScreens("first_open")
+    }
+
+    /**
+     * Parses [onboardingFlowJson] and returns the active screen sequence for
+     * the returning-open flow.
+     *
+     * e.g. ["login", "home"]  or  ["home"]
+     */
+    fun getReturningOpenScreenFlow(): List<String> {
+        return getActiveFlowScreens("returning_open")
+    }
+
+    private fun getActiveFlowScreens(flowKey: String): List<String> {
+        return try {
+            val root      = JSONObject(onboardingFlowJson)
+            val flowObj   = root.getJSONObject("onboarding_flow").getJSONObject(flowKey)
+            val activeCase = flowObj.getString("active_case")
+            val cases     = flowObj.getJSONObject("cases")
+            val arr       = cases.getJSONArray(activeCase)
+            (0 until arr.length()).map { arr.getString(it) }
+        } catch (e: Exception) {
+            // Safe fallback: onboarding slides → home
+            listOf(SCREEN_ONBOARDING_SLIDES, SCREEN_HOME)
+        }
+    }
+
+    /**
+     * Convenience: given the current first-open flow, returns the *next* screen
+     * that should be shown after [currentScreen].
+     *
+     * Returns null if [currentScreen] is the last item or is not found.
+     */
+    fun nextScreenAfter(currentScreen: String): String? {
+        val flow = getFirstOpenScreenFlow()
+        val idx  = flow.indexOf(currentScreen)
+        return if (idx >= 0 && idx < flow.size - 1) flow[idx + 1] else null
+    }
+
+    /**
+     * Returns true when [screen] is present in the active first-open flow.
+     */
+    fun isScreenInFlow(screen: String): Boolean =
+        getFirstOpenScreenFlow().contains(screen)
+
+    // ─── Backward-compatible individual flag accessors ────────────────────────
+    // These are now derived from the JSON flow so that any existing code that
+    // still reads them directly continues to work without modification.
+
+    val isOnboardingEnabled: Boolean
+        get() = isScreenInFlow(SCREEN_ONBOARDING_SLIDES)
+
+    val isPermissionEnabled: Boolean
+        get() = isScreenInFlow(SCREEN_PERMISSION)
+
+    val isNameWritingEnabled: Boolean
+        get() = isScreenInFlow(SCREEN_NAME)
+
+    val isPinSetupEnabled: Boolean
+        get() = isScreenInFlow(SCREEN_PIN)
+
+    val isThemeSelectionEnabled: Boolean
+        get() = isScreenInFlow(SCREEN_THEME)
 
     // ─── App state ───────────────────────────────────────────────────────────
     var isAppPurchased: Boolean
         get() = sharedPreferences.getBoolean(billingRequireKey, false)
         set(value) = sharedPreferences.edit().putBoolean(billingRequireKey, value).apply()
+
+    var hasUsedFreeTrial: Boolean
+        get()      = sharedPreferences.getBoolean("has_used_free_trial", false)
+        set(value) = sharedPreferences.edit().putBoolean("has_used_free_trial", value).apply()
 
     var isFirstTimeUser: Boolean
         get() = sharedPreferences.getBoolean(firstTimeUserKey, false)
@@ -103,30 +229,9 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
         get() = sharedPreferences.getLong("splash_timeout", 6000L)
         set(value) = sharedPreferences.edit().putLong("splash_timeout", value).apply()
 
-    // ─── Onboarding screen flags (from Remote Config booleans) ───────────────
-    var isOnboardingEnabled: Boolean
-        get() = sharedPreferences.getBoolean(onboardingDisplayKey, true)
-        set(value) = sharedPreferences.edit().putBoolean(onboardingDisplayKey, value).apply()
-
-    var isPermissionEnabled: Boolean
-        get() = sharedPreferences.getBoolean(permissionDisplayKey, true)
-        set(value) = sharedPreferences.edit().putBoolean(permissionDisplayKey, value).apply()
-
     var isPermissionDone: Boolean
         get() = sharedPreferences.getBoolean("permission_done", false)
         set(value) = sharedPreferences.edit().putBoolean("permission_done", value).apply()
-
-    var isNameWritingEnabled: Boolean
-        get() = sharedPreferences.getBoolean(nameDisplayKey, true)
-        set(value) = sharedPreferences.edit().putBoolean(nameDisplayKey, value).apply()
-
-    var isPinSetupEnabled: Boolean
-        get() = sharedPreferences.getBoolean(pinSetupScreenDisplay, true)
-        set(value) = sharedPreferences.edit().putBoolean(pinSetupScreenDisplay, value).apply()
-
-    var isThemeSelectionEnabled: Boolean
-        get() = sharedPreferences.getBoolean(themeScreenDisplay, true)
-        set(value) = sharedPreferences.edit().putBoolean(themeScreenDisplay, value).apply()
 
     // ─── Ad frequency ────────────────────────────────────────────────────────
     var libraryNativeAdAfterItems: String
@@ -141,20 +246,14 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
         get() = sharedPreferences.getBoolean("internet_popup_ftu_done", false)
         set(value) = sharedPreferences.edit().putBoolean("internet_popup_ftu_done", value).apply()
 
-    /** Raw Long stored from Remote Config (getLong). Defaults to -2. */
     var internetConnectivityDisplay: Long
         get() = sharedPreferences.getLong("internet_connectivity_display", -2L)
         set(value) = sharedPreferences.edit().putLong("internet_connectivity_display", value).apply()
 
-    /** Epoch-ms of the last time the popup was shown (24-hour mode only). */
     private var internetConnectivityLastShownAt: Long
         get() = sharedPreferences.getLong("internet_connectivity_last_shown", 0L)
         set(value) = sharedPreferences.edit().putLong("internet_connectivity_last_shown", value).apply()
 
-    /**
-     * Persisted count of "Remind Me Later" taps since the last popup show.
-     * Used in counter mode (N ≥ 1) only. Resets to 0 after the popup fires.
-     */
     var internetConnectivityCounter: Int
         get() = sharedPreferences.getInt("internet_connectivity_counter", 0)
         set(value) = sharedPreferences.edit().putInt("internet_connectivity_counter", value).apply()
@@ -170,39 +269,33 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
     var splashPaywallCounter: Int
         get() = sharedPreferences.getInt(splashCounterKey, 0)
         set(value) = sharedPreferences.edit().putInt(splashCounterKey, value).apply()
+
     fun shouldShowInternetConnectivityPopup(): Boolean {
         return when (val mode = internetConnectivityDisplay) {
-            0L  -> false   // disabled
-            -1L -> true    // every trigger — no state update
-            -2L -> {       // once per 24 hours
+            0L  -> false
+            -1L -> true
+            -2L -> {
                 val now      = System.currentTimeMillis()
                 val oneDayMs = 24L * 60 * 60 * 1000
                 if (now - internetConnectivityLastShownAt > oneDayMs) {
                     internetConnectivityLastShownAt = now
                     true
-                } else {
-                    false
-                }
+                } else false
             }
-            else -> {      // counter-based (mode >= 1)
+            else -> {
                 val n = mode.toInt()
                 when {
-                    internetConnectivityCounter == 0 -> true          // first trigger
-                    internetConnectivityCounter >= n -> {              // threshold reached
+                    internetConnectivityCounter == 0 -> true
+                    internetConnectivityCounter >= n -> {
                         internetConnectivityCounter = 0
                         true
                     }
-                    else -> false                                      // still counting
+                    else -> false
                 }
             }
         }
     }
 
-    /**
-     * Call when the user taps "Remind Me Later".
-     * Increments the persisted counter used in counter mode (N ≥ 1).
-     * No-op for -2 (24-hour) and -1 (always) modes.
-     */
     fun recordInternetPopupRemindLater() {
         if (internetConnectivityDisplay > 0L) {
             internetConnectivityCounter++
@@ -216,6 +309,7 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
         val raw = getAdObject(adName)?.optString("loading_dialog_time", "2000") ?: "2000"
         return raw.toLongOrNull() ?: 2000L
     }
+
     fun shouldShowSplashPaywall(): Boolean {
         if (isAppPurchased) return false
         val splashConfig = getAdObject("splash_paywall_config") ?: return false
@@ -247,7 +341,6 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
         }
     }
 
-    // ─── Remove Ads cross-button counter ─────────────────────────────────────
     private val interCrossCountKey = "inter_cross_count"
 
     var interstitialCrossCount: Int
@@ -309,27 +402,12 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
         return mediaNoteUsageCount >= quota
     }
 
-    // ─── Exit Popup helpers (NEW) ─────────────────────────────────────────────
-    /**
-     * Returns true when the exit popup should be shown.
-     * Reads `exit_popup_config` → `exit_popup_display` from iapJson.
-     * Default: true (popup visible until RC says otherwise).
-     */
+    // ─── Exit Popup helpers ───────────────────────────────────────────────────
     fun shouldShowExitPopup(): Boolean {
         val config = getAdObject("exit_popup_config") ?: return true
         return config.optString("exit_popup_display", "true").equals("true", ignoreCase = true)
     }
 
-    /**
-     * Returns the layout variant string for the exit popup.
-     *
-     * Firebase value → ExitPopupDialog.Variant mapping:
-     *   "Variant A" → SIMPLE
-     *   "Variant B" → WITH_RATING
-     *   "Variant C" → WITH_NATIVE
-     *
-     * Falls back to "Variant A" (SIMPLE) if the key is absent or unrecognised.
-     */
     fun getExitPopupVariant(): String {
         val config = getAdObject("exit_popup_config") ?: return "Variant A"
         return when (val v = config.optString("exit_popup_layout_variant", "Variant A").trim()) {
@@ -339,85 +417,36 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
     }
 
     // ─── App Open Resume frequency helpers ───────────────────────────────────
-    //
-    // Remote Config key (inside iaaJson, item name "app_open_resume"):
-    //   "app_open_resume_frequency": "<value>"
-    //
-    // Value semantics:
-    //   "-1"        → show on every resume (default / always-on)
-    //   "-2"        → show at most once per 24 hours
-    //    "0"        → disabled — never show
-    //   "1","2","N" → session-based: show on every Nth resume session
-    //                 e.g. "1" = every session, "2" = every 2nd session
-    //
-    // A "session" is one foreground→background→foreground cycle detected by
-    // ProcessLifecycleOwner in EasyDiaryApplication.
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /** Persisted epoch-ms of the last time the resume app-open was shown. */
     private var appOpenResumeLastShownAt: Long
         get()      = sharedPreferences.getLong("app_open_resume_last_shown", 0L)
         set(value) = sharedPreferences.edit().putLong("app_open_resume_last_shown", value).apply()
 
-    /**
-     * Counter that increments on every qualifying resume and resets when the
-     * ad is shown (session-based mode only).
-     */
     var appOpenResumeSessionCounter: Int
         get()      = sharedPreferences.getInt("app_open_resume_session_counter", 0)
         set(value) = sharedPreferences.edit().putInt("app_open_resume_session_counter", value).apply()
 
-    /**
-     * Reads "app_open_resume_frequency" from the iaaJson item "app_open_resume".
-     *
-     * Returns the raw integer value:
-     *   -1  → always
-     *   -2  → once per 24 h
-     *    0  → off
-     *   N>0 → every Nth session
-     *
-     * Falls back to -1 (always) when the key is absent so existing behaviour
-     * is preserved before the first Remote Config fetch.
-     */
     fun getAppOpenResumeFrequency(): Int {
         val obj = getAdObject(AppOpenAdKey_RESUME_VALUE) ?: return -1
         return obj.optString("app_open_resume_frequency", "-1").toIntOrNull() ?: -1
     }
 
-    /**
-     * The single decision point called by EasyDiaryApplication.showAdOnResume().
-     *
-     * Returns true when the resume app-open ad should be shown NOW according
-     * to the configured frequency value.  Side-effects (updating the last-shown
-     * timestamp and session counter) are applied atomically here so that
-     * callers never need to know the internals.
-     *
-     * Frequency semantics:
-     *   0   → always false (ad disabled)
-     *  -1   → always true  (every resume)
-     *  -2   → true only if more than 24 h have elapsed since last show
-     *  N>0  → increment counter; true when counter reaches N, then reset to 0
-     */
     fun shouldShowAppOpenOnResume(): Boolean {
         if (isAppPurchased) return false
-
         return when (val freq = getAppOpenResumeFrequency()) {
-            0    -> false   // disabled
-            -1   -> true    // every resume — no state update needed
-            -2   -> {       // once per 24 hours
-                val now       = System.currentTimeMillis()
-                val oneDayMs  = 24L * 60 * 60 * 1000
+            0    -> false
+            -1   -> true
+            -2   -> {
+                val now      = System.currentTimeMillis()
+                val oneDayMs = 24L * 60 * 60 * 1000
                 if (now - appOpenResumeLastShownAt > oneDayMs) {
                     appOpenResumeLastShownAt = now
                     true
-                } else {
-                    false
-                }
+                } else false
             }
-            else -> {       // session-based (freq >= 1)
+            else -> {
                 val next = appOpenResumeSessionCounter + 1
                 if (next >= freq) {
-                    appOpenResumeSessionCounter = 0   // reset after firing
+                    appOpenResumeSessionCounter = 0
                     true
                 } else {
                     appOpenResumeSessionCounter = next
@@ -426,8 +455,6 @@ class SharedPreferenceUtils @Inject constructor(private val sharedPreferences: S
             }
         }
     }
-
-
 
     private fun getAdObject(adName: String): JSONObject? {
         return try {

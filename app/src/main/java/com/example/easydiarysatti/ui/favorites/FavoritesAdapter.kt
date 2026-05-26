@@ -32,7 +32,9 @@ class FavoritesAdapter(
                 ivFavorite.isSelected = note.isFavorite
 
                 root.setOnClickListener { onItemClick(note) }
-                ivFavorite.setOnClickListener { onFavClick(note) }
+                ivFavorite.setOnClickListener { onFavClick(note)
+
+                }
             }
         }
     }

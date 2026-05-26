@@ -17,6 +17,8 @@ import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
 import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.databinding.FragmentCalenderBinding
@@ -37,6 +39,7 @@ import com.kizitonwose.calendar.core.daysOfWeek
 import com.kizitonwose.calendar.view.MonthDayBinder
 import com.kizitonwose.calendar.view.MonthHeaderFooterBinder
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
@@ -44,7 +47,6 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.time.temporal.WeekFields
 import java.util.Locale
-import javax.inject.Inject
 import kotlin.getValue
 
 @AndroidEntryPoint
@@ -56,7 +58,8 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
     private val bannerViewModel by activityViewModels<ViewModelBanner>()
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
-
+    @Inject lateinit var internetManager: InternetManager
+    @Inject lateinit var sharedPref: SharedPreferenceUtils
     // Inside CalenderFragment.kt
     private val calenderItemAdapter: CalenderItemAdapter by lazy {
         CalenderItemAdapter(onNoteItemClick = { note ->
@@ -83,6 +86,20 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
 
 
     private fun setupBannerObserver() {
+        // ── 1. No internet → hide shimmer immediately ─────────────────────────
+        if (sharedPref.isAppPurchased ||!internetManager.isInternetConnected) {
+            binding?.shimmerBannerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
+
+        // ── 2. Ad disabled from remote → hide shimmer immediately ─────────────
+        if (!sharedPref.getAdShowStatus(BannerAdKey.CALENDAR.value)) {
+            binding?.shimmerBannerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
+
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             if (isAdProcessStarted) return@observe
 
@@ -92,18 +109,19 @@ class CalenderFragment : Fragment(R.layout.fragment_calender) {
                 isAdProcessStarted = true
                 Log.d("AdDebug", "Calendar Banner Displayed")
 
-                // 1. Hide Shimmer
                 binding?.shimmerBannerContainer?.apply {
                     stopShimmer()
                     visibility = View.GONE
                 }
 
-                // 2. Show Ad Container
                 binding?.bannerContainer?.apply {
                     visibility = View.VISIBLE
                     removeAllViews()
                     addCleanView(preloadedBanner)
                 }
+            } else {
+                binding?.shimmerBannerContainer?.visibility = View.GONE
+                binding?.bannerContainer?.visibility = View.GONE
             }
         }
     }

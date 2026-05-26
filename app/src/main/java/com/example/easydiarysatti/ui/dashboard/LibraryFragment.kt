@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
 import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
@@ -35,6 +36,8 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
     private var layoutManager: GridLayoutManager? = null
     @Inject
     lateinit var sharedPreferenceUtils: SharedPreferenceUtils
+    @Inject  // ← ADD
+    lateinit var internetManager: InternetManager
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         // Default is 2 as per your spreadsheet
@@ -56,12 +59,20 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
     }
     private var adAlreadyPassedToAdapter = false
     private fun initAdObserver() {
+        // ── No internet or ad disabled → remove ad slot entirely ──────────────
+        if (sharedPreferenceUtils.isAppPurchased ||!internetManager.isInternetConnected ||
+            !sharedPreferenceUtils.getAdShowStatus(NativeAdKey.LIBRARY.value)) {
+            adapter?.hideAdSlot()
+            return
+        }
+
         viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             val nativeAd = adMap[NativeAdKey.LIBRARY]
             if (nativeAd != null) {
-                // Pass the loaded ad to your adapter
                 adAlreadyPassedToAdapter = true
                 adapter?.setNativeAd(nativeAd)
+            } else {
+                adapter?.hideAdSlot()
             }
         }
     }

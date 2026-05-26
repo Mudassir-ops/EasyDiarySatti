@@ -86,9 +86,14 @@ class DraftNotesFragment : Fragment(R.layout.fragment_draft_notes) {
         }
     }
     // ── Toolbar ───────────────────────────────────────────────────────────────
-
     private fun setupToolbar() {
         binding?.ivBack?.setOnClickListener {
+            // Reset the flag before popping so the outer-nav listener always
+            // enters Case B (plain back — go Home).  If openedFromDraft were left
+            // true here (e.g. user tapped Edit, then immediately pressed the toolbar
+            // back before the Handler.post fired), the listener would wrongly enter
+            // Case A, set cameFromDraft=true, and open CreateNote on a plain back press.
+            createNotesViewModel.openedFromDraft = false
             findNavController().navigateUp()
         }
     }
@@ -157,33 +162,12 @@ class DraftNotesFragment : Fragment(R.layout.fragment_draft_notes) {
 
     }
 
-    // ── Navigation helpers ────────────────────────────────────────────────────
-
-    /**
-     * Opens CreateNotesFragment with a blank note.
-     *
-     * WHY this two-step approach:
-     * ────────────────────────────
-     * DraftNotesFragment lives in the OUTER nav. If it navigates directly to
-     * createNotesFragment2, that push lands on the OUTER stack — outside homeHost.
-     * MainFragment.setupNavControllerListener() only watches homeHost, so
-     * handleDestinationChange(createNotesFragment) never fires → no header appears.
-     *
-     * Solution:
-     *   Step 1 — navigateUp() pops DraftNotes from the outer nav → mainFragment resumes.
-     *   Step 2 — post{} waits for the fragment transaction to fully settle, then
-     *            navigateInnerNavToCreateNote() pushes CreateNote into homeHost.
-     *            The inner nav listener fires → handleDestinationChange() runs →
-     *            header + save button + bottom toolbar appear exactly as normal. ✅
-     */
     private fun openFreshNote() {
         createNotesViewModel.clearTags()
         createNotesViewModel.clearImages()
         createNotesViewModel.setupNoteEntity(null)
-        // Tell CreateNotesFragment to navigate back to Drafts (not Home) on exit
         createNotesViewModel.openedFromDraft = true
 
-        // Step 1: pop DraftNotes off the outer nav
         findNavController().navigateUp()
 
         // Step 2: after the transaction settles, navigate inside homeHost
@@ -192,41 +176,25 @@ class DraftNotesFragment : Fragment(R.layout.fragment_draft_notes) {
         }
     }
 
-    /**
-     * Opens an existing draft in CreateNotesFragment for continued editing.
-     * Same two-step delegation pattern as openFreshNote().
-     *
-     * isDraft is kept true on the seeded entity. When the user taps Save,
-     * CreateNotesFragment calls mergeAndSave() (not mergeAndSaveAsDraft()),
-     * which persists isDraft=false — promoting the draft to a published note.
-     */
     private fun openDraftForEditing(draft: CreateNoteEntity) {
         createNotesViewModel.clearTags()
         createNotesViewModel.clearImages()
-        if (!draft.tags.isNullOrEmpty())   createNotesViewModel.addTags(draft.tags)
-        if (!draft.images.isNullOrEmpty()) createNotesViewModel.addImages(draft.images)
+
+        // Setup the shared ViewModel with the draft data
         createNotesViewModel.setupNoteEntity(draft)
-        // Tell CreateNotesFragment to navigate back to Drafts (not Home) on exit
-        createNotesViewModel.openedFromDraft = true
+        createNotesViewModel.openedFromDraft = true // Flag for single-navigation logic[cite: 4]
 
         val bundle = Bundle().apply { putParcelable(NOTE_ENTITY, draft) }
 
-        // Step 1: pop DraftNotes
+        // Step 1: Pop the current Drafts list so it is removed from the back-stack[cite: 4]
         findNavController().navigateUp()
 
-        // Step 2: open draft inside homeHost after transaction settles
+        // Step 2: Open CreateNote inside the home host after the transaction settles[cite: 4]
         Handler(Looper.getMainLooper()).post {
             getMainFragment()?.navigateInnerNavToCreateNote(draft = bundle)
         }
     }
 
-    // ── Utility ───────────────────────────────────────────────────────────────
-
-    /**
-     * Finds the MainFragment instance that owns this fragment's outer nav host.
-     * Searches both the parent fragment manager and the activity's fragment manager
-     * to handle all nesting configurations.
-     */
     private fun getMainFragment(): MainFragment? =
         activity?.supportFragmentManager?.fragments
             ?.flatMap { listOf(it) + it.childFragmentManager.fragments }

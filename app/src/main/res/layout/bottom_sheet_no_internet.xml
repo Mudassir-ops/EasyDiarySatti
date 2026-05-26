@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    bottom_sheet_no_internet.xml
+    Shown via BottomSheetDialog when the user taps the CTA button offline.
+    Place this file in: res/layout/bottom_sheet_no_internet.xml
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp"
+    android:paddingTop="24dp"
+    android:background="@color/white"
+    android:backgroundTint="@color/white"
+    android:paddingBottom="32dp"
+    android:gravity="center_horizontal">
+
+    <!-- Drag handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/bg_bottom_sheet_handle" />
+
+    <!-- Icon -->
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginBottom="16dp"
+        android:src="@drawable/ic_no_internet"
+        android:contentDescription="No internet" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/no_internet_connection"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="@color/black"
+        android:fontFamily="@font/outfit_bold"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Message -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="A network connection is required to complete your subscription. Please check your Wi-Fi or mobile data and try again."
+        android:textSize="@dimen/_8ssp"
+        android:backgroundTint="@color/black"
+        android:textColor="@color/black"
+
+        android:fontFamily="@font/outfit_regular"
+        android:gravity="center"
+        android:lineSpacingMultiplier="1.4"
+        android:layout_marginBottom="28dp" />
+
+    <!-- Retry button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnRetry"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:textColor="@color/white"
+        android:background="@drawable/btn_bg"
+        android:text="Try Again"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Dismiss link -->
+    <TextView
+        android:id="@+id/btnDismiss"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dismiss"
+        android:textSize="14sp"
+        android:textColor="@color/app_primary_color"
+        android:padding="8dp" />
+
+</LinearLayout>

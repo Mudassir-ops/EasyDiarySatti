@@ -237,6 +237,13 @@
     <string name="dialog_fav_subtitle">This note will be added to your favorites list.</string>
     <string name="add_to_favorites">Add to Favorites</string>
     <string name="remove">Remove</string>
+    <string name="share_as_text">Share as Text</string>
+    <string name="share_as_screenshot">Share as Screenshot</string>
+    <string name="share_note_title">Share Note</string>
+    <string name="share_via_app_label">Shared via Easy Diary</string>
+    <string name="screenshot_share_failed">Could not capture screenshot</string>
+    <string name="added_to_favorites">Added to Favorites</string>
+    <string name="removed_from_favorites">Removed from Favorites</string>
     <string name="delete">Delete</string>
 
     <!-- Multi-select -->
@@ -262,6 +269,7 @@
     <string name="back_to_home"><u>Back to Home</u></string>
     <string name="save_as_draft">Save as Draft</string>
     <string name="draft_deleted">Draft deleted</string>
+    <string name="fav_remove">Remove from Favorites</string>
     <string name="duplicate">Duplicate</string>
     <string name="add_tag">Add tag</string>
     <string name="share">Share</string>
@@ -273,5 +281,6 @@
     <!-- Add to res/values/strings.xml -->
     <string name="rewarded_loading_title">Preparing your reward… 🎁</string>
     <string name="rewarded_loading_subtitle">The video ad is loading.\nIt will start shortly.</string>
+    <string name="no_internet_connection">No Internet Connection</string>
 </resources>
 

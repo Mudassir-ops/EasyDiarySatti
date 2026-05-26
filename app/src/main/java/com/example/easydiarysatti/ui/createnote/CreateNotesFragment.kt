@@ -30,6 +30,7 @@ import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
 import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowCallBack
 import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
 import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
@@ -49,6 +50,7 @@ import com.example.easydiarysatti.setTextAlignmentByName
 import com.example.easydiarysatti.showDatePickerWithTime
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.toFormattedString
+import com.example.easydiarysatti.ui.main.MainFragment
 import com.example.easydiarysatti.ui.remainder.RemainderViewModel
 import com.example.easydiarysatti.utills.InternetConnectivityDialog
 import com.example.easydiarysatti.utills.SaveDraftDialog
@@ -184,14 +186,22 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             }
         }
 
-        // Refresh the tag flexbox row whenever we return from AddTagsFragment.
-        // viewModel.noteState holds the merged tag list written by handleSaveAction().
-        val latestTags = viewModel.noteState.value?.tags
-            ?.filter { !it.tagName.isNullOrBlank() }
-            ?: emptyList()
-        if (latestTags.isNotEmpty()) {
-            createNoteEntity = createNoteEntity?.copy(tags = latestTags)
-            latestTags.setupFlexBox()
+        // Only refresh the tag flexbox when the user explicitly pressed "Next" in
+        // AddTagsFragment (tagsConfirmed = true). A plain system back-press or toolbar
+        // back leaves tagsConfirmed = false, so the note's displayed tags are untouched.
+        //
+        // OLD CODE ran this block unconditionally on every onResume(), which caused tags
+        // selected in AddTagsFragment (but never confirmed via Next) to appear on the note
+        // the moment the user navigated back — even though handleSaveAction() was never
+        // called and the ViewModel's tagList was never updated for this session.
+        if (viewModel.tagsConfirmed) {
+            viewModel.tagsConfirmed = false // consume immediately — one-shot flag
+            val latestTags = viewModel.allTags()
+                .filter { !it.tagName.isNullOrBlank() }
+            if (latestTags.isNotEmpty()) {
+                createNoteEntity = createNoteEntity?.copy(tags = latestTags)
+                latestTags.setupFlexBox()
+            }
         }
     }
     private fun showInternetPopupIfNeeded() {
@@ -230,11 +240,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         setupImagesRecyclerview()
         setupDescriptionScroll()
         logAnalyticsEvent("Add_Note_Screen", "fragment_open")
-        listOf(
-            CustomTagEntity(
-                tagName = "", noteId = 999
-            )
-        ).setupFlexBox()
+
         val themeColor = getCurrentThemeColor(sessionManagerRepo)
         binding?.ivBottomArrow?.imageTintList = ColorStateList.valueOf(themeColor)
         setStyledDateTime(binding?.tvDate ?: return, R.color.grey)
@@ -329,14 +335,14 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         if (interstitialAdsConfig.isInterstitialLoaded()) {
             showBackPressInterstitial()
         } else {
-            val shouldShow = sharedPref.shouldShowRemoveAdsPopup()
+            val shouldShow = sharedPref.shouldShowRemoveAdsPopup() && internetManager.isInternetConnected
             if (shouldShow) {
                 proAccessManager.onInterstitialCrossClicked(
                     fragmentManager = requireActivity().supportFragmentManager,
-                    onAfterDismiss  = { navigateScreen() }
+                    onAfterDismiss  = { navigateScreen(fromBackPress = true) }
                 )
             } else {
-                navigateScreen()
+                navigateScreen(fromBackPress = true)
             }
         }
     }
@@ -344,6 +350,24 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     private var isAdLoaded = false
 
     private fun setupBannerObserver() {
+        if (sharedPref.isAppPurchased) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            binding?.bannerContainerTop?.visibility = View.GONE
+
+            return
+        }
+        if (!internetManager.isInternetConnected) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            return
+        }
+
+        // ── 2. Ad disabled from remote → hide shimmer immediately ─────────────
+        if (!sharedPref.getAdShowStatus(BannerAdKey.ADD_TASK.value)) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            return
+        }
+
+
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             if (isAdLoaded) return@observe
 
@@ -580,19 +604,261 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         return binding?.etHeader?.text?.toString().orEmpty()
     }
 
-    /** Called by MainFragment's kabab-menu bottom sheet → Share option. */
+    // ─────────────────────────────────────────────────────────────────────────
+//  Share
+// ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Called by MainFragment's kabab-menu bottom sheet → Share option.
+     * Shows a dialog so the user can choose Text or Screenshot format.
+     */
     fun shareNote() {
         val note = createNoteEntity ?: viewModel.noteState.value ?: return
+        val options = arrayOf(
+            getString(R.string.share_as_text),
+            getString(R.string.share_as_screenshot)
+        )
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.share_note_title))
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> shareNoteAsText(note)
+                    1 -> shareNoteAsCard(note)   // ← card beats screenshot: no cutoff
+                }
+            }
+            .show()
+    }
+
+    /**
+     * Shares note as formatted plain text:
+     *   📅 Date · 📝 Title · 📄 Description · app link
+     */
+    private fun shareNoteAsText(note: CreateNoteEntity) {
+        val appLink = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+        val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
         val shareText = buildString {
-            if (!note.title.isNullOrBlank()) appendLine(note.title)
-            if (!note.text.isNullOrBlank())  append(note.text)
+            appendLine("📅 Date: $dateStr")
+            if (!note.title.isNullOrBlank())       appendLine("📝 Title: ${note.title}")
+            if (!note.description.isNullOrBlank()) appendLine("📄 Description: ${note.description}")
+            appendLine()
+            appendLine(getString(R.string.share_via_app_label))
+            append(appLink)
         }.trim()
+
         val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
             type = "text/plain"
             putExtra(android.content.Intent.EXTRA_SUBJECT, note.title.orEmpty())
             putExtra(android.content.Intent.EXTRA_TEXT, shareText)
         }
         startActivity(android.content.Intent.createChooser(intent, getString(R.string.share)))
+    }
+
+    /**
+     * Builds a styled note card bitmap from [note] data and shares it as an image.
+     *
+     * WHY a generated card instead of PixelCopy / Canvas.draw():
+     *  • PixelCopy only captures what is VISIBLE on screen — any text the user
+     *    has scrolled past is silently cut off.
+     *  • A generated card expands its height to fit ALL text regardless of length.
+     *  • No window rect / hardware-layer issues — we draw directly to a Canvas.
+     */
+    private fun shareNoteAsCard(note: CreateNoteEntity) {
+        try {
+            val bitmap = buildNoteCardBitmap(note)
+
+            val appLink = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+            val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+                .format(java.util.Date())
+
+            val shareText = buildString {
+                appendLine("📅 Date: $dateStr")
+                appendLine()
+                appendLine(getString(R.string.share_via_app_label))
+                append(appLink)
+            }.trim()
+
+            saveBitmapAndShare(bitmap, shareText)
+        } catch (e: Exception) {
+            Log.e("shareNote", "Card share failed: ${e.message}")
+            showShareError()
+        }
+    }
+
+    /**
+     * Builds a white card bitmap containing:
+     *   • Branded header bar (app name)
+     *   • Date
+     *   • Title  (bold)
+     *   • Divider line
+     *   • Full description — ALL lines, no truncation
+     *
+     * Rendered at 1 080 px wide so it looks sharp on every device.
+     */
+    private fun buildNoteCardBitmap(note: CreateNoteEntity): android.graphics.Bitmap {
+        val cardWidth = 1080
+        val pad       = 72     // outer padding px
+        val innerPad  = 48     // spacing between sections px
+
+        // ── paints ────────────────────────────────────────────────────────────
+        val headerPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#4A90D9")
+            style = android.graphics.Paint.Style.FILL
+        }
+        val appNamePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.WHITE
+            textSize = 38f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        val datePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#888888")
+            textSize = 34f
+        }
+        val titlePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#1A1A1A")
+            textSize = 52f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        val dividerPaint = android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#E0E0E0")
+            strokeWidth = 2f
+        }
+        val descPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#333333")
+            textSize = 40f
+        }
+        val bgPaint = android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+        }
+
+        val textWidth = cardWidth - pad * 2
+        val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        // ── wrap text helper ──────────────────────────────────────────────────
+        fun wrapText(text: String, paint: android.graphics.Paint, maxWidth: Int): List<String> {
+            val lines = mutableListOf<String>()
+            // Handle newlines first, then word-wrap each paragraph
+            text.split("\n").forEach { paragraph ->
+                val words = paragraph.split(" ")
+                var current = ""
+                for (word in words) {
+                    val candidate = if (current.isEmpty()) word else "$current $word"
+                    if (paint.measureText(candidate) <= maxWidth) {
+                        current = candidate
+                    } else {
+                        if (current.isNotEmpty()) lines.add(current)
+                        current = word
+                    }
+                }
+                if (current.isNotEmpty()) lines.add(current)
+            }
+            return lines
+        }
+
+        val titleLines = if (!note.title.isNullOrBlank())
+            wrapText(note.title!!, titlePaint, textWidth) else emptyList()
+        val descLines  = if (!note.description.isNullOrBlank())
+            wrapText(note.description!!, descPaint, textWidth) else emptyList()
+
+        // ── measure total height ──────────────────────────────────────────────
+        val headerH = 110
+        var totalH  = headerH + pad                          // header + top pad
+        totalH     += 40 + innerPad                          // date row
+        if (titleLines.isNotEmpty())
+            totalH += titleLines.size * 64 + innerPad        // title rows
+        totalH     += 2 + innerPad                           // divider
+        if (descLines.isNotEmpty())
+            totalH += descLines.size * 54                    // desc rows
+        totalH     += pad                                    // bottom pad
+
+        // ── draw ──────────────────────────────────────────────────────────────
+        val bitmap = android.graphics.Bitmap.createBitmap(
+            cardWidth, totalH, android.graphics.Bitmap.Config.ARGB_8888
+        )
+        val canvas = android.graphics.Canvas(bitmap)
+
+        // White background
+        canvas.drawRect(0f, 0f, cardWidth.toFloat(), totalH.toFloat(), bgPaint)
+
+        // Header bar
+        canvas.drawRect(0f, 0f, cardWidth.toFloat(), headerH.toFloat(), headerPaint)
+        canvas.drawText(
+            getString(R.string.app_name),
+            pad.toFloat(),
+            headerH / 2f + appNamePaint.textSize / 3,
+            appNamePaint
+        )
+
+        var y = headerH + pad.toFloat()
+
+        // Date
+        canvas.drawText("📅 $dateStr", pad.toFloat(), y + 34f, datePaint)
+        y += 40 + innerPad
+
+        // Title lines
+        for (line in titleLines) {
+            canvas.drawText(line, pad.toFloat(), y + 52f, titlePaint)
+            y += 64
+        }
+        if (titleLines.isNotEmpty()) y += innerPad
+
+        // Divider
+        canvas.drawLine(pad.toFloat(), y, (cardWidth - pad).toFloat(), y, dividerPaint)
+        y += 2 + innerPad
+
+        // Description — every line, nothing skipped
+        for (line in descLines) {
+            canvas.drawText(line, pad.toFloat(), y + 40f, descPaint)
+            y += 54
+        }
+
+        return bitmap
+    }
+
+    private fun saveBitmapAndShare(bitmap: android.graphics.Bitmap, shareText: String) {
+        try {
+            val cacheFile = java.io.File(
+                requireContext().cacheDir,
+                "note_share_${System.currentTimeMillis()}.png"
+            )
+            cacheFile.outputStream().use {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, it)
+            }
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.provider",
+                cacheFile
+            )
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "image/png"
+                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(android.content.Intent.createChooser(intent, getString(R.string.share)))
+        } catch (e: Exception) {
+            Log.e("shareNote", "saveBitmapAndShare failed: ${e.message}")
+            showShareError()
+        }
+    }
+
+    private fun showShareError() {
+        binding?.parentLayout?.showSnackbar(getString(R.string.screenshot_share_failed))
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Favorite sync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Called by MainFragment via [CreateNoteOptionsBottomSheet.onFavoriteResult]
+     * so that [createNoteEntity].isFavorite stays in sync after a toggle.
+     * Without this, reopening the bottom sheet would show the old label text.
+     */
+    fun syncFavoriteState(newIsFavorite: Boolean) {
+        createNoteEntity = createNoteEntity?.copy(isFavorite = newIsFavorite)
     }
 
     /** Called by MainFragment's kabab-menu bottom sheet → Delete option. */
@@ -629,8 +895,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     private fun saveNote() {
         createNoteEntity = createNoteEntity?.copy(
-            title = binding?.etHeader?.text?.toString().orEmpty(),
-            description = binding?.etDescription?.text?.toString().orEmpty()
+            title       = binding?.etHeader?.text?.toString().orEmpty(),
+            description = binding?.etDescription?.text?.toString().orEmpty(),
+            isDraft     = false   // promote draft → published note; removes it from Drafts screen
         )
 
         createNoteEntity?.let {
@@ -832,16 +1099,20 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
      * Single place that checks the Remove Ads popup counter and either
      * shows RemoveAdsDialog (no navigation) or navigates up.
      * Called from every dismiss/fail/delay path of both interstitials.
+     *
+     * Internet guard: if the device is offline the dialog is suppressed and
+     * we navigate directly — there is no point showing a purchase UI without
+     * a network connection.
      */
     private fun checkRemoveAdsPopupOrNavigate() {
-        val shouldShow = sharedPref.shouldShowRemoveAdsPopup()
+        val shouldShow = sharedPref.shouldShowRemoveAdsPopup() && internetManager.isInternetConnected
         if (shouldShow) {
             proAccessManager.onInterstitialCrossClicked(
                 fragmentManager = requireActivity().supportFragmentManager,
-                onAfterDismiss = { navigateScreen() }
+                onAfterDismiss = { navigateScreen(fromBackPress = true) }
             )
         } else {
-            navigateScreen()
+            navigateScreen(fromBackPress = true)
         }
     }
 
@@ -876,9 +1147,12 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
     /**
      * Checks the Remove Ads popup counter WITHOUT navigating.
      * Used by showInterstitial() where navigation has already happened before the ad shows.
+     *
+     * Internet guard: if the device is offline the dialog is suppressed — no network,
+     * no purchase flow.
      */
     private fun checkRemoveAdsPopupOnly() {
-        val shouldShow = sharedPref.shouldShowRemoveAdsPopup()
+        val shouldShow = sharedPref.shouldShowRemoveAdsPopup() && internetManager.isInternetConnected
         if (shouldShow) {
             activity?.runOnUiThread {
                 if (!isAdded) return@runOnUiThread
@@ -912,8 +1186,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
      * 3. Last resort: pop to the start destination of the current nav graph. This is still
      *    better than navigateUp() because it always goes to root, not just one step back.
      */
-    private fun navigateScreen() {
-        // Guard: fire at most once per fragment instance
+    private fun navigateScreen(fromBackPress: Boolean = false) {
         if (hasNavigated) return
         hasNavigated = true
 
@@ -945,14 +1218,15 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                     ?: findMainFragmentRecursive(hostActivity.supportFragmentManager)
 
             if (mainFragment != null) {
-                if (fromDraft) {
-                    // Opened from DraftNotesFragment — go back to Drafts screen
-                    Log.d("navigateScreen", "fromDraft=true → navigateBackToDraft()")
+                if (fromDraft && fromBackPress) {
+                    // Opened from DraftNotesFragment and user pressed back — go back to Drafts
+                    Log.d("navigateScreen", "fromDraft=true + backPress → navigateBackToDraft()")
                     mainFragment.navigateBackToDraft()
                 } else {
-                    // Normal path — go back to Home
-                    Log.d("navigateScreen", "fromDraft=false → navigateInnerNavToHome()")
-                    mainFragment.navigateInnerNavToHome()
+                    // Save path (fromBackPress=false): always go Home, regardless of fromDraft
+                    // Back press from normal/Favorites path: navigateBackFromCreateNote handles it
+                    Log.d("navigateScreen", "fromDraft=false or save → navigateBackFromCreateNote()")
+                    mainFragment.navigateBackFromCreateNote(fromBackPress)
                 }
                 return
             }

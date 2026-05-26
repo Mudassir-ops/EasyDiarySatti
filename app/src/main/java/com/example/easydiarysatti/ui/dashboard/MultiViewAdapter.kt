@@ -149,6 +149,12 @@ class MultiViewAdapter(
             }
         }
     }
+    fun hideAdSlot() {
+        nativeAd = null
+        // Remove any AdItem from the current list so the slot disappears entirely
+        val filteredList = currentList.filterNot { it is LibraryItem.AdItem }
+        submitList(filteredList)
+    }
 
     class DiffCallback : DiffUtil.ItemCallback<LibraryItem>() {
         override fun areItemsTheSame(oldItem: LibraryItem, newItem: LibraryItem): Boolean {

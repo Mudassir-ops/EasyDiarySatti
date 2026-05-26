@@ -18,7 +18,9 @@ import androidx.core.app.AlarmManagerCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.graphics.toColorInt
 import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
 import com.example.easydiarysatti.ads.cmp.ConsentController
@@ -40,8 +42,8 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
 
     private lateinit var binding: ActivityMainBinding
     private val updateViewModel: UpdateViewModel by viewModels()
-    // 1. Declare the controller
     private lateinit var consentController: ConsentController
+
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
 
@@ -110,7 +112,7 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
 
     private val noteBgList: MutableList<com.example.easydiarysatti.utills.BgItem?> by lazy {
         mutableListOf(
-            null,                                                              // position 0 → upload button
+            null,
             com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_1),
             com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_2),
             com.example.easydiarysatti.utills.BgItem.DrawableRes(R.drawable.background_3),
@@ -124,65 +126,53 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
 
     private val colorPaletteSatti by lazy {
         listOf(
-            "#334155".toColorInt(), // black-ish
-            "#64748B".toColorInt(), // dark gray
-            "#8478BF".toColorInt(), // light gray
-            "#0F2A45".toColorInt(), // pink-ish
-            "#0F172A".toColorInt(), // greenish
-            "#4C0821".toColorInt()  // purple
+            "#334155".toColorInt(),
+            "#64748B".toColorInt(),
+            "#8478BF".toColorInt(),
+            "#0F2A45".toColorInt(),
+            "#0F172A".toColorInt(),
+            "#4C0821".toColorInt()
         )
     }
 
-    /**
-     * Drawer item list — positions must match the when(it) block in MainFragment.drawerItemAdapter.
-     *   0 → Edit Tags
-     *   1 → Draft          ← NEW
-     *   2 → Color Theme    (was 1)
-     *   3 → Reminders      (was 2)
-     *   4 → Diary Lock     (was 3)
-     *   5 → Language       (was 4)
-     *   6 → Privacy Policy (was 5)
-     *
-     * Add to strings.xml:  <string name="draft">Draft</string>
-     */
     private val mainDrawerItemList: List<DrawerItem> by lazy {
         listOf(
-            DrawerItem(                        // 0 — Edit Tags
+            DrawerItem(
                 bgTint = "#FFAC81",
                 imgRes = R.drawable.pencil_icon,
                 title  = getString(R.string.edit_tags2)
             ),
-            DrawerItem(                        // 1 — Favorites (NEW)
-                bgTint = "#E8BA00",            // pink/red to match heart theme
+            DrawerItem(
+                bgTint = "#E8BA00",
                 imgRes = R.drawable.ic_file_favourite,
                 title  = getString(R.string.favorites)
             ),
-            DrawerItem(                        // 1 — Draft (NEW)
+            DrawerItem(
                 bgTint = "#42ABD0",
                 imgRes = R.drawable.ic_draft_document1,
                 title  = getString(R.string.draft)
             ),
-            DrawerItem(                        // 2 — Color Theme (was 1)
+            DrawerItem(
                 bgTint = "#5EE3A9",
                 imgRes = R.drawable.paint_icon,
                 title  = getString(R.string.color_theme)
             ),
-            DrawerItem(                        // 3 — Reminders (was 2)
+            DrawerItem(
                 bgTint = "#FFDE8B",
                 imgRes = R.drawable.bell_drawer,
                 title  = getString(R.string.remainders)
             ),
-            DrawerItem(                        // 4 — Diary Lock (was 3)
+            DrawerItem(
                 bgTint = "#FF8D95",
                 imgRes = R.drawable.lock,
                 title  = getString(R.string.dairy_lock)
             ),
-            DrawerItem(                        // 5 — Language (was 4)
+            DrawerItem(
                 bgTint = "#A29DFB",
                 imgRes = R.drawable.language_icon,
                 title  = getString(R.string.langauge)
             ),
-            DrawerItem(                        // 6 — Privacy Policy (was 5)
+            DrawerItem(
                 bgTint = "#FFAC81",
                 imgRes = R.drawable.privacy_policy,
                 title  = getString(R.string.privacy_policy)
@@ -191,25 +181,82 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // ─────────────────────────────────────────────────────────────────────
+        // FIX #1 — Restore the theme color on the Window BEFORE the layout is
+        // inflated.  enableEdgeToEdge() makes the status bar transparent, so on
+        // a post-update cold-start the system briefly shows the window's raw
+        // background (white) before the fragment toolbar can set its own color.
+        // Resolving colorPrimary here and applying it immediately eliminates the
+        // white-header flash for every launch, including post-update restarts.
+        // ─────────────────────────────────────────────────────────────────────
+        restoreThemeColorEarly()
+
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // FIX #2 — After enableEdgeToEdge() decorates the window with
+        // transparent bars, re-apply the status-bar icon appearance so icons
+        // are readable against the themed background (not the white default).
+        applyStatusBarAppearance()
+
         consentController = ConsentController(this)
         consentController.initConsent(deviceId = "D31911EF56FDCB9715391100A2AB57A8", callback = this)
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
         setupStartGraph()
         checkAutoUpdate()
         handleIntent(intent)
     }
 
+    // -------------------------------------------------------------------------
+    // Resolves the theme's colorPrimary and applies it to the Window background
+    // BEFORE setContentView, so there is never a white flicker on any launch.
+    // -------------------------------------------------------------------------
+    private fun restoreThemeColorEarly() {
+        try {
+            val color = androidx.core.content.ContextCompat.getColor(this, R.color.app_primary_color)
+            window.setBackgroundDrawable(
+                android.graphics.drawable.ColorDrawable(color)
+            )
+        } catch (e: Exception) {
+            Log.w("MainActivity", "restoreThemeColorEarly: ${e.message}")
+        }
+    }
+
+    private fun applyStatusBarAppearance() {
+        try {
+            val color = androidx.core.content.ContextCompat.getColor(this, R.color.app_primary_color)
+            val controller = WindowInsetsControllerCompat(window, binding.root)
+            controller.isAppearanceLightStatusBars = isColorLight(color)
+        } catch (e: Exception) {
+            Log.w("MainActivity", "applyStatusBarAppearance: ${e.message}")
+        }
+    }
+    /**
+     * Returns true if [color] is perceptually "light" (luminance > 50 %).
+     * Used to decide whether to show dark or light status-bar icons.
+     */
+    private fun isColorLight(color: Int): Boolean {
+        val r = android.graphics.Color.red(color) / 255.0
+        val g = android.graphics.Color.green(color) / 255.0
+        val b = android.graphics.Color.blue(color) / 255.0
+        // Relative luminance (WCAG formula)
+        val luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+        return luminance > 0.5
+    }
+
     fun getBgThemes(): MutableList<com.example.easydiarysatti.utills.BgItem?> = noteBgList
     fun getColorPalette(): List<Int>? = colorPaletteSatti
     fun getDrawerItemList(): List<DrawerItem> = mainDrawerItemList
+
     private fun setupStartGraph() {
         val navHostFragment =
             supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
@@ -218,30 +265,23 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         val navController = navHostFragment.navController
         val inflater = navController.navInflater
         val navGraph = inflater.inflate(R.navigation.mobile_navigation)
-        if (viewModel.isOnBoardingCompleted()) {
-            navGraph.setStartDestination(R.id.splashFragment)
-        } else {
-            navGraph.setStartDestination(R.id.splashFragment)
-        }
+        navGraph.setStartDestination(R.id.splashFragment)
         navController.graph = navGraph
-
     }
 
-    private var isColdStart = true // Will be true when app is first opened
+    private var isColdStart = true
 
     override fun onResume() {
         super.onResume()
         val isOnBoardingDone = viewModel.isOnBoardingCompleted()
         if (!isOnBoardingDone) return
 
-        val navHostFragment = supportFragmentManager.findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
+        val navHostFragment = supportFragmentManager.findFragmentById(
+            R.id.nav_host_fragment_activity_main
+        ) as? NavHostFragment
         val currentDestinationId = navHostFragment?.navController?.currentDestination?.id
 
-        // 1. DO NOT show login if we are on Splash.
-        // This allows Splash to show and Ads to initialize properly.
-        if (currentDestinationId == R.id.splashFragment) {
-            return
-        }
+        if (currentDestinationId == R.id.splashFragment) return
 
         if (sessionManagerRepo.isBypassSecurityLogin()) {
             sessionManagerRepo.bypassSecurityLogin(false)
@@ -258,7 +298,6 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         val overlayContainer = findViewById<FrameLayout>(R.id.loginOverlayContainer)
         overlayContainer.visibility = View.VISIBLE
 
-        // Pass the Cold Start flag to the Fragment
         val fragment = LoginFragment().apply {
             arguments = Bundle().apply { putBoolean("IS_COLD_START", isColdStart) }
         }
@@ -267,14 +306,13 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
             .replace(R.id.loginOverlayContainer, fragment)
             .commit()
 
-        // After it shows once, any other trigger in this session is a resume
         isColdStart = false
     }
 
-    // Function for LoginFragment to call
     fun onLoginFinished() {
         findViewById<FrameLayout>(R.id.loginOverlayContainer).visibility = View.GONE
     }
+
     override fun onDestroy() {
         super.onDestroy()
         updateViewModel.unregisterListener()
@@ -286,16 +324,12 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         lifecycleScope.launch {
             updateViewModel.updateState.collect {
                 when (it) {
-                    is UpdateState.Downloaded -> {
-                        showRestartSnackBar()
-                    }
-
+                    is UpdateState.Downloaded -> showRestartSnackBar()
                     else -> {}
                 }
             }
         }
     }
-    // Inside MainActivity.kt
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -303,27 +337,11 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
         handleIntent(intent)
     }
 
-    //    private fun handleIntent(intent: Intent?) {
-//        val noteId = intent?.getIntExtra(REMAINDER_UNIQUE_ID, -1) ?: -1
-//        if (noteId != -1) {
-//            // Use your safeNav extension to go to the note screen
-//            val navHostFragment = supportFragmentManager
-//                .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
-//            navHostFragment?.navController?.safeNav(
-//                currentDestId = R.id.mainFragment, // Or current destination
-//                actionId = R.id.remainderFragment,
-//                bundle = Bundle().apply { putInt("noteId", noteId) }
-//            )
-//        }
-//    }
-// Inside MainActivity.kt
     private fun handleIntent(intent: Intent?) {
         val noteId = intent?.getIntExtra("REMAINDER_UNIQUE_ID", -1) ?: -1
         if (noteId != -1) {
             val navHostFragment = supportFragmentManager
                 .findFragmentById(R.id.nav_host_fragment_activity_main) as? NavHostFragment
-
-            // Use global action instead of fragment ID to avoid crashes
             try {
                 navHostFragment?.navController?.navigate(
                     R.id.action_global_remainderFragment,
@@ -334,15 +352,32 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
             }
         }
     }
+
     private fun showRestartSnackBar() {
         Snackbar.make(
             findViewById(android.R.id.content),
             "Update ready",
             Snackbar.LENGTH_INDEFINITE
-        )
-            .setAction("Restart") {
-                updateViewModel.completeUpdate()
-            }.show()
+        ).setAction("Restart") {
+            updateViewModel.completeUpdate()
+
+            // ─────────────────────────────────────────────────────────────────
+            // FIX #3 — After completeUpdate() the system kills the process and
+            // relaunches it.  Sending a clean launch intent with CLEAR_TOP +
+            // NEW_TASK guarantees the Activity is fully recreated (not resumed
+            // from the back-stack in a half-initialized state) so the theme
+            // color is applied from scratch, preventing the white header.
+            // ─────────────────────────────────────────────────────────────────
+            packageManager.getLaunchIntentForPackage(packageName)?.let { launchIntent ->
+                launchIntent.addFlags(
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_NEW_TASK   or
+                            Intent.FLAG_ACTIVITY_CLEAR_TASK
+                )
+                startActivity(launchIntent)
+            }
+            finishAffinity()
+        }.show()
     }
 
     override fun onAdsLoad(canRequestAds: Boolean) {
@@ -355,9 +390,9 @@ class MainActivity : AppCompatActivity(), ConsentCallback {
     }
 
     override fun onPolicyStatus(isRequired: Boolean) {
-        // This tells you if the "Privacy Options" entry point needs to be visible in settings
         Log.d("ConsentCheck", "Privacy Options Required: $required")
     }
+
     override fun onConsentFormDismissed() {
         Log.d("ConsentCheck", "Form dismissed.")
     }

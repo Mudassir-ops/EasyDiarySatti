@@ -162,10 +162,8 @@ class TagsAdapter(
         override fun areItemsTheSame(old: CustomTagEntity, new: CustomTagEntity) =
             old.tagName == new.tagName
 
-        // Always return false — isSelected state lives outside the entity in
-        // addedTags, so two "equal" entities can have different visual states.
-        // Returning false forces onBindViewHolder to run for every item so
-        // teal/grey highlight always reflects the current selection correctly.
-        override fun areContentsTheSame(old: CustomTagEntity, new: CustomTagEntity) = false
+        // CHANGE THIS FROM FALSE TO TRUE
+        override fun areContentsTheSame(old: CustomTagEntity, new: CustomTagEntity) =
+            old.tagName == new.tagName && old.noteId == new.noteId
     }
 }

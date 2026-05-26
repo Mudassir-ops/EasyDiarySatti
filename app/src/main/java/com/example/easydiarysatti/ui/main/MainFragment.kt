@@ -31,6 +31,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.rewarded.RewardedAdsConfig
 import com.example.easydiarysatti.ads.rewarded.RewardedInterAdsConfig
 import com.example.easydiarysatti.ads.rewarded.callbacks.RewardedOnLoadCallBack
@@ -69,6 +70,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.RecyclerView
 import com.example.easydiarysatti.AppLogger
+import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
 import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
 import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
@@ -119,10 +121,18 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     @Inject
     lateinit var rewardedInterAdsConfig: RewardedInterAdsConfig
 
+    @Inject
+    lateinit var internetManager: InternetManager
+
     private var pendingReminderAction: (() -> Unit)? = null
     private var pendingRewardGate: String? = null
     private var innerDestBeforePaywall: Int? = null
     private var paywallOpenedFromCreateNote: Boolean = false
+
+    private var cameFromFavorites = false
+    private var cameFromDraft = false
+
+    private var isSelectionModeActive = false
 
     private val notificationPermissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
@@ -159,6 +169,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 if (productId == ProAccessManager.REMOVE_ADS_PRODUCT_ID) {
                     sharedPref.isAppPurchased = true
                     refreshPremiumBadges()
+                    hideProCardSlider()
                 }
             }
         )
@@ -246,33 +257,23 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         createNotesViewModel.sendAction(CreateNotesState.ChangeBgUri(bgImageUri = uri.toString()))
     }
 
-    // ── Pro Card Slider ──────────────────────────────────────────────────────
     private var proCardAutoScrollHandler: Handler? = null
     private var proCardAutoScrollRunnable: Runnable? = null
     private val proCardDotViews = mutableListOf<ImageView>()
 
-    // ─────────────────────────────────────────────────────────────────────────
-    //  CHANGE 1: drawerItemAdapter — case 0 (Edit Tags)
-    //    • REMOVED: binding?.headerSave?.visibility = View.VISIBLE  (was wrong)
-    //    • ADDED:   closeDrawer() before navigating                 (was missing)
-    // ─────────────────────────────────────────────────────────────────────────
     private val drawerItemAdapter: DrawerItemAdapter by lazy {
         DrawerItemAdapter(onNoteItemClick = {
             when (it) {
-
-                // 0 — Edit Tags
                 0 -> {
                     logAnalyticsEvent("Drawer_Edit_Tags", "drawer_click")
-                    if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START) // ← ADDED
+                    if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START)
                     findNavController().safeNav(
                         currentDestId = R.id.mainFragment,
                         actionId      = R.id.action_mainFragment_to_addTagsFragment2,
                         bundle        = Bundle().apply { putBoolean(FROM_SCREEN, true) }
                     )
-                    // ← REMOVED: binding?.headerSave?.visibility = View.VISIBLE
                 }
 
-                // 1 — Favorites
                 1 -> {
                     logAnalyticsEvent("Drawer_Favorites", "drawer_click")
                     if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START)
@@ -282,7 +283,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     )
                 }
 
-                // 2 — Draft
                 2 -> {
                     logAnalyticsEvent("Drawer_Draft", "drawer_click")
                     if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START)
@@ -292,7 +292,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     )
                 }
 
-                // 3 — Color Theme
                 3 -> {
                     logAnalyticsEvent("Drawer_Color_Theme", "drawer_click")
                     findNavController().safeNav(
@@ -301,14 +300,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     )
                 }
 
-                // 4 — Reminders
                 4 -> {
                     logAnalyticsEvent("Drawer_Reminders", "drawer_click")
                     if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START)
                     onRemainderClick()
                 }
 
-                // 5 — Diary Lock
                 5 -> {
                     logAnalyticsEvent("Drawer_Diary_Lock", "drawer_click")
                     findNavController().safeNav(
@@ -317,7 +314,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     )
                 }
 
-                // 6 — Language
                 6 -> {
                     logAnalyticsEvent("Drawer_Language", "drawer_click")
                     if (view != null) {
@@ -327,7 +323,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     return@DrawerItemAdapter
                 }
 
-                // 7 — Privacy Policy
                 7 -> {
                     activity?.privacyPolicyUrl()
                     if (view != null) binding?.parentLayout?.closeDrawer(GravityCompat.START)
@@ -374,6 +369,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         backStack.push(R.id.btnHome)
 
         binding?.bottomNav?.clearChecked()
+
         setupNavControllerListener()
         setupOuterNavPaywallListener()
         setupBottomNav()
@@ -408,23 +404,43 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 insets
             }
         }
-    }
 
-    // ── Home Fragment selection wiring ───────────────────────────────────────
+        findNavController().currentBackStackEntry
+            ?.savedStateHandle
+            ?.getLiveData<Boolean>("navigate_to_create")
+            ?.observe(viewLifecycleOwner) { shouldOpen ->
+                if (shouldOpen != true) return@observe
+                findNavController().currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.remove<Boolean>("navigate_to_create")
+                cameFromFavorites = true
+                android.os.Handler(android.os.Looper.getMainLooper()).post {
+                    if (!isAdded || view == null) return@post
+                    navigateInnerNavToCreateNote()
+                }
+            }
+    }
 
     private fun wireHomeFragment() {
         val homeFragment = getHomeFragment() ?: return
         homeFragment.onSelectionChanged = { isActive, count ->
+            isSelectionModeActive = isActive
             binding?.apply {
                 if (isActive) {
-                    ivDeleteAll.visibility = View.VISIBLE
-                    ivRemainder.visibility = View.VISIBLE
+
+                    ivMenu.visibility      = View.GONE
+                    ivRemainder.visibility = View.GONE
                     ivPremium.visibility   = View.GONE
+                    icAddNotes.visibility  = View.GONE
+                    ivDeleteAll.visibility = View.VISIBLE
+                    headerTitle.text = getString(R.string.selected_count, count)
                 } else {
+                    ivMenu.visibility      = View.VISIBLE
                     ivDeleteAll.visibility = View.GONE
                     ivRemainder.visibility = View.VISIBLE
                     ivPremium.visibility   =
                         if (sharedPref.isAppPurchased) View.GONE else View.VISIBLE
+                    icAddNotes.visibility  = View.VISIBLE
                     headerTitle.text = getString(R.string.title_home)
                 }
             }
@@ -538,8 +554,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun setupBottomNav() {
-        binding?.bottomNav?.addOnButtonCheckedListener { _, checkedId, isChecked ->
+        binding?.bottomNav?.addOnButtonCheckedListener { group, checkedId, isChecked ->
             if (!isChecked) return@addOnButtonCheckedListener
+            if (isSelectionModeActive) {
+                group.check(R.id.btnHome)
+                return@addOnButtonCheckedListener
+            }
 
             val targetHost = when (checkedId) {
                 R.id.btnHome     -> homeHost
@@ -565,9 +585,25 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             backStack.remove(checkedId)
             backStack.push(checkedId)
 
-            childFragmentManager.beginTransaction()
-                .hide(activeNavHost ?: return@addOnButtonCheckedListener).show(targetHost)
-                .commitNowAllowingStateLoss()
+            val hostToHide = activeNavHost ?: return@addOnButtonCheckedListener
+
+            // Use commitAllowingStateLoss (deferred to next frame) instead of
+            // commitNowAllowingStateLoss (synchronous). commitNow causes a crash:
+            //   "Cannot transition entry that is not in the back stack"
+            // because it fires FragmentManager.onBackStackChangeStarted synchronously
+            // while NavController still has an in-flight animation/transition, so
+            // NavController.prepareForTransition finds its entry already gone.
+            // Deferring to the next frame lets any in-flight NavController transition
+            // finish before the hide/show transaction executes.
+            try {
+                childFragmentManager.beginTransaction()
+                    .hide(hostToHide)
+                    .show(targetHost)
+                    .commitAllowingStateLoss()
+            } catch (e: Exception) {
+                android.util.Log.e("MainFragment", "Tab switch transaction failed: ${e.message}")
+                return@addOnButtonCheckedListener
+            }
 
             activeNavHost = targetHost
             setupNavControllerListener()
@@ -631,7 +667,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
+    private fun hideProCardSlider() {
+        stopProCardAutoScroll()
+        val b = binding ?: return
+        b.drawerLayout.proCardViewPager.visibility = View.GONE
+        b.drawerLayout.proCardDots.visibility      = View.GONE
+    }
+
     private fun setupProCardSlider() {
+        // If the user has already purchased, hide the pro card section entirely.
+        if (sharedPref.isAppPurchased) {
+            hideProCardSlider()
+            return
+        }
         val binding = binding ?: return
         val viewPager  = binding.drawerLayout.proCardViewPager
         val dotsLayout = binding.drawerLayout.proCardDots
@@ -644,6 +692,9 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 drawer.closeDrawer(androidx.core.view.GravityCompat.START)
                 drawer.postDelayed({
                     if (!isAdded || view == null) return@postDelayed
+                    if (!internetManager.isInternetConnected) {
+                        return@postDelayed
+                    }
                     proAccessManager.onRemoveAdsClicked(requireActivity().supportFragmentManager)
                 }, 600)
             },
@@ -703,25 +754,73 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun setupOuterNavPaywallListener() {
         var previousDestinationId: Int? = null
         findNavController().addOnDestinationChangedListener { _, destination, _ ->
-            android.util.Log.d("OuterNav", "dest=${destination.id}  prev=$previousDestinationId  view=${view != null}")
 
-            // ── draftNotesFragment ────────────────────────────────────────────
+            // ── Arriving at draftNotesFragment ────────────────────────────────────
+            // Update the header to Draft mode. The inner nav is left untouched here;
+            // it is reset to Home only when we RETURN from Draft (see block below).
             if (view != null && destination.id == R.id.draftNotesFragment) {
                 handleDestinationChange(R.id.draftNotesFragment)
             }
+
+            // ── Returning from draftNotesFragment → mainFragment ──────────────────
+            //
+            // There are two cases:
+            //
+            // Case A — user tapped "Edit draft" or "Create note" inside DraftNotesFragment:
+            //   openedFromDraft == true at this moment.
+            //   DraftNotesFragment.openDraftForEditing() already called navigateUp() and then
+            //   posted Handler.post { navigateInnerNavToCreateNote(bundle) }.
+            //   That Handler.post fires right after this listener completes.
+            //   So here we only need to:
+            //     • set cameFromDraft = true  (so back-press from CreateNote returns to Draft)
+            //     • ensure inner nav is at Home before CreateNote is pushed
+            //   We must NOT call navigateInnerNavToCreateNote() here — that would be a
+            //   duplicate call that races with DraftNotesFragment's Handler.post.
+            //
+            // Case B — user pressed the back arrow or system back inside DraftNotesFragment:
+            //   openedFromDraft == false.
+            //   Just reset the inner nav to Home and restore the Home header.
+            //
             if (view != null
                 && destination.id == R.id.mainFragment
                 && previousDestinationId == R.id.draftNotesFragment) {
-                val innerDest = try { activeNavHost?.navController?.currentDestination?.id } catch (e: Exception) { null }
-                handleDestinationChange(innerDest ?: R.id.homeFragment)
-                if (innerDest == null || innerDest == R.id.homeFragment) setDefaultNavHeader()
+
+                if (createNotesViewModel.openedFromDraft) {
+                    // Case A: user tapped "Edit draft" or "Create note" inside
+                    // DraftNotesFragment.  openDraftForEditing()/openFreshNote() already:
+                    //   1. called navigateInnerNavToHome() synchronously (via getMainFragment())
+                    //      — wait, they don't; they post Handler.post{ navigateInnerNavToCreateNote }
+                    // The Handler.post in DraftNotesFragment is already queued on the main
+                    // thread message queue.  If we call navigateInnerNavToHome() here and it
+                    // goes async (isStateSaved=true → deferred to onStart), the deferred
+                    // doNavigate() can fire AFTER navigateInnerNavToCreateNote(), popping
+                    // CreateNote back to Home and leaving cameFromDraft=true stuck forever —
+                    // so every subsequent back-press from CreateNote wrongly re-opens Draft.
+                    //
+                    // Safe approach: post navigateInnerNavToHome() via Handler.post so it
+                    // lands on the queue RIGHT NOW, before DraftNotesFragment's already-posted
+                    // navigateInnerNavToCreateNote().  This guarantees order:
+                    //   (1) navigateInnerNavToHome  — clears stack to Home
+                    //   (2) navigateInnerNavToCreateNote — pushes CreateNote on top of Home
+                    cameFromDraft = true
+                    cameFromFavorites = false
+                    Handler(Looper.getMainLooper()).post {
+                        if (!isAdded || view == null) return@post
+                        navigateInnerNavToHome()
+                    }
+                    // Header will be set by the inner-nav listener when createNote opens.
+                } else {
+                    // Case B: user pressed back arrow / system-back inside DraftNotesFragment
+                    // without opening a note.  Just go Home.
+                    cameFromDraft = false
+                    cameFromFavorites = false
+                    navigateInnerNavToHome()
+                    setDefaultNavHeader()
+                    handleDestinationChange(R.id.homeFragment)
+                }
             }
 
-            // ── addTagsFragment2 (Drawer → Edit Tags) ────────────────────────
-            //
-            //  AddTagsFragment draws its OWN themed toolbar (drawerToolbar) in
-            //  manage mode. All MainFragment needs to do here is HIDE its own
-            //  toolbar views so they don't bleed through.
+            // ── Arriving at addTagsFragment2 (drawer → Manage Tags) ───────────────
             if (view != null && destination.id == R.id.addTagsFragment2) {
                 binding?.apply {
                     ivMenu.visibility              = View.GONE
@@ -738,16 +837,57 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 }
             }
 
-            // ── Returning from addTagsFragment2 back to mainFragment ──────────
+            // ── Returning from addTagsFragment2 → mainFragment ────────────────────
+            // Always go Home. navigateInnerNavToHome() is already safe: if inner nav
+            // is already at homeFragment it returns immediately without pushing a duplicate.
             if (view != null
                 && destination.id == R.id.mainFragment
                 && previousDestinationId == R.id.addTagsFragment2) {
-                val innerDest = try { activeNavHost?.navController?.currentDestination?.id } catch (e: Exception) { null }
-                handleDestinationChange(innerDest ?: R.id.homeFragment)
-                if (innerDest == null || innerDest == R.id.homeFragment) setDefaultNavHeader()
+                cameFromFavorites = false
+                cameFromDraft = false
+                navigateInnerNavToHome()
+                setDefaultNavHeader()
+                handleDestinationChange(R.id.homeFragment)
             }
 
-            // ── Paywall ───────────────────────────────────────────────────────
+            // ── Returning from favoritesFragment → mainFragment ───────────────────
+            //
+            // Two cases must be distinguished:
+            //
+            // Case BACK — user pressed ivBack/system-back inside FavoritesFragment
+            //   without tapping a note.  navigate_to_create is absent (or false).
+            //   → Reset inner nav to Home and restore the Home header.
+            //
+            // Case NOTE — user tapped a note / FAB. FavoritesFragment wrote
+            //   navigate_to_create=true to the savedStateHandle then called navigateUp().
+            //   The LiveData observer in onViewCreated will deliver true, set
+            //   cameFromFavorites=true, and call navigateInnerNavToCreateNote().
+            //   We must NOT call navigateInnerNavToHome() here — it would race with
+            //   and undo the Handler.post inside the observer, popping CreateNote back
+            //   to Home while leaving cameFromFavorites=true permanently so the next
+            //   back-press from any CreateNote wrongly re-opens Favorites.
+            //
+            if (view != null && destination.id == R.id.mainFragment
+                && previousDestinationId == R.id.favoritesFragment) {
+
+                // Peek without consuming — the observer will consume it on delivery.
+                val noteWasTapped = findNavController()
+                    .currentBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<Boolean>("navigate_to_create") == true
+
+                if (!noteWasTapped) {
+                    // Case BACK: plain back-press — reset to Home.
+                    cameFromFavorites = false
+                    cameFromDraft = false
+                    navigateInnerNavToHome()
+                    setDefaultNavHeader()
+                    handleDestinationChange(R.id.homeFragment)
+                }
+                // Case NOTE: the navigate_to_create observer handles everything.
+            }
+
+            // ── Returning from paywall ─────────────────────────────────────────────
             if (destination.id == R.id.mainFragment && previousDestinationId == R.id.mainPaywallFragment) {
                 innerDestBeforePaywall = null
                 val createNoteInStack = try {
@@ -755,6 +895,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         .any { it is com.example.easydiarysatti.ui.createnote.CreateNotesFragment }
                 } catch (e: Exception) { false }
                 if (!createNoteInStack) paywallOpenedFromCreateNote = false
+                // Hide the pro card slider if the user completed a premium purchase.
+                if (sharedPref.isAppPurchased) hideProCardSlider()
             }
 
             previousDestinationId = destination.id
@@ -765,7 +907,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         innerDestBeforePaywall = try {
             homeHost.findNavController().currentDestination?.id
         } catch (e: Exception) { null }
-        android.util.Log.d("PaywallNav", "captureInnerDestBeforePaywall → $innerDestBeforePaywall")
 
         if (innerDestBeforePaywall == R.id.createNotesFragment) {
             getCreateNotesFragment()?.let { createNote ->
@@ -779,6 +920,14 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun getCreateNotesFragment(): com.example.easydiarysatti.ui.createnote.CreateNotesFragment? {
         return homeHost.childFragmentManager.fragments
             .firstOrNull { it is com.example.easydiarysatti.ui.createnote.CreateNotesFragment }
+                as? com.example.easydiarysatti.ui.createnote.CreateNotesFragment
+    }
+
+    private fun findCreateNotesFragmentAnywhere(): com.example.easydiarysatti.ui.createnote.CreateNotesFragment? {
+        getCreateNotesFragment()?.let { return it }
+        return (parentFragment as? androidx.navigation.fragment.NavHostFragment)
+            ?.childFragmentManager?.fragments
+            ?.firstOrNull { it is com.example.easydiarysatti.ui.createnote.CreateNotesFragment }
                 as? com.example.easydiarysatti.ui.createnote.CreateNotesFragment
     }
 
@@ -811,7 +960,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     ivMenu.visibility              = View.INVISIBLE
                     ivBack.visibility              = View.VISIBLE
                     ivCreateNote.visibility        = View.VISIBLE
-                    // ✅ Only show kabab for existing saved notes (noteId != 0)
                     val isExistingNote = (createNotesViewModel.noteState.value?.noteId ?: 0L) != 0L
                     ivKabab.visibility             = if (isExistingNote) View.VISIBLE else View.GONE
                     ivDeleteAll.visibility         = View.GONE
@@ -914,10 +1062,12 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun setClickListeners() {
         binding?.apply {
             ivMenu.setOnClickListener {
+                if (isSelectionModeActive) return@setOnClickListener
                 logAnalyticsEvent("Drawer_Button", "icon_click")
                 parentLayout.openDrawer(GravityCompat.START)
             }
             ivBack.setOnClickListener {
+                if (isSelectionModeActive) return@setOnClickListener
                 val dispatcher = requireActivity().onBackPressedDispatcher
                 if (dispatcher.hasEnabledCallbacks()) {
                     dispatcher.onBackPressed()
@@ -929,16 +1079,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 getHomeFragment()?.deleteSelectedNotes()
             }
             ivRemainder.setOnClickListener {
+                if (isSelectionModeActive) return@setOnClickListener
                 logAnalyticsEvent("Home_Screen_Reminder", "icon_click")
                 viewModelNative.loadNativeAd(NativeAdKey.REMINDER_INTERVAL)
                 onRemainderClick()
             }
             ivPremium.setOnClickListener {
+                if (isSelectionModeActive) return@setOnClickListener
                 logAnalyticsEvent("Home_Screen_Premium_Icon", "icon_click")
                 captureInnerDestBeforePaywall()
                 proAccessManager.onPremiumIconClicked()
             }
             icAddNotes.setOnClickListener {
+                if (isSelectionModeActive) return@setOnClickListener
                 preLoadNextAd(BannerAdKey.ADD_TASK)
                 logAnalyticsEvent("Home_Screen_Add_Note", "button_click")
                 createNotesViewModel.clearTags()
@@ -954,7 +1107,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun preLoadNextAd(adKey: BannerAdKey) {
-        Log.d("AdsInformation", "NameFragment pre-loading ad for: ${adKey.value}")
         val adView = com.google.android.gms.ads.AdView(requireContext())
         bannerViewModel.loadBannerAd(adView, adKey, requireContext())
     }
@@ -988,15 +1140,84 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         )
     }
 
+    private fun showCreateNoteExitAdThenFavorites() {
+        sessionManagerRepo.bypassSecurityLogin(true)
+        interstitialAdsConfig.showInterstitialWithDialog(
+            requireActivity(),
+            InterAdKey.ADD_TASK_INTER_BACKPRESS,
+            object : InterstitialOnShowCallBack {
+                override fun onAdDismissedFullScreenContent() {
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navigateInnerNavToHomeAndOpenFavorites()
+                }
+                override fun onAdFailedToShow() {
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navigateInnerNavToHomeAndOpenFavorites()
+                }
+                override fun onAdImpressionDelayed() {
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navigateInnerNavToHomeAndOpenFavorites()
+                }
+            }
+        )
+    }
+
+    private fun navigateInnerNavToHomeAndOpenFavorites() {
+        navigateInnerNavToHome()
+        if (!isAdded || view == null) return
+        findNavController().safeNav(
+            currentDestId = R.id.mainFragment,
+            actionId      = R.id.action_mainFragment_to_favoritesFragment
+        )
+    }
+
+    private fun showCreateNoteExitAdThenDraft() {
+        sessionManagerRepo.bypassSecurityLogin(true)
+        interstitialAdsConfig.showInterstitialWithDialog(
+            requireActivity(),
+            InterAdKey.ADD_TASK_INTER_BACKPRESS,
+            object : InterstitialOnShowCallBack {
+                override fun onAdDismissedFullScreenContent() {
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navigateBackToDraft()
+                }
+                override fun onAdFailedToShow() {
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navigateBackToDraft()
+                }
+                override fun onAdImpressionDelayed() {
+                    sessionManagerRepo.bypassSecurityLogin(true)
+                    navigateBackToDraft()
+                }
+            }
+        )
+    }
+
     fun navigateInnerNavToHome() {
         fun doNavigate() {
             try {
                 val innerNav = homeHost?.findNavController() ?: return
-                innerNav.popBackStack(R.id.homeFragment, false)
+
+                // If we are already at home, just return to avoid unnecessary stack manipulation[cite: 1]
+                if (innerNav.currentDestination?.id == R.id.homeFragment) return
+
+                // Clear the inner backstack entirely back to homeFragment[cite: 1]
+                val popped = innerNav.popBackStack(R.id.homeFragment, false)
+                if (!popped) {
+                    innerNav.navigate(
+                        R.id.homeFragment,
+                        null,
+                        androidx.navigation.NavOptions.Builder()
+                            .setPopUpTo(innerNav.graph.startDestinationId, true)
+                            .build()
+                    )
+                }
             } catch (e: Exception) {
-                android.util.Log.e("navigateInnerNavToHome", "popBackStack failed: ${e.message}")
+                android.util.Log.e("navigateInnerNavToHome", "Stack reset failed: ${e.message}")
             }
         }
+
+        // Standard lifecycle safety check[cite: 1]
         val fm = activity?.supportFragmentManager
         if (fm != null && fm.isStateSaved) {
             viewLifecycleOwner.lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
@@ -1010,13 +1231,47 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         }
     }
 
+    fun navigateBackFromCreateNote(fromBackPress: Boolean) {
+        // ── Back-press from CreateNote opened via Favorites ───────────────────
+        // The interstitial/ad has already been shown by onBackTriggered() or
+        // CreateNotesFragment.showBackPressInterstitial() before this is called.
+        // We only need to handle the navigation destination here.
+        if (fromBackPress && cameFromFavorites) {
+            cameFromFavorites = false
+            cameFromDraft = false
+            navigateInnerNavToHomeAndOpenFavorites()
+
+            // ── Back-press from CreateNote opened via Draft list ──────────────────
+            // Ad already shown. Navigate back to the Draft list.
+        } else if (fromBackPress && cameFromDraft) {
+            cameFromFavorites = false
+            cameFromDraft = false
+            navigateBackToDraft()
+
+            // ── Save / any other exit (not a back-press, or no origin flag set) ───
+            // Always go Home. Never accidentally re-open Draft or Favorites on save.
+        } else {
+            cameFromFavorites = false
+            cameFromDraft = false
+            navigateInnerNavToHome()
+        }
+    }
+
     fun navigateBackToDraft() {
         fun doNavigate() {
             try {
                 val innerNav = homeHost?.findNavController() ?: return
-                if (innerNav.currentDestination?.id == R.id.createNotesFragment2 ||
-                    innerNav.currentDestination?.id == R.id.createNotesFragment) {
-                    innerNav.popBackStack()
+                if (innerNav.currentDestination?.id != R.id.homeFragment) {
+                    val popped = innerNav.popBackStack(R.id.homeFragment, false)
+                    if (!popped) {
+                        innerNav.navigate(
+                            R.id.homeFragment,
+                            null,
+                            androidx.navigation.NavOptions.Builder()
+                                .setPopUpTo(innerNav.graph.startDestinationId, true)
+                                .build()
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 android.util.Log.e("navigateBackToDraft", "inner pop failed: ${e.message}")
@@ -1055,7 +1310,21 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                         bundle        = draft
                     )
                 } else {
-                    innerNav.navigate(R.id.createNotesFragment2, draft)
+                    val popped = innerNav.popBackStack(R.id.homeFragment, false)
+                    if (!popped) {
+                        innerNav.navigate(
+                            R.id.homeFragment,
+                            null,
+                            androidx.navigation.NavOptions.Builder()
+                                .setPopUpTo(innerNav.graph.startDestinationId, true)
+                                .build()
+                        )
+                    }
+                    innerNav.safeNav(
+                        currentDestId = R.id.homeFragment,
+                        actionId      = R.id.action_homeFragment_to_createNotesFragment2,
+                        bundle        = draft
+                    )
                 }
             } catch (e: Exception) {
                 android.util.Log.e("navigateInnerNav", "navigateInnerNavToCreateNote failed: ${e.message}")
@@ -1075,7 +1344,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     }
 
     private fun checkRemoveAdsPopupOrNavigate() {
-        val shouldShow = sharedPref.shouldShowRemoveAdsPopup()
+        val shouldShow = sharedPref.shouldShowRemoveAdsPopup() && internetManager.isInternetConnected
         if (shouldShow) {
             proAccessManager.onInterstitialCrossClicked(
                 fragmentManager = requireActivity().supportFragmentManager,
@@ -1093,6 +1362,16 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             return
         }
 
+        try {
+            val outerNav = findNavController()
+            if (outerNav.currentDestination?.id != R.id.mainFragment) {
+                outerNav.navigateUp()
+                return
+            }
+        } catch (e: Exception) {
+            android.util.Log.e("onBackTriggered", "outer nav check failed: ${e.message}")
+        }
+
         val currentHost  = activeNavHost ?: return
         navController    = currentHost.findNavController()
         val currentDestId = navController.currentDestination?.id
@@ -1101,8 +1380,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             R.id.addTagsFragment -> {
                 navController.navigateUp()
             }
-            R.id.createNotesFragment -> {
-                showCreateNoteExitAd()
+            R.id.createNotesFragment,
+            R.id.createNotesFragment2 -> {
+                if (cameFromFavorites) {
+                    // Back from CreateNote opened via Favorites → show exit ad then return to Favorites
+                    cameFromFavorites = false
+                    showCreateNoteExitAdThenFavorites()
+                } else if (cameFromDraft) {
+                    // Back from CreateNote opened via Draft list → show exit ad then return to Draft list
+                    cameFromDraft = false
+                    showCreateNoteExitAdThenDraft()
+                } else {
+                    showCreateNoteExitAd()
+                }
             }
             else -> {
                 if (navController.previousBackStackEntry != null) {
@@ -1148,6 +1438,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         )
         applyDynamicTheme(currentTheme)
     }
+
     private fun setNoteHeader() {
         binding?.apply {
             headerTitle.text       = ContextCompat.getString(context ?: return, R.string.add_note)
@@ -1156,10 +1447,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             ivPremium.visibility   = View.GONE
             refreshPremiumBadges()
 
-            // ── Save ─────────────────────────────────────────────────────────────
             headerSave.setOnClickListener {
-                val noteFragment = activeNavHost?.childFragmentManager
-                    ?.fragments?.find { it is CreateNotesFragment } as? CreateNotesFragment
+                val noteFragment = findCreateNotesFragmentAnywhere()
                 if (noteFragment?.getTitleText().isNullOrEmpty()) {
                     android.widget.Toast.makeText(
                         context,
@@ -1197,14 +1486,20 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             }
             ivKabab.setOnClickListener {
                 val currentNote = createNotesViewModel.noteState.value
-                val noteFragment = activeNavHost?.childFragmentManager
-                    ?.fragments?.find { it is CreateNotesFragment } as? CreateNotesFragment
+                val noteFragment = findCreateNotesFragmentAnywhere()
 
-                // Use the updated .show() which takes the 'note' object
+                val liveIsFavorite = getHomeFragment()
+                    ?.getLiveNote(currentNote?.noteId ?: 0L)
+                    ?.isFavorite
+                    ?: currentNote?.isFavorite
+                    ?: false
+
+                val noteWithFreshFav = currentNote?.copy(isFavorite = liveIsFavorite)
+
                 CreateNoteOptionsBottomSheet.show(
-                    fm = childFragmentManager,
-                    note = currentNote, // Pass the whole object here
-                    onFavorite = {clickedNote ->
+                    fm         = childFragmentManager,
+                    note       = noteWithFreshFav,
+                    onFavorite = { clickedNote ->
                         createNotesViewModel.toggleFavorite(clickedNote)
                     },
                     onShare = {
@@ -1212,14 +1507,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     },
                     onDelete = {
                         noteFragment?.deleteNote()
+                    },
+                    onFavoriteResult = { newIsFavorite ->
+                        noteFragment?.syncFavoriteState(newIsFavorite)
+                        createNotesViewModel.noteState.value?.let { note ->
+                            createNotesViewModel.setupNoteEntity(
+                                note.copy(isFavorite = newIsFavorite)
+                            )
+                        }
                     }
                 )
             }
-            // ── ⋮ Kabab → CreateNoteOptionsBottomSheet ───────────────────────────
-
         }
     }
-
 
     private fun setProfileHeader() {
         binding?.apply {
@@ -1232,15 +1532,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
     private fun setTagsHeader() {
         binding?.apply {
             headerTitle.text = ContextCompat.getString(context ?: return, R.string.tags)
-
-//            ivRemainder.setImageResource(R.drawable.ic_search)
-//            ivRemainder.visibility = View.VISIBLE
-//            ivRemainder.setOnClickListener {
-//                // Inner nav only — AddTagsFragment is a child of the active NavHost
-//                val addTagsFrag = activeNavHost?.childFragmentManager?.fragments
-//                    ?.find { it is AddTagsFragment } as? AddTagsFragment
-//                addTagsFrag?.toggleSearchMode()
-//            }
             ivRemainder.visibility = View.GONE
             headerSave.visibility         = View.GONE
             ivPremium.visibility          = View.GONE
@@ -1279,7 +1570,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                 val iv = binding?.ivCreateNote ?: return@collect
                 if (view == null) return@collect
 
-                // ✅ Sync kabab visibility when noteId changes (e.g. after first save)
                 val onCreateNoteScreen =
                     activeNavHost?.navController?.currentDestination?.id == R.id.createNotesFragment
                 if (onCreateNoteScreen) {
@@ -1381,7 +1671,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     action = CreateNotesState.ImagePicked(imageUri = uri)
                 )
             }
-            AppLogger.createLog("MultiPicker", "Sent ${uris.size} images to ViewModel")
         }
         if (view != null) {
             binding?.bottomNavCreateNote?.clearChecked()
@@ -1458,19 +1747,13 @@ class MainFragment : Fragment(R.layout.fragment_main) {
         navHostListeners.clear()
     }
 
-    // ── Rewarded Ad ──────────────────────────────────────────────────────────
-
     private fun loadAndShowReward(adKey: RewardedAdKey) {
-        val gateKey = pendingRewardGate ?: run {
-            android.util.Log.e("MainFragment", "loadAndShowReward: pendingRewardGate is null for $adKey")
-            return
-        }
-
-        // ── Check remote config for loading dialog ────────────────────────────────
-        val showLoadingDialog = sharedPref.getRewardedLoadingDialogShow(adKey.value)
+        val gateKey = pendingRewardGate ?: return
+        val adEnabled         = sharedPref.getAdShowStatus(adKey.value)
+        val showLoadingDialog = adEnabled && sharedPref.getRewardedLoadingDialogShow(adKey.value)&&
+                internetManager.isInternetConnected
         val loadingDialogTime = sharedPref.getRewardedLoadingDialogTime(adKey.value)
 
-        // ── Show loading dialog if enabled ────────────────────────────────────────
         val loadingDialog: RewardedLoadingDialog? = if (showLoadingDialog && isAdded) {
             RewardedLoadingDialog.show(
                 fm           = childFragmentManager,
@@ -1478,7 +1761,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             )
         } else null
 
-        // ── Load the rewarded ad ──────────────────────────────────────────────────
         rewardedAdsConfig.loadRewardedAd(
             adType   = adKey,
             listener = object : RewardedOnLoadCallBack {
@@ -1487,11 +1769,8 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     val act = activity ?: return
 
                     if (isSuccess) {
-                        // Ad loaded — tell the dialog it can dismiss when ready,
-                        // then show the ad in the callback
                         if (loadingDialog != null) {
                             loadingDialog.onAdReady {
-                                // Called after dialog dismissed + min time elapsed
                                 rewardedAdsConfig.showRewardedAd(
                                     act,
                                     adType   = adKey,
@@ -1502,7 +1781,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                 )
                             }
                         } else {
-                            // No dialog — show ad directly (original behaviour)
                             rewardedAdsConfig.showRewardedAd(
                                 act,
                                 adType   = adKey,
@@ -1513,7 +1791,6 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                             )
                         }
                     } else {
-                        // Ad failed to load — dismiss dialog immediately, run failover
                         if (loadingDialog != null) {
                             loadingDialog.onAdFailed {
                                 showRewardedInterstitialFailover(adKey, gateKey)
@@ -1533,6 +1810,19 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             RewardedAdKey.VIDEO_PRO_MEDIA -> RewardedInterAdKey.REWARDED_INTER_FAILOVER_MEDIA
             RewardedAdKey.VIDEO_PRO_SAVE  -> RewardedInterAdKey.REWARDED_INTER_FAILOVER_SAVE
         }
+
+        val failoverAdEnabled = sharedPref.getAdShowStatus(failoverKey.value)
+        val showLoadingDialog = failoverAdEnabled && sharedPref.getRewardedLoadingDialogShow(failoverKey.value)&&
+                internetManager.isInternetConnected
+        val loadingDialogTime = sharedPref.getRewardedLoadingDialogTime(failoverKey.value)
+
+        val loadingDialog: RewardedLoadingDialog? = if (showLoadingDialog && isAdded) {
+            RewardedLoadingDialog.show(
+                fm           = childFragmentManager,
+                minDisplayMs = loadingDialogTime
+            )
+        } else null
+
         rewardedInterAdsConfig.loadRewardedInterAd(
             adType   = failoverKey,
             listener = object : RewardedOnLoadCallBack {
@@ -1540,16 +1830,33 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     if (!isAdded) return
                     val act = activity ?: return
                     if (isSuccess) {
-                        rewardedInterAdsConfig.showRewardedInterAd(
-                            act,
-                            adType   = failoverKey,
-                            listener = object : RewardedOnShowCallBack {
-                                override fun onAdFailedToShow()   = onRewardGranted(gateKey)
-                                override fun onUserEarnedReward() = onRewardGranted(gateKey)
+                        if (loadingDialog != null) {
+                            loadingDialog.onAdReady {
+                                rewardedInterAdsConfig.showRewardedInterAd(
+                                    act,
+                                    adType   = failoverKey,
+                                    listener = object : RewardedOnShowCallBack {
+                                        override fun onAdFailedToShow()   = onRewardGranted(gateKey)
+                                        override fun onUserEarnedReward() = onRewardGranted(gateKey)
+                                    }
+                                )
                             }
-                        )
+                        } else {
+                            rewardedInterAdsConfig.showRewardedInterAd(
+                                act,
+                                adType   = failoverKey,
+                                listener = object : RewardedOnShowCallBack {
+                                    override fun onAdFailedToShow()   = onRewardGranted(gateKey)
+                                    override fun onUserEarnedReward() = onRewardGranted(gateKey)
+                                }
+                            )
+                        }
                     } else {
-                        onRewardGranted(gateKey)
+                        if (loadingDialog != null) {
+                            loadingDialog.onAdFailed { onRewardGranted(gateKey) }
+                        } else {
+                            onRewardGranted(gateKey)
+                        }
                     }
                 }
             }
@@ -1592,9 +1899,7 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                                     src.uri,
                                     android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
                                 )
-                            } catch (e: Exception) {
-                                android.util.Log.w("MainFragment", "takePersistableUriPermission failed: ${e.message}")
-                            }
+                            } catch (e: Exception) {}
                             applyGalleryBackground(src.uri)
                         }
                         null -> Unit

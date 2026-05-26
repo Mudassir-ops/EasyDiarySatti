@@ -29,8 +29,8 @@ android {
         applicationId = "com.dailydiary.privatejournal.lockednotes"
         minSdk = 24
         targetSdk = 36
-        versionCode = 26
-        versionName = "26.0"
+        versionCode = 32
+        versionName = "32.0"
         multiDexEnabled = true
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         setProperty("archivesBaseName", "EasyDiary-v$versionCode($versionName)")
@@ -49,10 +49,7 @@ android {
             isMinifyEnabled = false
             isShrinkResources = false
             isDebuggable = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+
         }
         getByName("release") {
             isMinifyEnabled = true
@@ -85,17 +82,14 @@ android {
     buildFeatures {
         viewBinding = true
         buildConfig = true
+        dataBinding = true
     }
     kotlin {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    buildFeatures {
-        viewBinding = true
-        buildConfig = true
-        dataBinding = true
-    }
+
 }
 
 dependencies {

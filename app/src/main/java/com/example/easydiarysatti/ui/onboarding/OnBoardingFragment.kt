@@ -16,6 +16,7 @@ import com.example.easydiarysatti.ads.appOpen.entrance.ViewModelEntrance
 import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
 import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
 import com.example.easydiarysatti.ads.firebase.RemoteConfiguration
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.databinding.FragmentOnBoardingBinding
@@ -24,8 +25,8 @@ import com.example.easydiarysatti.ui.uimodels.OnGoingScreenUiModel
 import com.example.easydiarysatti.viewBinding
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
 import java.lang.ref.WeakReference
-import javax.inject.Inject
 import kotlin.getValue
 
 @AndroidEntryPoint
@@ -35,7 +36,7 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
     private val viewModel by viewModels<OnBoardingViewModel>()
     private val bannerViewModel by activityViewModels<ViewModelBanner>()
     lateinit var mFirebaseAnalytics: FirebaseAnalytics
-
+    @Inject lateinit var internetManager: InternetManager
     @Inject lateinit var sharedPreferenceUtils: SharedPreferenceUtils
     @Inject lateinit var remoteConfiguration: RemoteConfiguration
 
@@ -64,44 +65,39 @@ class OnBoardingFragment : Fragment(R.layout.fragment_on_boarding) {
 //    private var isAdProcessStarted = false
 
     private fun setupBannerObserver() {
+        // ── 1. No internet → hide shimmer immediately ─────────────────────────
+        if (sharedPreferenceUtils.isAppPurchased||!internetManager.isInternetConnected) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
+
+        // ── 2. Ad disabled from remote → hide shimmer immediately ─────────────
         if (!sharedPreferenceUtils.getAdShowStatus(BannerAdKey.ON_BOARDING.value)) {
             binding?.bannerShimmerContainer?.visibility = View.GONE
             binding?.bannerContainer?.visibility = View.GONE
             return
         }
-        bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
-            // 2. SAFETY LOCK: If we already started the timer for this screen, STOP here.
-//            if (isAdProcessStarted) return@observe
 
-            // Specifically grab the ad preloaded for this screen
+        bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             val preloadedAd = adMap[BannerAdKey.ON_BOARDING]
 
             if (preloadedAd != null) {
-                // 3. ACTIVATE LOCK: Ensure this block only runs once per fragment lifecycle
-//                isAdProcessStarted = true
-
-                // Show the shimmer container and start animation
                 binding?.bannerShimmerContainer?.visibility = View.VISIBLE
                 binding?.bannerShimmerContainer?.startShimmer()
 
-                // Check if fragment is still attached to avoid crashes
                 if (isAdded && binding != null) {
-
-                    // 5. TURN OFF SHIMMER: Stop animation and clear the effect
                     binding?.bannerShimmerContainer?.stopShimmer()
                     binding?.bannerShimmerContainer?.setShimmer(null)
 
                     binding?.bannerContainer?.let { container ->
-                        // Remove gray background and show the ad
                         container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
                         container.addCleanView(preloadedAd)
                         container.visibility = View.VISIBLE
                     }
                     Log.d("AdDebug", "Shimmer off, ON_BOARDING Ad visible (One-time load)")
                 }
-
             } else {
-                // Keep container hidden while waiting for the ad to appear in the map
                 binding?.bannerShimmerContainer?.visibility = View.GONE
                 binding?.bannerContainer?.visibility = View.GONE
                 Log.d("AdDebug", "ON_BOARDING ad not found in map yet...")

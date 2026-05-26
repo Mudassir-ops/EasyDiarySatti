@@ -9,6 +9,7 @@ import com.example.easydiarysatti.domain.repo.CreateNoteRepository
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -38,9 +40,16 @@ class HomeViewModel @Inject constructor(
     //  doesn't need to know about GlobalTagEntity.
     //  Room emits automatically on every insert / delete / rename — no manual
     //  StateFlow updates needed anywhere.
-    val globalTagsState = globalTagDao.observeAllTags()
-        .map { list -> list.map { it.tagName } }    // expose names only
-
+//    val globalTagsState = globalTagDao.observeAllTags()
+//        .map { list -> list.map { it.tagName } }    // expose names only
+    // FIX: Convert Flow to StateFlow so we can use .value
+    val globalTagsState: StateFlow<List<String>> = globalTagDao.observeAllTags()
+        .map { list -> list.map { it.tagName } }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
     var currentSortOrder = false
 
     init {
@@ -91,9 +100,21 @@ class HomeViewModel @Inject constructor(
     // ── Global tag management — all backed by Room ────────────────────────────
 
     /** Insert tag if it doesn't already exist. Room flow emits → grid updates. */
+//    fun saveGlobalTag(tagName: String) {
+//        viewModelScope.launch {
+//            globalTagDao.insertTag(GlobalTagEntity(tagName = tagName))
+//        }
+//    }
+    // FIX: Now uses the StateFlow's .value to check for duplicates
     fun saveGlobalTag(tagName: String) {
         viewModelScope.launch {
-            globalTagDao.insertTag(GlobalTagEntity(tagName = tagName))
+            val name = tagName.trim()
+            if (name.isEmpty()) return@launch
+
+            val alreadyExists = globalTagsState.value.any { it.equals(name, ignoreCase = true) }
+            if (!alreadyExists) {
+                globalTagDao.insertTag(GlobalTagEntity(tagName = name))
+            }
         }
     }
 

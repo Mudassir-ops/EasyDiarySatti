@@ -63,26 +63,17 @@ class RemoteConfiguration @Inject constructor(
 
     private fun updateRemoteValues() {
         try {
-            // ── Onboarding flow screen toggles (plan: Remote Config booleans) ──
-            // Key: onboarding_slides_display  → controls isOnboardingEnabled
-            sharedPreferenceUtils.isOnboardingEnabled =
-                remoteConfig.getBoolean("onboarding_slides_display")
-
-            // Key: permission_screen_display  → controls isPermissionEnabled
-            sharedPreferenceUtils.isPermissionEnabled =
-                remoteConfig.getBoolean("permission_screen_display")
-
-            // Key: start_writing_display  → controls isNameWritingEnabled
-            sharedPreferenceUtils.isNameWritingEnabled =
-                remoteConfig.getBoolean("start_writing_display")
-
-            // Key: pin_setup_screen_display  → controls isPinSetupEnabled
-            sharedPreferenceUtils.isPinSetupEnabled =
-                remoteConfig.getBoolean("pin_setup_screen_display")
-
-            // Key: choose_your_theme_screen_display  → controls isThemeSelectionEnabled
-            sharedPreferenceUtils.isThemeSelectionEnabled =
-                remoteConfig.getBoolean("choose_your_theme_screen_display")
+            // ── Onboarding Flow JSON ──────────────────────────────────────────
+            // Remote Config key: "onboarding_flow"
+            // Value: the full onboarding_flow JSON (first_open + returning_open cases).
+            // The JSON replaces all individual boolean screen-toggle keys.
+            // If the remote value is empty we keep whatever is already stored
+            // (defaults to DEFAULT_ONBOARDING_FLOW_JSON on a fresh install).
+            val remoteOnboardingFlow = remoteConfig.getString("onboarding_flow")
+            if (remoteOnboardingFlow.isNotEmpty()) {
+                sharedPreferenceUtils.onboardingFlowJson = remoteOnboardingFlow
+                Log.d(TAG_REMOTE, "RemoteConfig: onboarding_flow JSON updated")
+            }
 
             // ── Splash timeout ────────────────────────────────────────────────
             // Key: splash_timeout  (Long, ms)
@@ -98,13 +89,11 @@ class RemoteConfiguration @Inject constructor(
                 if (libraryAdFrequency.isNotEmpty()) libraryAdFrequency else "2"
 
             // ── Internet Connectivity Popup toggle ────────────────────────────
-            // Key:     "internet_connectivity_display"
-            // Type:    Boolean
-            // Default: true
-            // Effect:  true  → show no-internet popup at FTU (Add Note) and RU (Home)
-            //          false → popup is suppressed app-wide
+            // Key:  "internet_connectivity_display"
+            // Type: Long
             sharedPreferenceUtils.internetConnectivityDisplay =
-                         remoteConfig.getLong("internet_connectivity_display")
+                remoteConfig.getLong("internet_connectivity_display")
+
             Log.d(
                 TAG_REMOTE,
                 "RemoteConfig: Flags Updated → " +
@@ -115,12 +104,9 @@ class RemoteConfiguration @Inject constructor(
                         "Theme=${sharedPreferenceUtils.isThemeSelectionEnabled}, " +
                         "Timeout=${sharedPreferenceUtils.splashTimeout}, " +
                         "InternetPopup=${sharedPreferenceUtils.internetConnectivityDisplay}"
-
             )
 
             // ── IAA JSON (interstitials, app-opens, banners, natives) ─────────
-            // Debug key:   dairy_ads_debug
-            // Release key: dairy_ads_release
             val iaaKey  = if (BuildConfig.DEBUG) "dairy_ads_debug" else "dairy_ads_release"
             val iaaJson = remoteConfig.getString(iaaKey)
             if (iaaJson.isNotEmpty()) {
@@ -129,16 +115,6 @@ class RemoteConfiguration @Inject constructor(
             }
 
             // ── IAP JSON (paywalls, remove-ads, rewarded gates) ───────────────
-            // Debug key:   dairy_ads_iap_debug
-            // Release key: dairy_ads_iap_release
-            //
-            // This JSON must contain Items with these names (from plan):
-            //   onboarding_paywall_config  → Onboarding Paywall
-            //   splash_paywall_config      → Splash Paywall
-            //   main_paywall_config        → Main Paywall
-            //   remove_ads_inter_ad_cross_ipu → Remove Ads Only popup
-            //   free_add_note_save_quota   → Rewarded gate: save note
-            //   free_add_note_media_quota  → Rewarded gate: media note
             val iapKey  = if (BuildConfig.DEBUG) "dairy_ads_iap_debug" else "dairy_ads_iap_release"
             val iapJson = remoteConfig.getString(iapKey)
             if (iapJson.isNotEmpty()) {

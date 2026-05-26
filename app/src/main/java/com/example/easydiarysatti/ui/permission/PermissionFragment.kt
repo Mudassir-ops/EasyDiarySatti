@@ -15,6 +15,7 @@ import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
 import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.databinding.FragmentPermissionBinding
@@ -31,10 +32,10 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
     private val bannerViewModel by activityViewModels<ViewModelBanner>()
 
     @Inject lateinit var sharedPref: SharedPreferenceUtils
-
+    @Inject lateinit var internetManager: InternetManager
     private var cameraDeniedCount = 0
     private var galleryDeniedCount = 0
-    lateinit var mFirebaseAnalytics : FirebaseAnalytics
+    lateinit var mFirebaseAnalytics: FirebaseAnalytics
     private lateinit var requestCameraPermission: ActivityResultLauncher<String>
     private lateinit var requestGalleryPermission: ActivityResultLauncher<Array<String>>
 
@@ -82,7 +83,7 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
     }
 
     private fun setupBannerObserver() {
-        if (!sharedPref.getAdShowStatus(BannerAdKey.PERMISSION.value)) {
+        if (sharedPref.isAppPurchased||!internetManager.isInternetConnected || !sharedPref.getAdShowStatus(BannerAdKey.PERMISSION.value)) {
             binding?.bannerShimmerContainer?.visibility = View.GONE
             binding?.bannerContainer?.visibility = View.GONE
             return
@@ -110,32 +111,41 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
         }
     }
 
-    // Standard Navigation: permission is always popped from the stack by the nav XML.
-    // Whether the user skips, all permissions are granted, or they proceed normally —
-    // permissionFragment is removed so back from nameFragment goes to onBoardingFragment.
+    /**
+     * Waterfall navigation driven by the onboarding flow JSON.
+     *
+     * We ask the JSON "what comes after permission?" and navigate there.
+     * The JSON already encodes which screens exist in the active case, so we
+     * never need to manually check individual boolean flags here.
+     *
+     * Example flows:
+     *   case_full           → permission → name → pin → theme → home
+     *   case_no_name        → permission → pin  → theme → home
+     *   case_no_name_no_pin → permission → theme → home
+     */
     fun moveToNextScreen() {
         // Mark permission as done so onboarding never routes here again,
-        // even if isPermissionEnabled=true in Remote Config.
+        // even if the flow JSON still lists it for new installs.
         sharedPref.isPermissionDone = true
 
-        val showWriting = sharedPref.isNameWritingEnabled
-        val showPin = sharedPref.isPinSetupEnabled
-        val showTheme = sharedPref.isThemeSelectionEnabled
+        val nextScreen = sharedPref.nextScreenAfter(SharedPreferenceUtils.SCREEN_PERMISSION)
+        Log.d("PermissionFragment", "Next screen after permission: $nextScreen")
 
-        when {
-            showWriting -> {
+        when (nextScreen) {
+            SharedPreferenceUtils.SCREEN_NAME -> {
                 preLoadNextAd(BannerAdKey.START_WRITING)
                 findNavController().navigate(R.id.action_permissionFragment_to_nameFragment)
             }
-            showPin -> {
+            SharedPreferenceUtils.SCREEN_PIN -> {
                 preLoadNextAd(BannerAdKey.PIN_SETUP)
                 findNavController().navigate(R.id.action_permissionFragment_to_pinSetupFragment)
             }
-            showTheme -> {
+            SharedPreferenceUtils.SCREEN_THEME -> {
                 preLoadNextAd(BannerAdKey.THEME_SELECTION)
                 findNavController().navigate(R.id.action_permissionFragment_to_themeFragment)
             }
-            else -> {
+            SharedPreferenceUtils.SCREEN_HOME, null -> {
+                // Either home is next, or permission was the last screen before home
                 sharedPref.isFirstTimeUser = false
                 findNavController().navigate(R.id.action_permissionFragment_to_mainFragment)
             }
@@ -188,8 +198,6 @@ class PermissionFragment : Fragment(R.layout.fragment_permission) {
             btnSkip.setOnClickListener {
                 val eventParams = Bundle().apply { putString("action_type", "skip_clicked") }
                 mFirebaseAnalytics.logEvent("On_Boarding_Permissions_Skipped", eventParams)
-                // nav XML pops permissionFragment (inclusive) on every forward action,
-                // so plain moveToNextScreen() is enough — no manual NavOptions needed.
                 moveToNextScreen()
             }
         }

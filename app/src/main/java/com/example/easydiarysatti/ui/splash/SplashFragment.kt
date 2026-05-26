@@ -129,10 +129,8 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         adReadyToShow = false
         timerFinished = false
 
-        // Start progress bar immediately — always runs for 5 seconds
         startProgressBar()
 
-        // Safety net timeout
         val dynamicTimeout = sharedPref.splashTimeout
         timeoutJob = lifecycleScope.launch {
             delay(dynamicTimeout)
@@ -143,7 +141,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
             }
         }
 
-        // No internet — skip remote config, navigate after bar completes
         if (!internetManager.isInternetConnected) {
             Log.d(TAG_ADS, "No internet — skipping ads, waiting for progress bar")
             adReadyToShow = true
@@ -152,7 +149,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
             return
         }
 
-        // Has internet — fetch remote config then load ad, both parallel with the bar
         remoteConfig.checkRemoteConfig { success ->
             lifecycleScope.launch(Dispatchers.Main) {
                 if (success) {
@@ -185,11 +181,8 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
                 Log.d(TAG_ADS, "Progress bar done. adReadyToShow=$adReadyToShow pendingNavigation=${pendingNavigation != null}")
 
                 when {
-                    // Ad flow: both timer and ad are ready → show ad
-                    adReadyToShow -> showPendingAd()
-                    // Non-ad flow (no internet / navigate states): fire buffered navigation
+                    adReadyToShow      -> showPendingAd()
                     pendingNavigation != null -> firePendingNavigation()
-                    // else: ad not ready yet — wait for ad load callback
                 }
             }
         }.start()
@@ -200,11 +193,9 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         pendingNavigation = null
     }
 
-    // Holds the action to show the ad — set once the ad is loaded and ready
     private var pendingAdShow: (() -> Unit)? = null
 
     private fun showPendingAd() {
-        // Both timer and ad are ready — cancel timeout and show
         timeoutJob?.cancel()
         pendingAdShow?.invoke()
         pendingAdShow = null
@@ -220,7 +211,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         } else if (sharedPref.getAdShowStatus(appOpenKey.value)) {
             loadAppOpen(appOpenKey)
         } else {
-            // No ad enabled — wait for timer to finish then navigate
             adReadyToShow = true
             pendingAdShow = { viewModel.onAdFinished() }
             if (timerFinished) showPendingAd()
@@ -231,7 +221,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         interAdsConfig.loadInterstitialAd(adKey, object : InterstitialOnLoadCallBack {
             override fun onResponse(successfullyLoaded: Boolean) {
                 if (successfullyLoaded && isAdded) {
-                    // Ad is ready — store the show action and trigger if timer already done
                     adReadyToShow = true
                     pendingAdShow = {
                         interAdsConfig.showInterstitialWithDialog(requireActivity(), adKey, object : InterstitialOnShowCallBack {
@@ -242,7 +231,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
                     Log.d(TAG_ADS, "Interstitial ready. timerFinished=$timerFinished")
                     if (timerFinished) showPendingAd()
                 } else {
-                    // Interstitial failed — fall back to app open
                     loadAppOpen(fallbackKey)
                 }
             }
@@ -251,7 +239,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
 
     private fun loadAppOpen(adKey: AppOpenAdKey) {
         if (!sharedPref.getAdShowStatus(adKey.value)) {
-            // App open also disabled — wait for timer then navigate
             adReadyToShow = true
             pendingAdShow = { viewModel.onAdFinished() }
             if (timerFinished) showPendingAd()
@@ -271,7 +258,6 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
                         Log.d(TAG_ADS, "AppOpen ready. timerFinished=$timerFinished")
                         if (timerFinished) showPendingAd()
                     } else {
-                        // Both ads failed — wait for timer then navigate
                         adReadyToShow = true
                         pendingAdShow = { viewModel.onAdFinished() }
                         if (timerFinished) showPendingAd()
@@ -281,41 +267,74 @@ class SplashFragment : Fragment(R.layout.fragment_splash) {
         })
     }
 
+    /**
+     * Decides where to navigate after splash for a FIRST-TIME user.
+     *
+     * Instead of checking individual boolean flags, we read the active first-open
+     * flow from the JSON and navigate to the very first screen in that list.
+     * Each subsequent screen is responsible for reading nextScreenAfter() to
+     * continue the waterfall.
+     *
+     * JSON example (active_case = "case_full"):
+     *   flow = ["onboarding_slides", "permission", "name", "pin", "theme", "home"]
+     *   → navigate to onboarding_slides
+     *
+     * JSON example (active_case = "case_no_permission"):
+     *   flow = ["onboarding_slides", "name", "pin", "theme", "home"]
+     *   → navigate to onboarding_slides  (permission is simply absent from the list)
+     */
     private fun handleControlledNavigation() {
-        when {
-            sharedPref.isOnboardingEnabled -> {
-                preLoadBanner(BannerAdKey.ON_BOARDING)
-                navigateTo(R.id.action_splashFragment_to_onBoardingFragment)
-            }
-            sharedPref.isPermissionEnabled -> {
-                preLoadBanner(BannerAdKey.PERMISSION)
-                navigateTo(R.id.action_splashFragment_to_permissionFragment)
-            }
-            sharedPref.isNameWritingEnabled -> {
-                preLoadBanner(BannerAdKey.START_WRITING)
-                navigateTo(R.id.action_splashFragment_to_nameSetupFragment)
-            }
-            sharedPref.isPinSetupEnabled -> {
-                preLoadBanner(BannerAdKey.PIN_SETUP)
-                navigateTo(R.id.action_splashFragment_to_pinSetupFragment)
-            }
-            sharedPref.isThemeSelectionEnabled -> {
-                preLoadBanner(BannerAdKey.THEME_SELECTION)
-                navigateTo(R.id.action_splashFragment_to_themeFragment)
-            }
-            else -> {
-                val shouldShowOnboardingPaywall = sharedPref.getAdExtraData(
-                    "onboarding_paywall_config",
-                    "splash_onboarding_paywall_screen_display"
-                ) == "true"
-                if (sharedPref.isFirstTimeUser && shouldShowOnboardingPaywall && !sharedPref.isAppPurchased) {
-                    navigateTo(R.id.action_splashFragment_to_onboardingPaywallFragment)
-                } else {
-                    sharedPref.isFirstTimeUser = false
-                    navigateTo(R.id.action_splashFragment_to_mainFragment)
+        val flow = sharedPref.getFirstOpenScreenFlow()
+        Log.d(TAG_ADS, "Onboarding flow: $flow")
+
+        // Walk the flow until we find the first actionable screen
+        for (screen in flow) {
+            when (screen) {
+                SharedPreferenceUtils.SCREEN_ONBOARDING_SLIDES -> {
+                    preLoadBanner(BannerAdKey.ON_BOARDING)
+                    navigateTo(R.id.action_splashFragment_to_onBoardingFragment)
+                    return
+                }
+                SharedPreferenceUtils.SCREEN_PERMISSION -> {
+                    preLoadBanner(BannerAdKey.PERMISSION)
+                    navigateTo(R.id.action_splashFragment_to_permissionFragment)
+                    return
+                }
+                SharedPreferenceUtils.SCREEN_NAME -> {
+                    preLoadBanner(BannerAdKey.START_WRITING)
+                    navigateTo(R.id.action_splashFragment_to_nameSetupFragment)
+                    return
+                }
+                SharedPreferenceUtils.SCREEN_PIN -> {
+                    preLoadBanner(BannerAdKey.PIN_SETUP)
+                    navigateTo(R.id.action_splashFragment_to_pinSetupFragment)
+                    return
+                }
+                SharedPreferenceUtils.SCREEN_THEME -> {
+                    preLoadBanner(BannerAdKey.THEME_SELECTION)
+                    navigateTo(R.id.action_splashFragment_to_themeFragment)
+                    return
+                }
+                SharedPreferenceUtils.SCREEN_HOME -> {
+                    // "home" is the terminal node — no more onboarding screens
+                    val shouldShowOnboardingPaywall = sharedPref.getAdExtraData(
+                        "onboarding_paywall_config",
+                        "splash_onboarding_paywall_screen_display"
+                    ) == "true"
+                    if (sharedPref.isFirstTimeUser && shouldShowOnboardingPaywall && !sharedPref.isAppPurchased) {
+                        navigateTo(R.id.action_splashFragment_to_onboardingPaywallFragment)
+                    } else {
+                        sharedPref.isFirstTimeUser = false
+                        navigateTo(R.id.action_splashFragment_to_mainFragment)
+                    }
+                    return
                 }
             }
         }
+
+        // Fallback: should never reach here, but navigate home to be safe
+        sharedPref.isFirstTimeUser = false
+        navigateTo(R.id.action_splashFragment_to_mainFragment)
     }
 
     private fun preLoadBanner(adKey: BannerAdKey) {

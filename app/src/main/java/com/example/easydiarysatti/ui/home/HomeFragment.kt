@@ -102,7 +102,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             onNoteItemLongClick = { note ->
                 if (!isSelectionMode) {
                     enterSelectionMode(note.noteId)
+
                 } else {
+
                     findNavController().safeNav(
                         currentDestId = R.id.homeFragment,
                         actionId = R.id.action_homeFragment_to_previewFragment2,
@@ -113,9 +115,12 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     )
                 }
             },
-            onFavClick = { note -> viewModel.toggleFavorite(note) },
+            onFavClick = { note ->
+                viewModel.toggleFavorite(note)
+                notesItemAdapter.updateFavoriteInstant(note.noteId, !note.isFavorite)
+            },
             onDeleteClick = { note -> viewModel.deleteNote(note) },
-                    onMoreOptionClick = { view, note ->
+            onMoreOptionClick = { view, note ->
                 showPopupMenu(view, note)
             }
         )
@@ -141,7 +146,8 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         // Notify MainFragment: hide delete icon
         onSelectionChanged?.invoke(false, 0)
     }
-
+    fun getLiveNote(noteId: Long): CreateNoteEntity? =
+        notesItemAdapter.currentList.find { it.noteId == noteId }
     private fun toggleNoteSelection(noteId: Long) {
         if (selectedNoteIds.contains(noteId)) {
             selectedNoteIds.remove(noteId)
@@ -159,34 +165,50 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         onSelectionChanged?.invoke(true, selectedNoteIds.size)
     }
     private fun showPopupMenu(view: View, note: CreateNoteEntity) {
+        // ✅ Theme.AppCompat.Light forces full light context — icons, text, background all light
         val wrapper = androidx.appcompat.view.ContextThemeWrapper(
             requireContext(),
-            R.style.PopupMenuStyle          // ← controls background color
+            androidx.appcompat.R.style.Theme_AppCompat_Light
         )
         val popup = androidx.appcompat.widget.PopupMenu(wrapper, view, android.view.Gravity.END)
-
         popup.menuInflater.inflate(R.menu.note_item_menu, popup.menu)
 
-        // Force icons to show — PopupMenu hides them by default
         try {
             val fieldPopup = androidx.appcompat.widget.PopupMenu::class.java
                 .getDeclaredField("mPopup")
             fieldPopup.isAccessible = true
             val menuPopupHelper = fieldPopup.get(popup)
-            val classPopupHelper = Class.forName(menuPopupHelper.javaClass.name)
-            val setForceIcons = classPopupHelper
-                .getMethod("setForceShowIcon", Boolean::class.java)
-            setForceIcons.invoke(menuPopupHelper, true)
+            val classPopupHelper = menuPopupHelper.javaClass
+
+            classPopupHelper.getDeclaredMethod("setForceShowIcon", Boolean::class.java)
+                .apply { isAccessible = true }
+                .invoke(menuPopupHelper, true)
+
+            classPopupHelper.getDeclaredMethod("setBackgroundDrawable", android.graphics.drawable.Drawable::class.java)
+                .apply { isAccessible = true }
+                .invoke(menuPopupHelper, android.graphics.drawable.ColorDrawable(0xFFFFFFFF.toInt()))
+
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
+
         popup.setOnMenuItemClickListener { item ->
             when (item.itemId) {
 
+                // AFTER
                 R.id.menu_add_tag -> {
-                    logAnalyticsEvent("Note_Item_Menu_AddTag", "popup_menu")
-                    navigateToNote(note, openTags = true)
+                    createNotesViewModel.clearTags()   // ← add this
+                    createNotesViewModel.clearImages()
+                    createNotesViewModel.setupNoteEntity(note)
+                    findNavController().safeNav(
+                        currentDestId = R.id.homeFragment,
+                        actionId      = R.id.action_homeFragment_to_addTagsFragment,
+                        bundle        = Bundle().apply {
+                            putBoolean(FROM_SCREEN, false)
+                            putLong(NOTE_ID, note.noteId) // Pass the ID
+                        }
+                    )
                     true
                 }
 
@@ -260,13 +282,245 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         )
     }
 
+    // ─────────────────────────────────────────────────────────────────────────
+//  Share
+// ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Shows a dialog so the user can choose Text or Screenshot share format.
+     */
     private fun shareNoteText(note: CreateNoteEntity) {
-        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        val options = arrayOf(
+            getString(R.string.share_as_text),
+            getString(R.string.share_as_screenshot)
+        )
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.share_note_title))
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> shareNoteAsText(note)
+                    1 -> shareNoteAsCard(note)   // ← generates a card, never screenshots home
+                }
+            }
+            .show()
+    }
+
+    /**
+     * Shares note as formatted plain text:
+     *   📅 Date · 📝 Title · 📄 Description · app link
+     */
+    private fun shareNoteAsText(note: CreateNoteEntity) {
+        val appLink = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+        val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        val shareText = buildString {
+            appendLine("📅 Date: $dateStr")
+            if (!note.title.isNullOrBlank())       appendLine("📝 Title: ${note.title}")
+            if (!note.description.isNullOrBlank()) appendLine("📄 Description: ${note.description}")
+            appendLine()
+            appendLine(getString(R.string.share_via_app_label))
+            append(appLink)
+        }.trim()
+
+        val intent = Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_SUBJECT, note.title)
-            putExtra(Intent.EXTRA_TEXT, "${note.title}\n\n${note.text}")
+            putExtra(Intent.EXTRA_SUBJECT, note.title.orEmpty())
+            putExtra(Intent.EXTRA_TEXT, shareText)
         }
-        startActivity(Intent.createChooser(shareIntent, "Share Note via"))
+        startActivity(Intent.createChooser(intent, getString(R.string.share)))
+    }
+
+    /**
+     * Builds a styled note card bitmap from [note] data and shares it as an image.
+     *
+     * WHY a generated card instead of a real screenshot:
+     *  • HomeFragment.binding.root IS the home list — screenshotting it would capture
+     *    the list, not the note.
+     *  • A generated card renders ALL text regardless of note length (no scroll cutoff).
+     *  • No PixelCopy / window rect issues — we draw directly to a Canvas.
+     */
+    private fun shareNoteAsCard(note: CreateNoteEntity) {
+        try {
+            val bitmap = buildNoteCardBitmap(note)
+            val appLink = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+            val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+                .format(java.util.Date())
+
+            val shareText = buildString {
+                appendLine("📅 Date: $dateStr")
+
+                appendLine()
+                appendLine(getString(R.string.share_via_app_label))
+                append(appLink)
+            }.trim()
+
+            saveBitmapAndShare(bitmap, shareText)
+        } catch (e: Exception) {
+            Log.e("shareNote", "Card share failed: ${e.message}")
+            showShareError()
+        }
+    }
+
+    /**
+     * Builds a white card bitmap containing:
+     *   • App name header bar
+     *   • Date
+     *   • Title  (bold)
+     *   • Divider line
+     *   • Full description (all text, no truncation)
+     *
+     * Rendered at a fixed width of 1 080 px so it looks sharp on any device.
+     */
+    private fun buildNoteCardBitmap(note: CreateNoteEntity): android.graphics.Bitmap {
+        val ctx = requireContext()
+        val cardWidth = 1080
+        val pad = 72          // outer padding px
+        val innerPad = 48     // between sections px
+
+        // ── paints ────────────────────────────────────────────────────────────
+        val headerPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#4A90D9")
+            style = android.graphics.Paint.Style.FILL
+        }
+        val appNamePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.WHITE
+            textSize = 38f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        val datePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#888888")
+            textSize = 34f
+        }
+        val titlePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#1A1A1A")
+            textSize = 52f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        val dividerPaint = android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#E0E0E0")
+            strokeWidth = 2f
+        }
+        val descPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#333333")
+            textSize = 40f
+        }
+        val bgPaint = android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+        }
+
+        val textWidth = cardWidth - pad * 2
+        val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        // ── wrap text helper ──────────────────────────────────────────────────
+        fun wrapText(text: String, paint: android.graphics.Paint, maxWidth: Int): List<String> {
+            val words = text.split(" ")
+            val lines = mutableListOf<String>()
+            var current = ""
+            for (word in words) {
+                val candidate = if (current.isEmpty()) word else "$current $word"
+                if (paint.measureText(candidate) <= maxWidth) {
+                    current = candidate
+                } else {
+                    if (current.isNotEmpty()) lines.add(current)
+                    current = word
+                }
+            }
+            if (current.isNotEmpty()) lines.add(current)
+            return lines
+        }
+
+        val titleLines = if (!note.title.isNullOrBlank())
+            wrapText(note.title!!, titlePaint, textWidth) else emptyList()
+        val descLines  = if (!note.description.isNullOrBlank())
+            note.description!!.split("\n").flatMap { wrapText(it, descPaint, textWidth) }
+        else emptyList()
+
+        // ── measure total height ──────────────────────────────────────────────
+        val headerH   = 110
+        var totalH    = headerH + pad                   // header + top pad
+        totalH       += 40 + innerPad                   // date line
+        if (titleLines.isNotEmpty())
+            totalH   += titleLines.size * 64 + innerPad // title lines
+        totalH       += 2 + innerPad                    // divider
+        if (descLines.isNotEmpty())
+            totalH   += descLines.size * 54             // desc lines
+        totalH       += pad                             // bottom pad
+
+        // ── draw ──────────────────────────────────────────────────────────────
+        val bitmap = android.graphics.Bitmap.createBitmap(
+            cardWidth, totalH, android.graphics.Bitmap.Config.ARGB_8888
+        )
+        val canvas = android.graphics.Canvas(bitmap)
+
+        // White background
+        canvas.drawRect(0f, 0f, cardWidth.toFloat(), totalH.toFloat(), bgPaint)
+
+        // Header bar
+        canvas.drawRect(0f, 0f, cardWidth.toFloat(), headerH.toFloat(), headerPaint)
+        canvas.drawText(
+            getString(R.string.app_name),
+            pad.toFloat(),
+            headerH / 2f + appNamePaint.textSize / 3,
+            appNamePaint
+        )
+
+        var y = headerH + pad.toFloat()
+
+        // Date
+        canvas.drawText("📅 $dateStr", pad.toFloat(), y + 34f, datePaint)
+        y += 40 + innerPad
+
+        // Title
+        for (line in titleLines) {
+            canvas.drawText(line, pad.toFloat(), y + 52f, titlePaint)
+            y += 64
+        }
+        if (titleLines.isNotEmpty()) y += innerPad
+
+        // Divider
+        canvas.drawLine(pad.toFloat(), y, (cardWidth - pad).toFloat(), y, dividerPaint)
+        y += 2 + innerPad
+
+        // Description — ALL lines, no cutoff
+        for (line in descLines) {
+            canvas.drawText(line, pad.toFloat(), y + 40f, descPaint)
+            y += 54
+        }
+
+        return bitmap
+    }
+
+    private fun saveBitmapAndShare(bitmap: android.graphics.Bitmap, shareText: String) {
+        try {
+            val cacheFile = java.io.File(
+                requireContext().cacheDir,
+                "note_share_${System.currentTimeMillis()}.png"
+            )
+            cacheFile.outputStream().use {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, it)
+            }
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.provider",
+                cacheFile
+            )
+            val intent = Intent(Intent.ACTION_SEND).apply {
+                type = "image/png"
+                putExtra(Intent.EXTRA_STREAM, uri)
+                putExtra(Intent.EXTRA_TEXT, shareText)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(intent, getString(R.string.share)))
+        } catch (e: Exception) {
+            Log.e("shareNote", "saveBitmapAndShare failed: ${e.message}")
+            showShareError()
+        }
+    }
+
+    private fun showShareError() {
+        Toast.makeText(requireContext(), getString(R.string.screenshot_share_failed), Toast.LENGTH_SHORT).show()
     }
     // ────────────────────────────────────────────────────────────────────────
     //  Swipe actions (with confirmation dialogs)
@@ -327,13 +581,16 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                 } else {
                     logAnalyticsEvent("Home_Favourite_Note_Swipe", "swipe_fav")
                     ConfirmationDialog.showFavorite(
-                        fm = childFragmentManager,
-                        isFav = note.isFavorite,
+                        fm     = childFragmentManager,
+                        isFav  = note.isFavorite,
                         onConfirm = {
                             viewModel.toggleFavorite(note)
+                            // ✅ flip heart instantly — don't wait for DB roundtrip
+                            notesItemAdapter.updateFavoriteInstant(note.noteId, !note.isFavorite)
                             logAnalyticsEvent("Home_Favourite_Note", "fav_confirm")
                         }
                     )
+
                 }
 
 
@@ -540,12 +797,31 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private var isAdProcessStarted = false
 
     private fun initBannerObserver() {
-        if (!sharedPref.getAdShowStatus(BannerAdKey.START_WRITING.value)) {
+        if (sharedPref.isAppPurchased) {
             binding?.shimmerViewContainer?.visibility = View.GONE
             binding?.bannerContainer?.visibility = View.GONE
             binding?.bannerAdViewHome?.visibility = View.GONE
             return
         }
+        // ── 1. No internet → hide shimmer immediately, don't wait ────────────
+        if (!internetManager.isInternetConnected) {
+            binding?.shimmerViewContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            binding?.bannerAdViewHome?.visibility = View.GONE
+            return
+        }
+
+        // ── 2. Ad disabled from remote → hide shimmer immediately ────────────
+        val isHomeAdEnabled = sharedPref.getAdShowStatus(BannerAdKey.HOME_FIRST_TIME.value)
+                || sharedPref.getAdShowStatus(BannerAdKey.HOME_RETURNING.value)
+        if (!isHomeAdEnabled) {
+            binding?.shimmerViewContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            binding?.bannerAdViewHome?.visibility = View.GONE
+            return
+        }
+
+        // ── 3. Ad is enabled and internet is available → show shimmer and wait
         bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             if (isAdProcessStarted) return@observe
             val homeAd = adMap[BannerAdKey.HOME_FIRST_TIME] ?: adMap[BannerAdKey.HOME_RETURNING]
@@ -558,14 +834,22 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
                     addCleanView(homeAd)
                 }
             } else {
-                binding?.shimmerViewContainer?.visibility = View.VISIBLE
-                binding?.bannerAdViewHome?.visibility = View.GONE
+                binding?.shimmerViewContainer?.visibility = View.GONE
                 binding?.bannerContainer?.visibility = View.GONE
+                binding?.bannerAdViewHome?.visibility = View.GONE
             }
         }
     }
 
     private fun initNativeObserver() {
+        // ── If no internet or ad disabled → hide shimmer in adapter immediately
+        if (sharedPref.isAppPurchased ||
+            !internetManager.isInternetConnected ||
+            !sharedPref.getAdShowStatus(NativeAdKey.HOME.value)) {
+            notesItemAdapter.hideAdSlot()
+            return
+        }
+
         viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             val homeNativeAd = adMap[NativeAdKey.HOME]
             if (homeNativeAd != null) {

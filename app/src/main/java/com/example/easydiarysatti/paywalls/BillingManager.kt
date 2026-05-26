@@ -1,6 +1,8 @@
 package com.example.easydiarysatti.paywalls
 
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.android.billingclient.api.*
 
@@ -12,6 +14,10 @@ class BillingManager(
     // billingClient is var so it can be rebuilt after endConnection() destroys it.
     // A closed BillingClient can NEVER reconnect — must create a new instance.
     private var billingClient: BillingClient = buildClient()
+
+    // Handler for connection timeout — cancelled once the client connects or fails.
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private var timeoutRunnable: Runnable? = null
 
     private fun buildClient(): BillingClient =
         BillingClient.newBuilder(activity)
@@ -28,35 +34,69 @@ class BillingManager(
 
     /**
      * Establish connection to Google Play Store.
-     * [onConnected] fires on the UI thread once the connection is ready.
+     *
+     * [onConnected]  — fires on the UI thread once the connection is ready.
+     * [onFailed]     — fires on the UI thread when the connection fails or times out.
+     * [timeoutMs]    — ms before [onFailed] is triggered if no response (default 8 s).
+     *
+     * Covers three failure modes:
+     *  1. Billing service returns a non-OK response code  → onFailed immediately
+     *  2. No Google Play Services / no network at all     → onFailed after timeout
+     *  3. Very slow network                               → onFailed after timeout
      */
-    fun startConnection(onConnected: (() -> Unit)? = null) {
+    fun startConnection(
+        onConnected: (() -> Unit)? = null,
+        onFailed: (() -> Unit)? = null,
+        timeoutMs: Long = 8_000L
+    ) {
         if (billingClient.isReady) {
             activity.runOnUiThread { onConnected?.invoke() }
             return
         }
-        // Rebuild before connecting — a closed BillingClient can never reconnect
+        // Rebuild before connecting — a closed BillingClient can NEVER reconnect
         billingClient = buildClient()
+
+        // Cancel any previous pending timeout before arming a new one
+        cancelTimeout()
+        timeoutRunnable = Runnable {
+            if (!billingClient.isReady) {
+                Log.w("BillingManager", "startConnection: timed out after ${timeoutMs}ms")
+                activity.runOnUiThread { onFailed?.invoke() }
+            }
+        }.also { mainHandler.postDelayed(it, timeoutMs) }
+
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
+                cancelTimeout()
                 if (billingResult.responseCode == BillingClient.BillingResponseCode.OK) {
                     Log.d("BillingManager", "Billing Client Connected")
                     activity.runOnUiThread { onConnected?.invoke() }
                 } else {
                     Log.e("BillingManager", "Billing setup failed: ${billingResult.debugMessage}")
+                    activity.runOnUiThread { onFailed?.invoke() }
                 }
             }
+
             override fun onBillingServiceDisconnected() {
+                // This fires after a mid-session disconnection, not just on initial setup,
+                // so we intentionally do NOT call onFailed here — that would produce
+                // spurious error dialogs after a purchase completes or during backgrounding.
                 Log.e("BillingManager", "Billing Client Disconnected")
+                cancelTimeout()
             }
         })
+    }
+
+    /** Cancel any pending connection-timeout runnable. */
+    private fun cancelTimeout() {
+        timeoutRunnable?.let { mainHandler.removeCallbacks(it) }
+        timeoutRunnable = null
     }
 
     /**
      * Ensures billing is connected, then runs [block] on the billing thread.
      * If already connected, runs [block] immediately.
      * If disconnected, starts a new connection and runs [block] once connected.
-     * This is the core guard used by fetchInAppPrice and launchInAppBillingFlow.
      */
     private fun ensureConnected(block: () -> Unit) {
         if (billingClient.isReady) {
@@ -64,8 +104,6 @@ class BillingManager(
             return
         }
         Log.d("BillingManager", "ensureConnected: not ready, rebuilding and reconnecting...")
-        // CRITICAL: rebuild the client — a closed BillingClient can NEVER reconnect.
-        // This is what caused: "Client was already closed and can't be reused."
         billingClient = buildClient()
         billingClient.startConnection(object : BillingClientStateListener {
             override fun onBillingSetupFinished(billingResult: BillingResult) {
@@ -88,19 +126,6 @@ class BillingManager(
      *
      * The result is delivered on the **UI thread** as a Map<productId, ProductDetails>.
      * Use [PricingHelper] to extract human-readable strings from each ProductDetails.
-     *
-     * Example usage in a Fragment:
-     * ```
-     * billingManager.fetchProductDetails(
-     *     listOf(PaywallCatalog.SPLASH_ANNUAL, PaywallCatalog.SPLASH_MONTHLY)
-     * ) { map ->
-     *     map[PaywallCatalog.SPLASH_ANNUAL]?.let { details ->
-     *         tvPrice.text       = PricingHelper.formattedPrice(details)
-     *         tvTrialDays.text   = PricingHelper.freeTrialDays(details)
-     *         tvBillingPeriod.text = PricingHelper.billingPeriod(details)
-     *     }
-     * }
-     * ```
      */
     fun fetchProductDetails(
         productIds: List<String>,
@@ -128,7 +153,6 @@ class BillingManager(
 
     /**
      * Launches the Google Play Purchase Flow for a SUBSCRIPTION product.
-     * Use for: annual, monthly, weekly subscription plans.
      */
     fun launchBillingFlow(productId: String) {
         val productList = listOf(
@@ -164,18 +188,7 @@ class BillingManager(
 
     /**
      * Launches the Google Play Purchase Flow for a one-time IN_APP product.
-     * Use for: lifetime_inter_close_in_app_purchase (Remove Ads — $9.99 Lifetime).
-     *
-     * IN_APP products have no subscriptionOfferDetails / offerToken — do NOT use
-     * launchBillingFlow() for them as that will silently fail.
-     *
-     * Usage:
-     *   billingManager.launchInAppBillingFlow("lifetime_inter_close_in_app_purchase")
-     */
-    /**
-     * Launches the Google Play Purchase Flow for a one-time IN_APP product.
      * Automatically reconnects if billing service is disconnected.
-     * Use for: lifetime_inter_close_in_app_purchase (Remove Ads — $9.99 Lifetime).
      */
     fun launchInAppBillingFlow(productId: String) {
         ensureConnected {
@@ -193,7 +206,6 @@ class BillingManager(
                         Log.e("BillingManager", "launchInAppBillingFlow: no product details for $productId")
                         return@queryProductDetailsAsync
                     }
-                    // IN_APP — no offerToken needed
                     val billingFlowParams = BillingFlowParams.newBuilder()
                         .setProductDetailsParamsList(
                             listOf(
@@ -213,18 +225,8 @@ class BillingManager(
     }
 
     /**
-     * Fetches the formatted price for a one-time IN_APP product from Google Play.
-     * Returns price string (e.g. "$9.99") via [onResult], or "" on failure.
-     *
-     * Usage:
-     *   billingManager.fetchInAppPrice("lifetime_inter_close_in_app_purchase") { price ->
-     *       showRemoveAdsDialog(price = "$price - Lifetime")
-     *   }
-     */
-    /**
      * Fetches the formatted price for a one-time IN_APP product.
      * Automatically reconnects if billing service is disconnected.
-     * Returns price string (e.g. "$9.99") via [onResult], or "" on failure.
      */
     fun fetchInAppPrice(productId: String, onResult: (String) -> Unit) {
         ensureConnected {
@@ -252,10 +254,8 @@ class BillingManager(
 
     /** Acknowledges the purchase (both SUBS and IN_APP). */
     private fun handlePurchase(purchase: Purchase) {
-        // Guard: only process completed, unacknowledged purchases
         if (purchase.purchaseState != Purchase.PurchaseState.PURCHASED) return
         if (purchase.isAcknowledged) {
-            // Already acknowledged (e.g. restored) — still fire success so UI updates
             val purchasedId = purchase.products.firstOrNull() ?: return
             onPurchaseSuccess(purchasedId)
             return
@@ -274,6 +274,7 @@ class BillingManager(
 
     /** Release resources. Call in Fragment's onDestroyView(). */
     fun endConnection() {
+        cancelTimeout()
         if (billingClient.isReady) billingClient.endConnection()
     }
 }

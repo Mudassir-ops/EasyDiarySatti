@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -45,13 +46,21 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
                 createNotesViewModel.clearImages()
                 createNotesViewModel.setupNoteEntity(null)
                 createNotesViewModel.setupNoteEntity(note)
-                findNavController().safeNav(
-                    currentDestId = R.id.favoritesFragment,
-                    actionId = R.id.action_favoritesFragment_to_createNotesFragment2
-                )
+                // Signal MainFragment (which owns the header) to open CreateNote in its
+                // inner nav. This keeps CreateNotesFragment inside MainFragment's layout
+                // so the header (Save, title, back) is always visible.
+                findNavController().previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("navigate_to_create", true)
+                findNavController().navigateUp()
             },
             onFavClick = { note ->
                 viewModel.toggleFavorite(note)
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.fav_remove),
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         )
     }
@@ -85,16 +94,28 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
         observeFavorites()
 
         binding?.apply {
-            ivBack.setOnClickListener { findNavController().navigateUp() }
+            ivBack.setOnClickListener {
+                // Explicitly clear the key so the outer-nav listener's noteWasTapped
+                // check correctly identifies this as Case BACK (no note was tapped).
+                // Without this, if the user had previously tapped a note but then
+                // pressed Back before CreateNote could open, the key would still be
+                // present and the listener would skip the Home reset.
+                findNavController().previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.remove<Boolean>("navigate_to_create")
+                findNavController().navigateUp()
+            }
 
             fabAddNote.setOnClickListener {
                 createNotesViewModel.clearTags()
                 createNotesViewModel.clearImages()
                 createNotesViewModel.setupNoteEntity(null)
-                findNavController().safeNav(
-                    currentDestId = R.id.favoritesFragment,
-                    actionId = R.id.action_favoritesFragment_to_createNotesFragment2
-                )
+                // Same pattern as onItemClick — pop back to MainFragment and let its
+                // inner nav open CreateNote so the header is present.
+                findNavController().previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.set("navigate_to_create", true)
+                findNavController().navigateUp()
             }
         }
     }

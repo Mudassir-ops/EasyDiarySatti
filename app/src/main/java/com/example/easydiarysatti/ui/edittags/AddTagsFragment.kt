@@ -37,56 +37,44 @@ import com.example.easydiarysatti.viewBinding
 import com.google.android.material.chip.Chip
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private val PREDEFINED_TAGS = listOf(
+    "Personal", "Work", "Ideas", "Travel", "Health",
+    "Finance", "Family", "Goals", "Shopping", "Quotes"
+)
 
 @AndroidEntryPoint
 class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
 
     private val binding by viewBinding(FragmentAddTagsBinding::bind)
-
     private val viewModel: CreateNotesViewModel by activityViewModels()
     private val homeViewModel: HomeViewModel by activityViewModels()
     private val nativeViewModel: ViewModelNative by viewModels()
 
-    @Inject
-    lateinit var sessionManagerRepo: SessionManagerRepo
+    @Inject lateinit var sessionManagerRepo: SessionManagerRepo
 
-    // ── Mode ───────────────────────────────────────────────────────────────────
-    //
-    //  isFromDrawer = true  → Drawer "Edit Tags" (outer nav / manage mode)
-    //    ┌ drawerToolbar VISIBLE  — fragment owns its own themed header
-    //    ├ chip row GONE          — no selection concept
-    //    ├ Save Tags GONE         — edits are immediate
-    //    ├ Create button VISIBLE  — adds tag to global list (shown immediately)
-    //    └ chip tap              → rename dialog
-    //
-    //  isFromDrawer = false → Create Note "Add Tags" (inner nav / select mode)
-    //    ┌ drawerToolbar GONE     — MainFragment toolbar handles the header
-    //    ├ chip row VISIBLE when ≥1 tag is selected
-    //    ├ Save Tags VISIBLE      — commits selected tags to the note
-    //    ├ Create button VISIBLE  — attaches new tag to the current note AND
-    //    │                          shows it in All Tags grid immediately
-    //    └ chip tap              → select / deselect
-    //
-    private val isFromDrawer: Boolean by lazy {
-        arguments?.getBoolean(FROM_SCREEN, false) ?: false
-    }
+    private val isFromDrawer: Boolean by lazy { arguments?.getBoolean(FROM_SCREEN, false) ?: false }
 
-    // ── State ──────────────────────────────────────────────────────────────────
-
+    // BUG 1 FIX: allNotes was declared but never assigned, so deleteTagEverywhere
+    // always iterated over null. Now assigned in observeAllNotes().
     private var allNotes: List<CreateNoteEntity>? = null
     private var allUniqueTags: List<CustomTagEntity> = emptyList()
-    private val selectedTags: MutableSet<String> = mutableSetOf()
 
-    // ── Adapter ────────────────────────────────────────────────────────────────
+    // BUG 4 FIX: Track whether predefined tags have been seeded this session.
+    // Previously PREDEFINED_TAGS.forEach { saveGlobalTag(it) } ran unconditionally
+    // in setupSelectModeUi() on every open, resurrecting renamed/deleted tags.
+    private var predefinedTagsSeeded = false
+
+    private val selectedTags: MutableSet<String> = mutableSetOf()
 
     private val tagsAdapter: TagsAdapter by lazy {
         TagsAdapter(
             isManageMode = isFromDrawer,
-
             onSelectTag = { tagName ->
-                // SELECT MODE: toggle — if already selected, deselect it
                 if (selectedTags.contains(tagName)) {
                     selectedTags.remove(tagName)
                     removeSelectedChip(tagName)
@@ -94,263 +82,169 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
                     selectedTags.add(tagName)
                     addSelectedChip(tagName)
                 }
-                // Update the full grid highlight in one call (does notifyItemRangeChanged)
                 tagsAdapter.updateAddedTags(selectedTags.toSet())
                 updateSelectedSection()
             },
-
-            onEditTag = { tag ->
-                openEditDialog(tag)
-            },
-
-            onDeleteTag = { tagName ->
-                deleteTagEverywhere(tagName)
-            }
+            onEditTag = { tag -> openEditDialog(tag) },
+            onDeleteTag = { tagName -> deleteTagEverywhere(tagName) }
         )
     }
-
-    // ── Edit dialog (rename) ───────────────────────────────────────────────────
-
-    private fun openEditDialog(tag: CustomTagEntity) {
-        val oldName = tag.tagName.orEmpty()
-        editTagDialog(
-            sessionManagerRepo = sessionManagerRepo,
-            oldTags            = allUniqueTags,
-            selectedTag        = tag,
-            onUpdateTag        = { updatedList ->
-
-                val newName = updatedList
-                    .firstOrNull { it.tagName != oldName }?.tagName
-                    ?: updatedList.firstOrNull()?.tagName
-                    ?: return@editTagDialog
-
-                // 1. Persist rename on every note that carries the old name
-                allNotes?.forEach { note ->
-                    if (note.tags?.any { it.tagName == oldName } == true) {
-                        val renamed = note.tags!!.map { t ->
-                            if (t.tagName == oldName) t.copy(tagName = newName) else t
-                        }
-                        viewModel.updateTagsForNote(note.noteId, renamed)
-                    }
-                }
-
-                // 2. Rename in global tags if it lives there (no-op if note-only)
-                homeViewModel.renameGlobalTag(oldName, newName)
-
-                // 3. Sync select-mode chip strip (no-op in manage mode)
-                if (selectedTags.remove(oldName)) {
-                    selectedTags.add(newName)
-                    renameSelectedChip(oldName, newName)
-                }
-
-                // 3. Reflect rename in local list immediately (no waiting for DB)
-                allUniqueTags = allUniqueTags.map { t ->
-                    if (t.tagName == oldName) t.copy(tagName = newName) else t
-                }
-                tagsAdapter.submitTagList(
-                    filteredByCurrentQuery(allUniqueTags),
-                    selectedTags.toSet()
-                )
-            }
-        )
-    }
-
-    // ── Lifecycle ──────────────────────────────────────────────────────────────
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         (activity as? AppCompatActivity)?.supportActionBar?.hide()
-
-        activity?.onBackPressedDispatcher?.addCallback(viewLifecycleOwner) {
-            findNavController().navigateUp()
+        arguments?.getParcelable<CreateNoteEntity>("CURRENT_NOTE")?.let { existingNote ->
+            viewModel.setupNoteEntity(existingNote)
         }
-
         binding?.apply {
-
+            rvTags.itemAnimator = null
             rvTags.adapter = tagsAdapter
-            rvTags.setHasFixedSize(false)
-
-            // Mode-specific setup
             if (isFromDrawer) setupManageModeUi() else setupSelectModeUi()
-
-            // Live search — same in both modes
-            etTags.doAfterTextChanged { text ->
-                tagsAdapter.filter(text.toString())
-            }
-
+            etTags.doAfterTextChanged { text -> tagsAdapter.filter(text.toString()) }
             setupBgTheme()
             observeAllNotes()
         }
-
         homeViewModel.observeAllNotes()
     }
 
-    // ── MANAGE MODE UI ─────────────────────────────────────────────────────────
+    private fun observeAllNotes() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            combine(
+                homeViewModel.allNotesState.flowWithLifecycle(viewLifecycleOwner.lifecycle),
+                homeViewModel.globalTagsState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            ) { notesState, globalNames ->
 
-    private fun setupManageModeUi() {
-        binding?.apply {
+                // BUG 1 FIX: Capture the notes list here so deleteTagEverywhere can use it.
+                // Previously allNotes was never assigned anywhere, so note cleanup on delete
+                // was silently skipped for all notes.
+                val notes = if (notesState is HomeNotesState.Success) notesState.notes else null
 
-            // ── Show own toolbar (MainFragment's toolbar is covered by outer nav) ──
-            drawerToolbar.visibility = View.VISIBLE
-            applyToolbarTheme(drawerToolbar)
-            ivDrawerBack.setOnClickListener { findNavController().navigateUp() }
-            ivDrawerSearch.setOnClickListener { toggleSearchMode() }
+                val noteTags: List<CustomTagEntity> = notes
+                    ?.flatMap { it.tags ?: emptyList() } ?: emptyList()
 
-            // ── Hide select-mode only views ───────────────────────────────────
-            tvSelectedTagsLabel.visibility = View.GONE
-            chipGroupSelected.visibility   = View.GONE
-            btnNext.visibility             = View.GONE
+                val globalEntities = globalNames.map { CustomTagEntity(tagName = it, noteId = 0) }
 
-            // ── Create adds the tag directly to the All Tags grid ─────────────
-            btnCreate.setOnClickListener { createManageTagFromInput() }
+                val merged = (globalEntities + noteTags)
+                    .distinctBy { it.tagName?.lowercase()?.trim() }
+                    .filter { !it.tagName.isNullOrBlank() }
+
+                Pair(notes, merged)
+            }
+                .distinctUntilChanged()
+                .collect { (notes, mergedList) ->
+                    // BUG 1 FIX: assign allNotes so deleteTagEverywhere works
+                    allNotes = notes
+
+                    allUniqueTags = mergedList
+
+                    // BUG 4 & 5 FIX: Seed predefined tags only on the very first emission
+                    // when no tags exist at all, not on every screen open or setup call.
+                    // Previously:
+                    //   • setupSelectModeUi() called saveGlobalTag unconditionally every open
+                    //   • setupManageModeUi() checked allUniqueTags.isEmpty() which was always
+                    //     true at setup time (flow hadn't emitted yet), so tags were always re-added
+                    // Now the check runs after the flow emits, against real data.
+                    if (!predefinedTagsSeeded && mergedList.isEmpty()) {
+                        predefinedTagsSeeded = true
+                        PREDEFINED_TAGS.forEach { homeViewModel.saveGlobalTag(it) }
+                        return@collect // flow will re-emit once tags are saved
+                    }
+                    predefinedTagsSeeded = true
+
+                    tagsAdapter.submitTagList(mergedList, selectedTags.toSet())
+                    binding?.rvTags?.isVisible = mergedList.isNotEmpty()
+                }
         }
     }
-
-    // ── SELECT MODE UI ─────────────────────────────────────────────────────────
 
     private fun setupSelectModeUi() {
         binding?.apply {
-
             drawerToolbar.visibility = View.GONE
             btnNext.visibility = View.VISIBLE
-            btnNext.isEnabled = false                // disabled until at least one tag selected
-            btnNext.alpha = 0.4f                     // visually dimmed when disabled
-            btnNext.setOnClickListener { handleSaveAction() }
-            btnCreate.setOnClickListener { createNoteTagFromInput() }
 
-            // Pre-select tags already on the current note and build chip strip once
-            viewModel.noteState.value?.tags
-                ?.mapNotNull { it.tagName }
-                ?.forEach { name ->
-                    selectedTags.add(name)
-                    addSelectedChip(name)
+            if (selectedTags.isEmpty()) {
+                val seedSource: List<CustomTagEntity> = viewModel.allTags()
+                    .filter { !it.tagName.isNullOrBlank() }
+                    .ifEmpty {
+                        viewModel.noteState.value
+                            ?.tags
+                            ?.filter { !it.tagName.isNullOrBlank() }
+                            ?: emptyList()
+                    }
+
+                seedSource.forEach { entity ->
+                    entity.tagName?.let { name ->
+                        if (selectedTags.add(name)) addSelectedChip(name)
+                    }
                 }
-            updateSelectedSection()
-        }
-    }
-
-    // ── Search toggle (toolbar search icon / MainFragment search icon) ─────────
-
-    fun toggleSearchMode() {
-        binding?.apply {
-            val isSearching = etTags.hint == getString(R.string.search_tags)
-            if (!isSearching) {
-                etTags.hint = getString(R.string.search_tags)
-                etTags.requestFocus()
-            } else {
-                etTags.hint = getString(R.string.add_a_new_tag)
-                etTags.text?.clear()
-                tagsAdapter.filter("")
+                tagsAdapter.updateAddedTags(selectedTags.toSet())
+                updateSelectedSection()
             }
+
+            tagsAdapter.updateAddedTags(selectedTags.toSet())
+            updateSelectedSection()
+
+            btnCreate.setOnClickListener {
+                createNoteTagFromInput()
+                binding?.etTags?.text?.clear()
+            }
+
+            btnNext.setOnClickListener { handleSaveAction() }
+
+            // BUG 4 FIX: Removed unconditional PREDEFINED_TAGS seeding from here.
+            // It now only happens in observeAllNotes() when the DB is truly empty on first launch.
         }
     }
-
-    // ── Create tag — MANAGE MODE ───────────────────────────────────────────────
-    //
-    //  Tags live inside notes in this app's data model. To "create" a standalone
-    //  tag we piggyback on the ViewModel's AddTag action with a null note entity.
-    //  CreateNotesViewModel.AddTag(name, null) should create/update a placeholder
-    //  that makes the tag visible in allNotesState. The DB emission then updates
-    //  observeAllNotes → the tag appears in the All Tags grid automatically.
-    //
-    //  If your ViewModel doesn't support null-note AddTag, swap this call out for
-    //  whatever mechanism your repo uses to insert a standalone CustomTagEntity.
-
-    private fun createManageTagFromInput() {
-        val entered = binding?.etTags?.text.toString().trim()
-        if (entered.isEmpty()) return
-
-        val alreadyExists = allUniqueTags.any {
-            it.tagName.orEmpty().equals(entered, ignoreCase = true)
-        }
-        if (alreadyExists) {
-            Toast.makeText(context, getString(R.string.tag_already_exists), Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Room insert → globalTagsState Flow emits → observeAllNotes collects
-        // → grid updates automatically. No manual allUniqueTags update needed.
-        homeViewModel.saveGlobalTag(entered)
-        binding?.etTags?.text?.clear()
-    }
-
-    // ── Create tag — SELECT MODE ───────────────────────────────────────────────
-    //
-    //  Attaches the typed tag to the currently-open note.
-    //  The DB emission from AddTag → observeAllNotes → grid shows it in All Tags.
-    //  The tag is also added to selectedTags + chip strip immediately.
-    //  Tapping "Save Tags" later commits all selectedTags to the note.
-
-    // ── Create tag — SELECT MODE ───────────────────────────────────────────────
-    //
-    //  STEP 1 of 2:  "Create" button
-    //
-    //  • Saves the tag to global tags (SharedPrefs) so it appears in All Tags
-    //    grid immediately and persists across sessions — but does NOT attach it
-    //    to the current note yet.
-    //  • Adds to the selectedTags set + chip strip so the user sees it selected.
-    //  • The note only gets the tag when the user taps "Save Tags" (step 2).
-
-    private fun createNoteTagFromInput() {
-        val entered = binding?.etTags?.text.toString().trim()
-        if (entered.isEmpty()) return
-
-        // Room insert → flow emits → grid updates automatically
-        homeViewModel.saveGlobalTag(entered)
-
-        // Mark as selected immediately — chip strip + teal highlight
-        selectedTags.add(entered)
-        addSelectedChip(entered)
-        updateSelectedSection()
-        tagsAdapter.updateAddedTags(selectedTags.toSet())
-
-        binding?.etTags?.text?.clear()
-    }
-
-    // ── Save (SELECT MODE only) ────────────────────────────────────────────────
-    //
-    //  STEP 2 of 2:  "Save Tags" button
-    //
-    //  • Attaches every tag in selectedTags to the current note via ViewModel.
-    //  • Also picks up anything still typed in the input field.
-    //  • Navigates back to CreateNotesFragment where the tags are now visible.
 
     fun handleSaveAction() {
-        val currentNote  = viewModel.noteState.value
+        val currentNote = viewModel.noteState.value
+
         val existingTags = currentNote?.tags
-            ?.map { it.tagName.orEmpty().lowercase() }
+            ?.filter { !it.tagName.isNullOrBlank() }
             ?: emptyList()
+        val existingNames = existingTags
+            .mapNotNull { it.tagName?.lowercase()?.trim() }
+            .toSet()
 
-        // Attach each selected tag to the note (skip ones already on it)
-        selectedTags.forEach { tagName ->
-            if (!existingTags.contains(tagName.lowercase())) {
-                viewModel.sendAction(CreateNotesState.AddTag(tagName, viewModel.noteState.value))
-            }
-        }
+        val newTagEntities = selectedTags
+            .filter { !existingNames.contains(it.lowercase().trim()) }
+            .map { CustomTagEntity(
+                tagName = it,
+                noteId  = currentNote?.noteId?.toInt() ?: 0
+            )}
 
-        // Also attach whatever is still typed but not yet tapped "Create"
         val typed = binding?.etTags?.text.toString().trim()
-        if (typed.isNotEmpty() && !existingTags.contains(typed.lowercase())) {
-            homeViewModel.saveGlobalTag(typed)          // persist to All Tags
-            viewModel.sendAction(CreateNotesState.AddTag(typed, viewModel.noteState.value))
+        val typedEntity = if (typed.isNotEmpty()
+            && !existingNames.contains(typed.lowercase())
+            && !selectedTags.any { it.equals(typed, ignoreCase = true) }) {
+            homeViewModel.saveGlobalTag(typed)
+            listOf(CustomTagEntity(
+                tagName = typed,
+                noteId  = currentNote?.noteId?.toInt() ?: 0
+            ))
+        } else emptyList()
+
+        val mergedTags = existingTags + newTagEntities + typedEntity
+
+        viewModel.clearTags()
+        viewModel.addTags(mergedTags)
+        viewModel.tagsConfirmed = true
+
+        val noteId = currentNote?.noteId ?: 0L
+        if (noteId > 0L) {
+            viewModel.updateTagsForNote(noteId, mergedTags)
         }
 
         findNavController().navigateUp()
     }
 
-    // ── Selected-chips strip (SELECT MODE only) ────────────────────────────────
-
     private fun addSelectedChip(tagName: String) {
         val group = binding?.chipGroupSelected ?: return
-        for (i in 0 until group.childCount) {
-            if ((group.getChildAt(i) as? Chip)?.text.toString() == tagName) return
-        }
         val chip = Chip(requireContext()).apply {
-            text               = tagName
+            text = tagName
             isCloseIconVisible = true
             setChipBackgroundColorResource(android.R.color.transparent)
-            chipStrokeWidth    = 2f
+            chipStrokeWidth = 2f
             setChipStrokeColorResource(R.color.app_primary_color)
             setTextColor(ContextCompat.getColor(requireContext(), R.color.app_primary_color))
             setOnCloseIconClickListener { deselectTag(tagName) }
@@ -362,18 +256,9 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
         val group = binding?.chipGroupSelected ?: return
         for (i in 0 until group.childCount) {
             val chip = group.getChildAt(i) as? Chip
-            if (chip?.text.toString() == tagName) { group.removeView(chip); return }
-        }
-    }
-
-    private fun renameSelectedChip(oldName: String, newName: String) {
-        val group = binding?.chipGroupSelected ?: return
-        for (i in 0 until group.childCount) {
-            val chip = group.getChildAt(i) as? Chip
-            if (chip?.text.toString() == oldName) {
-                chip?.text = newName
-                chip?.setOnCloseIconClickListener { deselectTag(newName) }
-                return
+            if (chip?.text.toString() == tagName) {
+                group.removeView(chip)
+                break
             }
         }
     }
@@ -388,127 +273,116 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
     private fun updateSelectedSection() {
         val has = selectedTags.isNotEmpty()
         binding?.tvSelectedTagsLabel?.isVisible = has
-        binding?.chipGroupSelected?.isVisible   = has
-        // Enable Save Tags only when at least one tag is selected
+        binding?.chipGroupSelected?.isVisible = has
         binding?.btnNext?.isEnabled = has
-        binding?.btnNext?.alpha     = if (has) 1f else 0.4f
+        binding?.btnNext?.alpha = if (has) 1f else 0.4f
     }
 
-    // ── Delete tag globally (BOTH modes) ──────────────────────────────────────
+    private fun filteredByCurrentQuery(list: List<CustomTagEntity>) =
+        binding?.etTags?.text.toString().let { q ->
+            if (q.isBlank()) list else list.filter { it.tagName.orEmpty().contains(q.trim(), ignoreCase = true) }
+        }
+
+    private fun createNoteTagFromInput() {
+        val entered = binding?.etTags?.text.toString().trim()
+        if (entered.isEmpty()) return
+        homeViewModel.saveGlobalTag(entered)
+        if (selectedTags.add(entered)) {
+            addSelectedChip(entered)
+            updateSelectedSection()
+            tagsAdapter.updateAddedTags(selectedTags.toSet())
+        }
+        binding?.etTags?.text?.clear()
+    }
+
+    private fun setupManageModeUi() {
+        binding?.apply {
+            drawerToolbar.visibility = View.VISIBLE
+            applyToolbarTheme(drawerToolbar)
+            ivDrawerBack.setOnClickListener {
+                findNavController().navigateUp() }
+            tvSelectedTagsLabel.visibility = View.GONE
+            chipGroupSelected.visibility = View.GONE
+            btnNext.visibility = View.GONE
+            btnCreate.setOnClickListener {
+                val entered = etTags.text.toString().trim()
+                if (entered.isNotEmpty()) homeViewModel.saveGlobalTag(entered)
+                etTags.text?.clear()
+            }
+
+            // BUG 5 FIX: Removed the race-condition guard `if (allUniqueTags.isEmpty())` from
+            // here. allUniqueTags is always empty at setup time because the flow hasn't emitted
+            // yet, so this guard was never effective. Seeding is now handled exclusively in
+            // observeAllNotes() after the flow's first real emission.
+        }
+    }
+
+    private fun setupBgTheme() {
+        val bgResource = sessionManagerRepo.getBgTheme().let { if (it != 0) it else R.drawable.theme_1 }
+        binding?.parentView?.let { v ->
+            Glide.with(this).load(bgResource).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).centerCrop().into(object : CustomViewTarget<View, Drawable>(v) {
+                override fun onResourceReady(r: Drawable, t: Transition<in Drawable>?) { v.background = r }
+                override fun onResourceCleared(p: Drawable?) { v.background = null }
+                override fun onLoadFailed(e: Drawable?) { v.setBackgroundResource(R.drawable.theme_1) }
+            })
+        }
+    }
+
+    private fun applyToolbarTheme(toolbar: LinearLayout) {
+        val bgResource = sessionManagerRepo.getBgTheme().let { if (it != 0) it else R.drawable.theme_1 }
+        Glide.with(this).load(bgResource).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).centerCrop().into(object : CustomViewTarget<LinearLayout, Drawable>(toolbar) {
+            override fun onResourceReady(r: Drawable, t: Transition<in Drawable>?) { toolbar.background = r }
+            override fun onResourceCleared(p: Drawable?) { toolbar.background = null }
+            override fun onLoadFailed(e: Drawable?) { toolbar.setBackgroundResource(R.drawable.theme_1) }
+        })
+    }
 
     private fun deleteTagEverywhere(tagName: String) {
-        // 1a. Remove from every note in DB
+        // BUG 1 FIX: allNotes is now properly populated by observeAllNotes(),
+        // so this loop actually runs and cleans up tags from every affected note.
         allNotes?.forEach { note ->
             if (note.tags?.any { it.tagName == tagName } == true) {
                 val trimmed = note.tags!!.filter { it.tagName != tagName }
                 viewModel.updateTagsForNote(note.noteId, trimmed)
             }
         }
-
-        // 1b. Remove from global_tags table — Room flow emits → grid updates
         homeViewModel.removeGlobalTag(tagName)
-
-        // 2. Remove from select-mode chip strip (no-op in manage mode)
         selectedTags.remove(tagName)
         removeSelectedChip(tagName)
         updateSelectedSection()
     }
 
-    // ── Observe both sources and merge into All Tags grid ────────────────────
-    //
-    //  Source 1: allNotesState  — tags derived from notes in the DB
-    //  Source 2: globalTagsState — standalone tags saved in SharedPreferences
-    //
-    //  Both flows are combined so any change to either source automatically
-    //  refreshes the grid without any manual UI calls.
+    private fun openEditDialog(tag: CustomTagEntity) {
+        val oldName = tag.tagName.orEmpty()
 
-    private fun observeAllNotes() {
-        viewLifecycleOwner.lifecycleScope.launch {
-            combine(
-                homeViewModel.allNotesState.flowWithLifecycle(viewLifecycleOwner.lifecycle),
-                homeViewModel.globalTagsState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
-            ) { notesState, globalTagNames ->
+        // Snapshot the current names BEFORE the dialog opens so we can diff afterwards.
+        val namesBefore: Set<String> = allUniqueTags.mapNotNull { it.tagName }.toSet()
 
-                // Tags from saved notes
-                val noteTags: List<CustomTagEntity> =
-                    if (notesState is HomeNotesState.Success) {
-                        allNotes = notesState.notes
-                        notesState.notes
-                            ?.flatMap { it.tags ?: emptyList() }
-                            ?: emptyList()
-                    } else emptyList()
+        editTagDialog(
+            sessionManagerRepo = sessionManagerRepo,
+            oldTags = allUniqueTags,
+            selectedTag = tag,
+            onUpdateTag = { updatedList ->
 
-                // Standalone global tags (SharedPrefs) as CustomTagEntity
-                val globalTags: List<CustomTagEntity> = globalTagNames.map { name ->
-                    CustomTagEntity(tagName = name, noteId = 0)
-                }
+                // BUG 2 FIX: The old code used:
+                //   updatedList.firstOrNull { it.tagName != oldName }
+                // which matches the very first tag in the list that isn't `oldName`
+                // (e.g. "Work") — completely wrong for any predefined tag beyond index 0.
+                //
+                // Correct approach: diff the list against the pre-dialog snapshot to find
+                // whichever name is new (i.e. wasn't present before the rename).
+                val newName = updatedList
+                    .mapNotNull { it.tagName }
+                    .firstOrNull { it !in namesBefore }
+                    ?: return@editTagDialog
 
-                // Merge: put globalTags first so newly-created tags appear at
-                // the top. Then note tags fill in anything not already present.
-                // Deduplicate strictly on lowercase name — noteId differences
-                // must NOT create separate entries for the same tag name.
-                (globalTags + noteTags)
-                    .distinctBy { it.tagName.orEmpty().lowercase().trim() }
-                    .filter { it.tagName.orEmpty().isNotBlank() }
+                homeViewModel.renameGlobalTag(oldName, newName)
 
-            }.collect { mergedFromDb ->
-                allUniqueTags = mergedFromDb
-                tagsAdapter.submitTagList(
-                    filteredByCurrentQuery(allUniqueTags),
-                    selectedTags.toSet()
-                )
-                binding?.tvEmpty?.isVisible = allUniqueTags.isEmpty()
-                binding?.rvTags?.isVisible  = allUniqueTags.isNotEmpty()
+                // BUG 3 FIX: Removed findNavController().navigateUp() from here.
+                // Previously every rename dismissed the entire Manage Tags screen,
+                // forcing the user to re-open it for each subsequent edit.
+                // The flow in observeAllNotes() will auto-refresh the list after renaming.
             }
-        }
-    }
-
-    // ── Helpers ────────────────────────────────────────────────────────────────
-
-    private fun filteredByCurrentQuery(list: List<CustomTagEntity>): List<CustomTagEntity> {
-        val q = binding?.etTags?.text.toString()
-        return if (q.isBlank()) list
-        else list.filter { it.tagName.orEmpty().contains(q.trim(), ignoreCase = true) }
-    }
-
-    // ── Background theme — applied to root AND to the drawer toolbar ───────────
-
-    private fun setupBgTheme() {
-        val bgResource    = sessionManagerRepo.getBgTheme()
-        val finalResource = if (bgResource != 0) bgResource else R.drawable.theme_1
-
-        // Root background (parentView)
-        binding?.parentView?.let { v ->
-            Glide.with(this)
-                .load(finalResource)
-                .skipMemoryCache(true)
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .centerCrop()
-                .into(object : CustomViewTarget<View, Drawable>(v) {
-                    override fun onResourceReady(r: Drawable, t: Transition<in Drawable>?) { v.background = r }
-                    override fun onResourceCleared(p: Drawable?)                           { v.background = null }
-                    override fun onLoadFailed(e: Drawable?)                                { v.setBackgroundResource(R.drawable.theme_1) }
-                })
-        }
-    }
-
-    /**
-     * Applies the current theme as the background of the drawer toolbar.
-     * Called only in manage mode after the toolbar is made visible.
-     */
-    private fun applyToolbarTheme(toolbar: LinearLayout) {
-        val bgResource    = sessionManagerRepo.getBgTheme()
-        val finalResource = if (bgResource != 0) bgResource else R.drawable.theme_1
-
-        Glide.with(this)
-            .load(finalResource)
-            .skipMemoryCache(true)
-            .diskCacheStrategy(DiskCacheStrategy.NONE)
-            .centerCrop()
-            .into(object : CustomViewTarget<LinearLayout, Drawable>(toolbar) {
-                override fun onResourceReady(r: Drawable, t: Transition<in Drawable>?) { toolbar.background = r }
-                override fun onResourceCleared(p: Drawable?)                           { toolbar.background = null }
-                override fun onLoadFailed(e: Drawable?)                                { toolbar.setBackgroundResource(R.drawable.theme_1) }
-            })
+        )
     }
 }

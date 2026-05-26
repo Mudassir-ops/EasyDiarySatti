@@ -39,6 +39,22 @@ class CreateNotesViewModel @Inject constructor(
      */
     var openedFromDraft: Boolean = false
 
+    /**
+     * Set to true ONLY when the user presses "Next" in AddTagsFragment (handleSaveAction).
+     * Consumed and immediately cleared by CreateNotesFragment.onResume().
+     *
+     * WHY THIS FLAG IS NEEDED:
+     * onResume() previously refreshed the tag flexbox by reading viewModel.allTags() on
+     * every return — including when the user pressed the system back button without
+     * confirming via "Next". This caused tags selected in AddTagsFragment to bleed into
+     * the note even though the user never intended to save them.
+     *
+     * With this flag, onResume() only applies allTags() to the note when the user
+     * explicitly confirmed via the Next button. A plain back-press leaves the note
+     * display unchanged.
+     */
+    var tagsConfirmed: Boolean = false
+
     fun sendAction(action: CreateNotesState) {
         viewModelScope.launch {
             Log.e("headerSave", "setClickListeners:$action ")

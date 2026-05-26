@@ -9,6 +9,8 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
 import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
 import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
@@ -23,10 +25,10 @@ import com.example.easydiarysatti.toFormattedString
 import com.example.easydiarysatti.viewBinding
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.UUID
-import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class RemainderFragment : Fragment(R.layout.fragment_remainder) {
@@ -35,6 +37,8 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
     private val viewModelNative: ViewModelNative by activityViewModels()
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
+    @Inject lateinit var internetManager: InternetManager
+    @Inject lateinit var sharedPref: SharedPreferenceUtils
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private val reminderAdapter by lazy {
         ReminderAdapter { reminder ->
@@ -124,6 +128,18 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
     private var isAdProcessStarted = false
 
     private fun initAdObserver() {
+        if (sharedPref.isAppPurchased || !internetManager.isInternetConnected) {
+            binding?.shimmerViewContainer?.visibility = View.GONE
+            binding?.flAdplaceholder?.visibility = View.GONE
+            return
+        }
+
+        // ── 2. Ad disabled from remote → hide shimmer immediately ─────────────
+        if (!sharedPref.getAdShowStatus(NativeAdKey.REMINDER_INTERVAL.value)) {
+            binding?.shimmerViewContainer?.visibility = View.GONE
+            binding?.flAdplaceholder?.visibility = View.GONE
+            return
+        }
         viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
             // 1. Log the map keys to verify the ad actually exists in this fragment
             Log.d("AdDebug", "Map keys present: ${adMap.keys}")

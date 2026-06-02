@@ -46,20 +46,7 @@ object AdsModule {
     }
 
 
-    /* ---------------- App Open Ads ---------------- */
-    @Provides
-    @Singleton
-    fun provideAppOpenAdManager(
-        @ApplicationContext context: Context,
-        sharedPreferenceUtils: SharedPreferenceUtils,
-        internetManager: InternetManager
-    ): AppOpenAdManager {
-        return AppOpenAdManager(
-            context = context,
-            internetManager = internetManager,
-            sharedPrefs = sharedPreferenceUtils
-        )
-    }
+
 
     @Provides
     @Singleton

@@ -9,4 +9,5 @@ sealed class LibraryItem {
         val noteId: Long
     ) :
         LibraryItem()
+    object AdItem : LibraryItem()
 }

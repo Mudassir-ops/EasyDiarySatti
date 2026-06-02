@@ -11,12 +11,18 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd
+import com.example.easydiarysatti.ads.AdShowingTracker
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback
 
 abstract class RewardedInterManager {
 
-    private var mRewardedInterstitialAd: RewardedInterstitialAd? = null
-    private var isRewardedInterLoading = false
+    // Per-key storage — same fix as RewardedManager.
+    // Single mRewardedInterstitialAd slot caused cross-key contamination:
+    // SAVE's failover ad occupied the slot → MEDIA/BG isRewardedInterLoaded() returned true
+    // → onResponse(true) fired immediately → showed SAVE's ad or null → free access granted.
+    private val rewardedInterAdMap   = HashMap<String, RewardedInterstitialAd>()
+    private val loadingInterKeys     = HashSet<String>()
+    private val pendingInterListeners = HashMap<String, RewardedOnLoadCallBack>()
 
     protected fun loadRewardedInter(
         context: Context?,
@@ -28,16 +34,15 @@ abstract class RewardedInterManager {
         listener: RewardedOnLoadCallBack?,
     ) {
 
-        if (isRewardedInterLoaded()) {
+        if (isRewardedInterLoaded(adType)) {
             Log.i(TAG_ADS, "$adType -> loadRewardedInter: Already loaded")
             listener?.onResponse(true)
             return
         }
 
-        if (isRewardedInterLoading) {
-            Log.d(TAG_ADS, "$adType -> loadRewardedInter: Ad is already loading...")
-            // No need to invoke callback, in some cases (e.g. activity recreation) it interrupts our response, as we are waiting for response in Splash
-            // listener?.onResponse(false)  // Uncomment if u still need to listen this case
+        if (loadingInterKeys.contains(adType)) {
+            Log.d(TAG_ADS, "$adType -> loadRewardedInter: Ad is already loading, queuing listener...")
+            pendingInterListeners[adType] = listener ?: return
             return
         }
 
@@ -72,7 +77,7 @@ abstract class RewardedInterManager {
         }
 
         Log.d(TAG_ADS, "$adType -> loadRewardedInter: Requesting admob server for ad...")
-        isRewardedInterLoading = true
+        loadingInterKeys.add(adType)
 
         RewardedInterstitialAd.load(
             context,
@@ -80,20 +85,19 @@ abstract class RewardedInterManager {
             AdRequest.Builder().build(),
             object : RewardedInterstitialAdLoadCallback() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
-                    Log.e(
-                        TAG_ADS,
-                        "$adType -> loadRewardedInter: onAdFailedToLoad: ${adError.message}"
-                    )
-                    isRewardedInterLoading = false
-                    mRewardedInterstitialAd = null
+                    Log.e(TAG_ADS, "$adType -> loadRewardedInter: onAdFailedToLoad: ${adError.message}")
+                    loadingInterKeys.remove(adType)
+                    rewardedInterAdMap.remove(adType)
                     listener?.onResponse(false)
+                    pendingInterListeners.remove(adType)?.onResponse(false)
                 }
 
                 override fun onAdLoaded(rewardedInterstitialAd: RewardedInterstitialAd) {
                     Log.i(TAG_ADS, "$adType -> loadRewardedInter: onAdLoaded")
-                    isRewardedInterLoading = false
-                    mRewardedInterstitialAd = rewardedInterstitialAd
+                    loadingInterKeys.remove(adType)
+                    rewardedInterAdMap[adType] = rewardedInterstitialAd   // per-key slot
                     listener?.onResponse(true)
+                    pendingInterListeners.remove(adType)?.onResponse(true)
                 }
             })
     }
@@ -105,7 +109,9 @@ abstract class RewardedInterManager {
         listener: RewardedOnShowCallBack?
     ) {
 
-        if (isRewardedInterLoaded().not()) {
+        val mRewardedInterstitialAd = rewardedInterAdMap[adType]   // per-key lookup
+
+        if (mRewardedInterstitialAd == null) {
             Log.e(TAG_ADS, "$adType -> showRewardedInter: RewardedInter is not loaded yet")
             listener?.onAdFailedToShow()
             return
@@ -113,10 +119,7 @@ abstract class RewardedInterManager {
 
         if (isAppPurchased) {
             Log.e(TAG_ADS, "$adType -> showRewardedInter: Premium user")
-            if (isRewardedInterLoaded()) {
-                Log.d(TAG_ADS, "$adType -> Destroying loaded RewardedInter ad due to Premium user")
-                mRewardedInterstitialAd = null
-            }
+            rewardedInterAdMap.remove(adType)
             listener?.onAdFailedToShow()
             return
         }
@@ -133,26 +136,26 @@ abstract class RewardedInterManager {
             return
         }
 
-        mRewardedInterstitialAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
+        mRewardedInterstitialAd.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdShowedFullScreenContent() {
+                AdShowingTracker.isAdShowing = true
+                Log.d(TAG_ADS, "admob RewardedInter onAdShowedFullScreenContent")
+                listener?.onAdShowedFullScreenContent()
+                rewardedInterAdMap.remove(adType)
+            }
+
             override fun onAdDismissedFullScreenContent() {
+                AdShowingTracker.clearWithDelay()
                 Log.d(TAG_ADS, "admob RewardedInter onAdDismissedFullScreenContent")
                 listener?.onAdDismissedFullScreenContent()
-                mRewardedInterstitialAd = null
+                rewardedInterAdMap.remove(adType)
             }
 
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                Log.e(
-                    TAG_ADS,
-                    "admob RewardedInter onAdFailedToShowFullScreenContent: ${adError.message}"
-                )
+                AdShowingTracker.clearWithDelay()
+                Log.e(TAG_ADS, "admob RewardedInter onAdFailedToShowFullScreenContent: ${adError.message}")
                 listener?.onAdFailedToShow()
-                mRewardedInterstitialAd = null
-            }
-
-            override fun onAdShowedFullScreenContent() {
-                Log.d(TAG_ADS, "admob RewardedInter onAdShowedFullScreenContent")
-                listener?.onAdShowedFullScreenContent()
-                mRewardedInterstitialAd = null
+                rewardedInterAdMap.remove(adType)
             }
 
             override fun onAdImpression() {
@@ -162,13 +165,17 @@ abstract class RewardedInterManager {
         }
 
         Log.d(TAG_ADS, "$adType -> RewardedInter: showing ad")
-        mRewardedInterstitialAd?.show(activity) {
+        // Set BEFORE show() so ProcessLifecycleOwner.onStop sees the flag
+        // immediately when the rewarded interstitial Activity launches.
+        AdShowingTracker.isAdShowing = true
+        mRewardedInterstitialAd.show(activity) {
             Log.d(TAG_ADS, "admob RewardedInter onUserEarnedReward")
             listener?.onUserEarnedReward()
         }
     }
 
-    fun isRewardedInterLoaded(): Boolean {
-        return mRewardedInterstitialAd != null
-    }
+    fun isRewardedInterLoaded(adType: String): Boolean = rewardedInterAdMap.containsKey(adType)
+
+    // Legacy no-arg check — true if any key has a loaded ad
+    fun isRewardedInterLoaded(): Boolean = rewardedInterAdMap.isNotEmpty()
 }

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Track (background) — full width, rounded -->
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <corners android:radius="100dp" />
+            <solid android:color="#8BA8A8A8" />
+        </shape>
+    </item>
+
+    <!-- Filled progress — scale from left, both ends stay rounded -->
+    <item android:id="@android:id/progress">
+        <scale
+            android:scaleWidth="100%"
+            android:scaleGravity="left|center_vertical">
+            <shape android:shape="rectangle">
+                <corners android:radius="100dp" />
+                <solid android:color="@color/app_primary_color" />
+            </shape>
+        </scale>
+    </item>
+
+</layer-list>

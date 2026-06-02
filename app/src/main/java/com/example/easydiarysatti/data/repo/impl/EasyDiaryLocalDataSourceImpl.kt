@@ -16,9 +16,11 @@ class EasyDiaryLocalDataSourceImpl(
         val emptyNote = CreateNoteEntity()
         return dao.insertNote(emptyNote)
     }
+
     override suspend fun deleteNote(note: CreateNoteEntity) {
-        return dao.deleteNote(note) // This will now work correctly
+        return dao.deleteNote(note)
     }
+
     override suspend fun insertNote(note: CreateNoteEntity): Long {
         return dao.insertNote(note = note)
     }
@@ -76,6 +78,18 @@ class EasyDiaryLocalDataSourceImpl(
         dao.updateImageForNote(noteId = noteId, newImages = newImages)
     }
 
+    // ── NEW ───────────────────────────────────────────────────────────────────
+
+    override fun getDraftNotes(): Flow<List<CreateNoteEntity>> {
+        return dao.getDraftNotes().distinctUntilChanged()
+    }
+
+    override suspend fun publishDraft(noteId: Long) {
+        dao.publishDraft(noteId)
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+
     override suspend fun insertReminder(reminderEntity: ReminderEntity): Long {
         return dao.insertReminder(reminderEntity)
     }
@@ -91,5 +105,4 @@ class EasyDiaryLocalDataSourceImpl(
     override fun observeReminder(): Flow<List<ReminderEntity>?> {
         return dao.observeReminder()
     }
-
 }

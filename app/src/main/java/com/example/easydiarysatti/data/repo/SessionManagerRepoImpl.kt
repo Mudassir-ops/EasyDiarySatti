@@ -140,5 +140,26 @@ class SessionManagerRepoImpl(
             BYPASS_SECURITY, false
         )
     }
+    override fun setRewardedJustShown(value: Boolean) {
+        preferences.edit().putBoolean("rewarded_just_shown", value).apply()
+    }
 
+    override fun wasRewardedJustShown(): Boolean {
+        val value = preferences.getBoolean("rewarded_just_shown", false)
+        preferences.edit().putBoolean("rewarded_just_shown", false).apply()
+        return value
+    }
+
+    private  val KEY_GLOBAL_TAGS = "key_global_tags"
+    override fun getGlobalTags(): List<String> {
+        val raw = preferences.getString(KEY_GLOBAL_TAGS, "") ?: ""
+        return if (raw.isBlank()) emptyList()
+        else raw.split("|").filter { it.isNotBlank() }
+    }
+
+    override fun saveGlobalTags(tags: List<String>) {
+        preferences.edit()
+            .putString(KEY_GLOBAL_TAGS, tags.joinToString("|"))
+            .apply()
+    }
 }

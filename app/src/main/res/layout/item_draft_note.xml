@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    item_draft_note.xml
+    Matches the draft list row in Draft_Notes.png:
+
+    ┌──────────────────────────────────────────────────────┐
+    │  Meeting notes                         [edit] [del]  │
+    │  🕐 Last edited: 2 hours ago                         │
+    ├──────────────────────────────────────────────────────┤  (divider)
+
+    - Title text, bold, dark
+    - Clock icon + "Last edited: X ago" in gray
+    - Edit icon (lines + pencil)  — teal/dark
+    - Delete icon (trash)         — red/coral
+    - Thin bottom divider
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="20dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:gravity="center_vertical">
+
+        <!-- Title + subtitle block -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginEnd="12dp">
+
+            <TextView
+                android:id="@+id/tvDraftTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A1A"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="4dp"
+                android:text="Draft title" />
+
+            <!-- Clock icon + "Last edited: X ago" -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:src="@drawable/ic_clock"
+                    app:tint="#999999"
+                    android:layout_marginEnd="4dp"
+                    android:contentDescription="@null" />
+
+                <TextView
+                    android:id="@+id/tvLastEdited"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="#999999"
+                    android:text="Last edited: just now" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Edit icon (lines + pencil) -->
+        <ImageView
+            android:id="@+id/ivEditDraft"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_edit_note"
+            app:tint="#444444"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Edit draft" />
+
+        <!-- Delete icon (trash) -->
+        <ImageView
+            android:id="@+id/ivDeleteDraft"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:padding="6dp"
+            android:src="@drawable/ic_delete"
+            app:tint="#D94F3D"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Delete draft" />
+
+    </LinearLayout>
+
+    <!-- Thin bottom divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.7dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:background="#E0E0E0" />
+
+</LinearLayout>

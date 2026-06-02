@@ -2,10 +2,15 @@ package com.example.easydiarysatti.ui.createnote
 
 import android.annotation.SuppressLint
 import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -19,9 +24,14 @@ import com.example.easydiarysatti.MainActivity
 import com.example.easydiarysatti.NOTE_ENTITY
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.addTags
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
 import com.example.easydiarysatti.ads.interstitial.InterstitialAdsConfig
 import com.example.easydiarysatti.ads.interstitial.callbacks.InterstitialOnShowCallBack
 import com.example.easydiarysatti.ads.interstitial.enums.InterAdKey
+import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.data.local.CreateNoteEntity
 import com.example.easydiarysatti.data.local.CustomTagEntity
 import com.example.easydiarysatti.data.local.ReminderEntity
@@ -40,7 +50,10 @@ import com.example.easydiarysatti.setTextAlignmentByName
 import com.example.easydiarysatti.showDatePickerWithTime
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.toFormattedString
+import com.example.easydiarysatti.ui.main.MainFragment
 import com.example.easydiarysatti.ui.remainder.RemainderViewModel
+import com.example.easydiarysatti.utills.InternetConnectivityDialog
+import com.example.easydiarysatti.utills.SaveDraftDialog
 import com.example.easydiarysatti.utills.getCurrentThemeColor
 import com.example.easydiarysatti.utills.showEditFeelingsDialog
 import com.example.easydiarysatti.viewBinding
@@ -57,8 +70,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     private val binding by viewBinding(FragmentCreateNotesBinding::bind)
     private val viewModel: CreateNotesViewModel by activityViewModels()
+    private val bannerViewModel by activityViewModels<ViewModelBanner>()
     private val reminderViewModel by viewModels<RemainderViewModel>()
     private var createNoteEntity: CreateNoteEntity? = null
+    private val homeViewModel by activityViewModels<com.example.easydiarysatti.ui.home.HomeViewModel>()
+
+    @Inject
+    lateinit var internetManager: InternetManager
     private val imagesItemAdapter: ImagesItemAdapter by lazy {
         ImagesItemAdapter(
             fromPreview = false,
@@ -84,14 +102,116 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             }
         )
     }
-    lateinit var mFirebaseAnalytics : FirebaseAnalytics
+
+    lateinit var mFirebaseAnalytics: FirebaseAnalytics
+
     @Inject
     lateinit var interstitialAdsConfig: InterstitialAdsConfig
 
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
+
+    @Inject
+    lateinit var sharedPref: com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+
+    /**
+     * BillingManager for Remove Ads direct purchase.
+     * Constructed here because CreateNotesFragment can show RemoveAdsDialog
+     * from both showBackPressInterstitial() and showInterstitial().
+     * onPurchaseSuccess mirrors the same logic as MainFragment.
+     */
+    private val billingManager: com.example.easydiarysatti.paywalls.BillingManager by lazy {
+        com.example.easydiarysatti.paywalls.BillingManager(
+            activity = requireActivity(),
+            onPurchaseSuccess = { productId ->
+                if (productId == com.example.easydiarysatti.paywalls.ProAccessManager.REMOVE_ADS_PRODUCT_ID) {
+                    sharedPref.isAppPurchased = true
+                }
+            }
+        )
+    }
+
+    /**
+     * ProAccessManager — used here for onInterstitialCrossClicked() (both backpress and save inter).
+     * billingManager is injected so RemoveAdsDialog CTA launches direct IN_APP purchase.
+     * Shares the same interstitialCrossCount counter via SharedPreferences.
+     */
+    private val proAccessManager by lazy {
+        com.example.easydiarysatti.paywalls.ProAccessManager(
+            activity = requireActivity() as androidx.fragment.app.FragmentActivity,
+            sharedPref = sharedPref,
+            billingManager = billingManager
+        )
+    }
+
     private var isNoteInitialized = false
 
+    // ✅ CORE FIX: Single navigation guard — ensures navigateScreen() fires AT MOST ONCE
+    // per fragment instance regardless of how many callbacks (ad dismiss, fail, delay,
+    // onAfterDismiss from RemoveAdsDialog) arrive. Without this, two callbacks arriving
+    // close together both call navigateScreen(), the second one finds the fragment already
+    // partially popped and navigates to CreateNote instead of Home.
+    private var hasNavigated = false
+
+    /**
+     * Set to true by MainFragment.captureInnerDestBeforePaywall() immediately before
+     * MainPaywallFragment is pushed onto the outer nav stack.
+     *
+     * WHY THIS IS NEEDED:
+     * notesActionState is a Channel.BUFFERED with receiveAsFlow().
+     * flowWithLifecycle(RESUMED) CANCELS its collector when the fragment stops (paywall opens).
+     * Any NoteSaved item already in the Channel buffer is NOT consumed — it waits.
+     * When the fragment resumes after paywall close, the collector restarts and immediately
+     * pulls that buffered NoteSaved → checkInterstitial() → navigateScreen()
+     * → navigateInnerNavToHome() → user lands on Home instead of createNotesFragment. ❌
+     *
+     * The flag is checked inside the NoteSaved handler (NOT in onResume, because the
+     * channel item is consumed before onResume runs) and cleared after skipping.
+     *
+     * Stuck-flag safety:
+     * If no NoteSaved is buffered (quota exceeded before save), nothing clears this flag
+     * after paywall close. We use a short postDelayed in onResume to clear it after the
+     * flow collector has had one cycle to process any buffered events.
+     */
+    var paywallCurrentlyOpen = false
+
+    override fun onResume() {
+        super.onResume()
+        if (paywallCurrentlyOpen) {
+            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                if (paywallCurrentlyOpen) {
+                    android.util.Log.d("PaywallNav", "onResume: clearing stuck paywallCurrentlyOpen flag")
+                    paywallCurrentlyOpen = false
+                }
+            }
+        }
+
+        // Only refresh the tag flexbox when the user explicitly pressed "Next" in
+        // AddTagsFragment (tagsConfirmed = true). A plain system back-press or toolbar
+        // back leaves tagsConfirmed = false, so the note's displayed tags are untouched.
+        //
+        // OLD CODE ran this block unconditionally on every onResume(), which caused tags
+        // selected in AddTagsFragment (but never confirmed via Next) to appear on the note
+        // the moment the user navigated back — even though handleSaveAction() was never
+        // called and the ViewModel's tagList was never updated for this session.
+        if (viewModel.tagsConfirmed) {
+            viewModel.tagsConfirmed = false // consume immediately — one-shot flag
+            val latestTags = viewModel.allTags()
+                .filter { !it.tagName.isNullOrBlank() }
+            if (latestTags.isNotEmpty()) {
+                createNoteEntity = createNoteEntity?.copy(tags = latestTags)
+                latestTags.setupFlexBox()
+            }
+        }
+    }
+    private fun showInternetPopupIfNeeded() {
+        InternetConnectivityDialog.showIfNeeded(
+            context             = requireContext(),
+            sharedPref          = sharedPref,
+            screenId            = InternetConnectivityDialog.SCREEN_CREATE_NOTE,
+            isInternetConnected = internetManager.isInternetConnected
+        )
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
@@ -103,38 +223,185 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             tags = emptyList()
         )
     }
+
     private fun logAnalyticsEvent(eventName: String, label: String) {
         val params = Bundle().apply { putString("action_label", label) }
         FirebaseAnalytics.getInstance(requireContext()).logEvent(eventName, params)
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        billingManager.startConnection()  // connect early so price is ready if dialog opens
         observeNote()
         observeNoteAction()
+        setupBannerObserver()
         clickListeners()
         adjustScreenKeyboard()
         setupImagesRecyclerview()
         setupDescriptionScroll()
         logAnalyticsEvent("Add_Note_Screen", "fragment_open")
-        listOf(
-            CustomTagEntity(
-                tagName = "", noteId = 999
-            )
-        ).setupFlexBox()
-        val themeColor=getCurrentThemeColor(sessionManagerRepo)
-        binding?.ivBottomArrow?.imageTintList=ColorStateList.valueOf(themeColor)
+
+        val themeColor = getCurrentThemeColor(sessionManagerRepo)
+        binding?.ivBottomArrow?.imageTintList = ColorStateList.valueOf(themeColor)
         setStyledDateTime(binding?.tvDate ?: return, R.color.grey)
         loadInterstitial()
+        showInternetPopupIfNeeded()
+        interstitialAdsConfig.loadInterstitialAd(InterAdKey.ADD_TASK_INTER_BACKPRESS)
 
+        requireActivity().onBackPressedDispatcher.addCallback(
+            viewLifecycleOwner,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (hasUnsavedContent()) {
+                        // User typed something — show the Save as Draft dialog
+                        SaveDraftDialog.show(
+                            fragmentManager = childFragmentManager,
+
+                            onSaveAsDraft = {
+                                // 1. Persist the note as a draft in the DB
+                                saveNoteAsDraft()
+                                // 2. Then go through the normal back-press ad/navigation flow
+                                proceedWithBackPress()
+                            },
+
+                            onCancel = {
+                                // Do nothing — user stays on CreateNotesFragment
+                            },
+
+                            onExitAnyway = {
+                                // Skip saving, go straight to ad/navigation flow
+                                proceedWithBackPress()
+                            }
+                        )
+                    } else {
+                        // Nothing typed — no dialog needed, just navigate back normally
+                        proceedWithBackPress()
+                    }
+                }
+            })
     }
+    private fun hasUnsavedContent(): Boolean {
+        val currentTitle = binding?.etHeader?.text?.toString().orEmpty()
+        val currentDesc  = binding?.etDescription?.text?.toString().orEmpty()
+
+        val savedTitle = createNoteEntity?.title.orEmpty()
+        val savedDesc  = createNoteEntity?.description.orEmpty()
+        val noteId     = createNoteEntity?.noteId ?: 0L
+
+        return when {
+            // Brand-new note: show dialog only if something was typed
+            noteId == 0L -> currentTitle.isNotBlank() || currentDesc.isNotBlank()
+
+            // Editing existing note: show dialog only if text changed
+            else -> currentTitle != savedTitle || currentDesc != savedDesc
+        }
+    }
+
+    /**
+     * Saves the current content as a DRAFT (isDraft = true) so it appears in
+     * the Drafts screen.  Mirrors saveNote() but marks the note as a draft.
+     *
+     * ⚠️  Your CreateNoteEntity / ViewModel must support an `isDraft` flag.
+     *     If it does not exist yet, add:
+     *         val isDraft: Boolean = false
+     *     to CreateNoteEntity and handle it in the repository / DAO layer.
+     */
+    /**
+     * Saves current content as a draft (isDraft = true).
+     *
+     * Calls mergeAndSaveAsDraft() which writes to DB and emits Init — NOT NoteSaved.
+     * This prevents the double-navigation race: mergeAndSave() would emit NoteSaved
+     * → checkInterstitial() → navigateScreen() fires at the same time as
+     * proceedWithBackPress() → navigateScreen(), crashing back to CreateNote. ❌
+     * mergeAndSaveAsDraft() emits Init so proceedWithBackPress() owns navigation. ✅
+     */
+    private fun saveNoteAsDraft() {
+        createNoteEntity = createNoteEntity?.copy(
+            title       = binding?.etHeader?.text?.toString().orEmpty(),
+            description = binding?.etDescription?.text?.toString().orEmpty(),
+            isDraft     = true
+        )
+        createNoteEntity?.let {
+            viewModel.mergeAndSaveAsDraft(createNoteEntity = it)
+        }
+    }
+
+    /**
+     * Encapsulates the original back-press flow (show interstitial or navigate).
+     * Extracted so it can be called from both the dialog callbacks and the
+     * no-content fast path.
+     */
+    private fun proceedWithBackPress() {
+        if (interstitialAdsConfig.isInterstitialLoaded()) {
+            showBackPressInterstitial()
+        } else {
+            val shouldShow = sharedPref.shouldShowRemoveAdsPopup() && internetManager.isInternetConnected
+            if (shouldShow) {
+                proAccessManager.onInterstitialCrossClicked(
+                    fragmentManager = requireActivity().supportFragmentManager,
+                    onAfterDismiss  = { navigateScreen(fromBackPress = true) }
+                )
+            } else {
+                navigateScreen(fromBackPress = true)
+            }
+        }
+    }
+    // Flag to prevent duplicate banner ad loading
+    private var isAdLoaded = false
+
+    private fun setupBannerObserver() {
+        if (sharedPref.isAppPurchased) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            binding?.bannerContainerTop?.visibility = View.GONE
+
+            return
+        }
+        if (!internetManager.isInternetConnected) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            return
+        }
+
+        // ── 2. Ad disabled from remote → hide shimmer immediately ─────────────
+        if (!sharedPref.getAdShowStatus(BannerAdKey.ADD_TASK.value)) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            return
+        }
+
+
+        bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            if (isAdLoaded) return@observe
+
+            val preloadedAd = adMap[BannerAdKey.ADD_TASK]
+
+            if (preloadedAd != null) {
+                isAdLoaded = true
+
+                binding?.bannerShimmerContainer?.visibility = View.VISIBLE
+                binding?.bannerShimmerContainer?.startShimmer()
+
+                if (isAdded && binding != null) {
+                    binding?.bannerShimmerContainer?.stopShimmer()
+                    binding?.bannerShimmerContainer?.setShimmer(null)
+
+                    binding?.bannerContainerTop?.let { container ->
+                        container.setBackgroundColor(Color.TRANSPARENT)
+                        container.addCleanView(preloadedAd)
+                    }
+                    Log.d("AdDebug", "Shimmer off, Ad visible (Loaded only once)")
+                }
+
+            } else {
+                binding?.bannerShimmerContainer?.visibility = View.GONE
+                Log.d("AdDebug", "ADD_TASK ad not found in map yet...")
+            }
+        }
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     private fun setupDescriptionScroll() {
         binding?.etDescription?.setOnTouchListener { view, event ->
             if (view.hasFocus()) {
-                // Disallow NestedScrollView to intercept touch events
                 view.parent.requestDisallowInterceptTouchEvent(true)
-
-                // Check if the event is an ACTION_UP to return control to the parent
                 if ((event.action and MotionEvent.ACTION_MASK) == MotionEvent.ACTION_UP) {
                     view.parent.requestDisallowInterceptTouchEvent(false)
                 }
@@ -142,12 +409,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
             false
         }
     }
+
     fun List<CustomTagEntity>.setupFlexBox() {
-        val displayTags = this.filter { it.tagName.isNotBlank() }
+        val displayTags = this.filter { !it.tagName.isNullOrBlank() }
 
         if (displayTags.isEmpty()) {
             binding?.flexboxLayout?.visibility = View.GONE
-            binding?.flexboxLayout?.removeAllViews() // Clear UI
+            binding?.flexboxLayout?.removeAllViews()
             return
         }
 
@@ -159,16 +427,9 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 displayTags.toMutableList(),
                 onTagClick = {},
                 onRemoveTagClick = { tagToRemove ->
-                    // 1. Remove from ViewModel (this returns the new updated list)
                     val updatedTags = viewModel.removeTag(tag = tagToRemove)
-
-                    // 2. Update the fragment's local entity
                     createNoteEntity = createNoteEntity?.copy(tags = updatedTags)
-
-                    // 3. Re-run setupFlexBox with the new list to refresh UI
                     updatedTags.setupFlexBox()
-
-                    // 4. Sync with Database if the note already exists
                     if (createNoteEntity?.noteId != 0L) {
                         viewModel.updateTagsForNote(
                             noteId = createNoteEntity?.noteId ?: 0L,
@@ -180,23 +441,23 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
-
     @SuppressLint("ClickableViewAccessibility")
     fun clickListeners() {
         binding?.apply {
             ivEmoji.setOnClickListener {
                 logAnalyticsEvent("Add_Note_Emoji_Clicked", "icon_click")
-                showEditFeelingsDialog( sessionManagerRepo = sessionManagerRepo,
+                showEditFeelingsDialog(
+                    sessionManagerRepo = sessionManagerRepo,
                     selectedEmotion = { emojiInfo ->
                         logAnalyticsEvent("Add_Note_Emoji_Selected", emojiInfo.name)
-                    ivEmoji.setImageResource(emojiInfo.drawableRes)
-                    createNoteEntity = createNoteEntity?.copy(
-                        feelingEmojiRes = emojiInfo.drawableRes,
-                        selectedEmojiColor = emojiInfo.colorHex,
-                        feelingTitle = emojiInfo.name,
-                        tagColor = emojiInfo.tagColor
-                    )
-                })
+                        ivEmoji.setImageResource(emojiInfo.drawableRes)
+                        createNoteEntity = createNoteEntity?.copy(
+                            feelingEmojiRes = emojiInfo.drawableRes,
+                            selectedEmojiColor = emojiInfo.colorHex,
+                            feelingTitle = emojiInfo.name,
+                            tagColor = emojiInfo.tagColor
+                        )
+                    })
             }
             tvDate.setOnClickListener {
                 logAnalyticsEvent("Add_Note_Reminder_Clicked", "date_text_click")
@@ -229,7 +490,13 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
     fun observeNoteAction() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.notesActionState.flowWithLifecycle(viewLifecycleOwner.lifecycle)
+            // ✅ FIX: Use RESUMED (not default STARTED) so this flow PAUSES while the
+            // interstitial ad is showing (fragment is STOPPED) and does NOT resume/replay
+            // NoteSaved when the ad dismisses and fragment comes back to STARTED.
+            // With STARTED, flowWithLifecycle would re-emit the last NoteSaved value the
+            // moment the fragment returns from the ad → checkInterstitial() fires again
+            // on a fragment that is already mid-navigation → lands on CreateNotesFragment.
+            viewModel.notesActionState.flowWithLifecycle(viewLifecycleOwner.lifecycle, Lifecycle.State.RESUMED)
                 .collect { note ->
                     Log.e("headerSaveSatti", "setClickListeners:$note ")
                     when (note) {
@@ -238,11 +505,29 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                         }
 
                         CreateNotesState.DiscardNote -> {
+                            // handle discard if needed
+                        }
 
+                        CreateNotesState.NoteSaved -> {
+                            // notesActionState is a Channel.BUFFERED with receiveAsFlow().
+                            // flowWithLifecycle(RESUMED) CANCELS the collector when the fragment
+                            // stops (paywall opens) and RESTARTS it on resume. Any NoteSaved
+                            // sitting in the Channel buffer is consumed immediately on resume —
+                            // BEFORE onResume() runs. So the guard must live HERE, not onResume.
+                            //
+                            // Sequence when paywall ✕:
+                            //   flowWithLifecycle restarts → pulls NoteSaved from buffer
+                            //   → paywallCurrentlyOpen is still true → skip navigation
+                            //   → set paywallCurrentlyOpen = false for the next real save
+                            if (paywallCurrentlyOpen) {
+                                paywallCurrentlyOpen = false
+                                return@collect
+                            }
+                            checkInterstitial()
                         }
 
                         is CreateNotesState.ShowMessage -> {
-
+                            // handle message if needed
                         }
 
                         is CreateNotesState.ImagePicked -> {
@@ -261,7 +546,7 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                             ).toMutableList().apply {
                                 if (this.isEmpty()) {
                                     val hasPersonal =
-                                        any { it.tagName.equals("", ignoreCase = true) }
+                                        any { it.tagName.orEmpty().equals("", ignoreCase = true) }
                                     if (!hasPersonal) add(
                                         CustomTagEntity(
                                             tagName = "",
@@ -291,8 +576,18 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
 
                         is CreateNotesState.ChangeBg -> {
                             createNoteEntity =
-                                createNoteEntity?.copy(backgroundRes = note.bgImageRes)
+                                createNoteEntity?.copy(
+                                    backgroundRes = note.bgImageRes,
+                                    bgImageUri = null  // drawable bg clears any gallery URI
+                                )
+                        }
 
+                        is CreateNotesState.ChangeBgUri -> {
+                            createNoteEntity =
+                                createNoteEntity?.copy(
+                                    bgImageUri = note.bgImageUri,
+                                    backgroundRes = null  // gallery bg clears any drawable res
+                                )
                         }
 
                         is CreateNotesState.FontAction -> onFontSelected(note.font)
@@ -305,15 +600,323 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
+    fun getTitleText(): String {
+        return binding?.etHeader?.text?.toString().orEmpty()
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+//  Share
+// ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Called by MainFragment's kabab-menu bottom sheet → Share option.
+     * Shows a dialog so the user can choose Text or Screenshot format.
+     */
+    fun shareNote() {
+        val note = createNoteEntity ?: viewModel.noteState.value ?: return
+        val options = arrayOf(
+            getString(R.string.share_as_text),
+            getString(R.string.share_as_screenshot)
+        )
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.share_note_title))
+            .setItems(options) { _, which ->
+                when (which) {
+                    0 -> shareNoteAsText(note)
+                    1 -> shareNoteAsCard(note)   // ← card beats screenshot: no cutoff
+                }
+            }
+            .show()
+    }
+
+    /**
+     * Shares note as formatted plain text:
+     *   📅 Date · 📝 Title · 📄 Description · app link
+     */
+    private fun shareNoteAsText(note: CreateNoteEntity) {
+        val appLink = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+        val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        val shareText = buildString {
+            appendLine("📅 Date: $dateStr")
+            if (!note.title.isNullOrBlank())       appendLine("📝 Title: ${note.title}")
+            if (!note.description.isNullOrBlank()) appendLine("📄 Description: ${note.description}")
+            appendLine()
+            appendLine(getString(R.string.share_via_app_label))
+            append(appLink)
+        }.trim()
+
+        val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(android.content.Intent.EXTRA_SUBJECT, note.title.orEmpty())
+            putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+        }
+        startActivity(android.content.Intent.createChooser(intent, getString(R.string.share)))
+    }
+
+    /**
+     * Builds a styled note card bitmap from [note] data and shares it as an image.
+     *
+     * WHY a generated card instead of PixelCopy / Canvas.draw():
+     *  • PixelCopy only captures what is VISIBLE on screen — any text the user
+     *    has scrolled past is silently cut off.
+     *  • A generated card expands its height to fit ALL text regardless of length.
+     *  • No window rect / hardware-layer issues — we draw directly to a Canvas.
+     */
+    private fun shareNoteAsCard(note: CreateNoteEntity) {
+        try {
+            val bitmap = buildNoteCardBitmap(note)
+
+            val appLink = "https://play.google.com/store/apps/details?id=${requireContext().packageName}"
+            val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+                .format(java.util.Date())
+
+            val shareText = buildString {
+                appendLine("📅 Date: $dateStr")
+                appendLine()
+                appendLine(getString(R.string.share_via_app_label))
+                append(appLink)
+            }.trim()
+
+            saveBitmapAndShare(bitmap, shareText)
+        } catch (e: Exception) {
+            Log.e("shareNote", "Card share failed: ${e.message}")
+            showShareError()
+        }
+    }
+
+    /**
+     * Builds a white card bitmap containing:
+     *   • Branded header bar (app name)
+     *   • Date
+     *   • Title  (bold)
+     *   • Divider line
+     *   • Full description — ALL lines, no truncation
+     *
+     * Rendered at 1 080 px wide so it looks sharp on every device.
+     */
+    private fun buildNoteCardBitmap(note: CreateNoteEntity): android.graphics.Bitmap {
+        val cardWidth = 1080
+        val pad       = 72     // outer padding px
+        val innerPad  = 48     // spacing between sections px
+
+        // ── paints ────────────────────────────────────────────────────────────
+        val headerPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#4A90D9")
+            style = android.graphics.Paint.Style.FILL
+        }
+        val appNamePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.WHITE
+            textSize = 38f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        val datePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#888888")
+            textSize = 34f
+        }
+        val titlePaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#1A1A1A")
+            textSize = 52f
+            typeface = android.graphics.Typeface.DEFAULT_BOLD
+        }
+        val dividerPaint = android.graphics.Paint().apply {
+            color = android.graphics.Color.parseColor("#E0E0E0")
+            strokeWidth = 2f
+        }
+        val descPaint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+            color = android.graphics.Color.parseColor("#333333")
+            textSize = 40f
+        }
+        val bgPaint = android.graphics.Paint().apply {
+            color = android.graphics.Color.WHITE
+        }
+
+        val textWidth = cardWidth - pad * 2
+        val dateStr = java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a", java.util.Locale.getDefault())
+            .format(java.util.Date())
+
+        // ── wrap text helper ──────────────────────────────────────────────────
+        fun wrapText(text: String, paint: android.graphics.Paint, maxWidth: Int): List<String> {
+            val lines = mutableListOf<String>()
+            // Handle newlines first, then word-wrap each paragraph
+            text.split("\n").forEach { paragraph ->
+                val words = paragraph.split(" ")
+                var current = ""
+                for (word in words) {
+                    val candidate = if (current.isEmpty()) word else "$current $word"
+                    if (paint.measureText(candidate) <= maxWidth) {
+                        current = candidate
+                    } else {
+                        if (current.isNotEmpty()) lines.add(current)
+                        current = word
+                    }
+                }
+                if (current.isNotEmpty()) lines.add(current)
+            }
+            return lines
+        }
+
+        val titleLines = if (!note.title.isNullOrBlank())
+            wrapText(note.title!!, titlePaint, textWidth) else emptyList()
+        val descLines  = if (!note.description.isNullOrBlank())
+            wrapText(note.description!!, descPaint, textWidth) else emptyList()
+
+        // ── measure total height ──────────────────────────────────────────────
+        val headerH = 110
+        var totalH  = headerH + pad                          // header + top pad
+        totalH     += 40 + innerPad                          // date row
+        if (titleLines.isNotEmpty())
+            totalH += titleLines.size * 64 + innerPad        // title rows
+        totalH     += 2 + innerPad                           // divider
+        if (descLines.isNotEmpty())
+            totalH += descLines.size * 54                    // desc rows
+        totalH     += pad                                    // bottom pad
+
+        // ── draw ──────────────────────────────────────────────────────────────
+        val bitmap = android.graphics.Bitmap.createBitmap(
+            cardWidth, totalH, android.graphics.Bitmap.Config.ARGB_8888
+        )
+        val canvas = android.graphics.Canvas(bitmap)
+
+        // White background
+        canvas.drawRect(0f, 0f, cardWidth.toFloat(), totalH.toFloat(), bgPaint)
+
+        // Header bar
+        canvas.drawRect(0f, 0f, cardWidth.toFloat(), headerH.toFloat(), headerPaint)
+        canvas.drawText(
+            getString(R.string.app_name),
+            pad.toFloat(),
+            headerH / 2f + appNamePaint.textSize / 3,
+            appNamePaint
+        )
+
+        var y = headerH + pad.toFloat()
+
+        // Date
+        canvas.drawText("📅 $dateStr", pad.toFloat(), y + 34f, datePaint)
+        y += 40 + innerPad
+
+        // Title lines
+        for (line in titleLines) {
+            canvas.drawText(line, pad.toFloat(), y + 52f, titlePaint)
+            y += 64
+        }
+        if (titleLines.isNotEmpty()) y += innerPad
+
+        // Divider
+        canvas.drawLine(pad.toFloat(), y, (cardWidth - pad).toFloat(), y, dividerPaint)
+        y += 2 + innerPad
+
+        // Description — every line, nothing skipped
+        for (line in descLines) {
+            canvas.drawText(line, pad.toFloat(), y + 40f, descPaint)
+            y += 54
+        }
+
+        return bitmap
+    }
+
+    private fun saveBitmapAndShare(bitmap: android.graphics.Bitmap, shareText: String) {
+        try {
+            val cacheFile = java.io.File(
+                requireContext().cacheDir,
+                "note_share_${System.currentTimeMillis()}.png"
+            )
+            cacheFile.outputStream().use {
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 90, it)
+            }
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                requireContext(),
+                "${requireContext().packageName}.provider",
+                cacheFile
+            )
+            val intent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+                type = "image/png"
+                putExtra(android.content.Intent.EXTRA_STREAM, uri)
+                putExtra(android.content.Intent.EXTRA_TEXT, shareText)
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(android.content.Intent.createChooser(intent, getString(R.string.share)))
+        } catch (e: Exception) {
+            Log.e("shareNote", "saveBitmapAndShare failed: ${e.message}")
+            showShareError()
+        }
+    }
+
+    private fun showShareError() {
+        binding?.parentLayout?.showSnackbar(getString(R.string.screenshot_share_failed))
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    //  Favorite sync
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Called by MainFragment via [CreateNoteOptionsBottomSheet.onFavoriteResult]
+     * so that [createNoteEntity].isFavorite stays in sync after a toggle.
+     * Without this, reopening the bottom sheet would show the old label text.
+     */
+    fun syncFavoriteState(newIsFavorite: Boolean) {
+        createNoteEntity = createNoteEntity?.copy(isFavorite = newIsFavorite)
+    }
+
+    /** Called by MainFragment's kabab-menu bottom sheet → Delete option. */
+    fun deleteNote() {
+        val note = createNoteEntity ?: viewModel.noteState.value ?: return
+        com.example.easydiarysatti.utills.ConfirmationDialog.showDelete(
+            fm        = childFragmentManager,
+            count     = 1,
+            onConfirm = {
+                homeViewModel.deleteNote(note)
+                proceedWithBackPress()
+            },
+            onCancel  = {}
+        )
+    }
+
+    /**
+     * Called by MainFragment just before the paywall opens.
+     * Snapshots the current title + description from the EditTexts into the ViewModel's
+     * noteState so the data survives CreateNotesFragment being destroyed and recreated
+     * when MainFragment's view is torn down while MainPaywallFragment is on screen.
+     * When CreateNotesFragment is recreated, observeNote() → setupDefaultValues()
+     * restores everything from the ViewModel automatically.
+     */
+    fun snapshotDraftToViewModel() {
+        val title = binding?.etHeader?.text?.toString().orEmpty()
+        val description = binding?.etDescription?.text?.toString().orEmpty()
+        createNoteEntity = createNoteEntity?.copy(title = title, description = description)
+        createNoteEntity?.let {
+            viewModel.setupNoteEntity(it)
+            android.util.Log.d("PaywallNav", "snapshotDraftToViewModel: title='$title' desc='${description.take(30)}'")
+        }
+    }
+
     private fun saveNote() {
         createNoteEntity = createNoteEntity?.copy(
-            title = binding?.etHeader?.text?.toString().orEmpty(),
-            description = binding?.etDescription?.text?.toString().orEmpty()
+            title       = binding?.etHeader?.text?.toString().orEmpty(),
+            description = binding?.etDescription?.text?.toString().orEmpty(),
+            isDraft     = false   // promote draft → published note; removes it from Drafts screen
         )
-        createNoteEntity?.let { viewModel.mergeAndSave(createNoteEntity = it) } ?: run {
-            Log.e("headerSaveSatti", "setClickListeners:$createNoteEntity is Null ")
+
+        createNoteEntity?.let {
+            viewModel.mergeAndSave(createNoteEntity = it)
+        } ?: run {
+            Log.e("headerSaveSatti", "setClickListeners:$createNoteEntity is Null")
+            return
         }
-        checkInterstitial()
+
+        // ✅ FIX: Reset the action state immediately after triggering save.
+        // Because viewModel is activityViewModels() (shared), the Channel retains the
+        // last SaveNote event. Without this reset, re-opening CreateNotesFragment a 2nd
+        // time causes observeNoteAction() to replay SaveNote → fires saveNote() again →
+        // shows the ad → cross navigates back to CreateNote instead of Home.
+        viewModel.resetActionState()
+
+        // NOTE: checkInterstitial() is NO LONGER called here.
+        // It is now triggered from observeNoteAction() when CreateNotesState.NoteSaved
+        // is emitted by the ViewModel — i.e. only AFTER the DB write has completed.
     }
 
     private fun setupImagesRecyclerview() {
@@ -393,7 +996,15 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         viewModel.clearImages()
         Log.e("setupDefaultValues", "setupDefaultValues: ${createNoteEntity?.images}")
         viewModel.addImages(imagePath = createNoteEntity?.images ?: listOf())
-        viewModel.addTags(tags = createNoteEntity?.tags ?: listOf())
+        viewModel.addTags(
+            tags = createNoteEntity?.tags?.filter { !it.tagName.isNullOrBlank() } ?: listOf()
+        )
+        // Restore gallery background if this note was saved with one
+        createNoteEntity?.bgImageUri?.let { uriString ->
+            viewModel.sendAction(CreateNotesState.ChangeBgUri(bgImageUri = uriString))
+        } ?: createNoteEntity?.backgroundRes?.let { resId ->
+            viewModel.sendAction(CreateNotesState.ChangeBg(bgImageRes = resId))
+        }
         binding?.apply {
             etHeader.setText(createNoteEntity?.title)
             etDescription.setText(createNoteEntity?.description)
@@ -410,14 +1021,10 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 }
             }
             fontSizePair?.first?.let {
-                etHeader.setHeadingSize(
-                    textSizeInSp = it
-                )
+                etHeader.setHeadingSize(textSizeInSp = it)
             }
             fontSizePair?.second?.let {
-                etDescription.setHeadingSize(
-                    textSizeInSp = it
-                )
+                etDescription.setHeadingSize(textSizeInSp = it)
             }
             createNoteEntity?.textAlignment?.let { setTextAlignmentByName(etHeader, it) }
             createNoteEntity?.textAlignment?.let { setTextAlignmentByName(etDescription, it) }
@@ -426,12 +1033,255 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
         }
     }
 
+    fun addDefaultTags() {
+        val tags = createNoteEntity?.tags?.toMutableList() ?: mutableListOf()
+        val validTags = tags.filter { !it.tagName.isNullOrBlank() }
+
+        viewModel.clearTags()
+        if (validTags.isNotEmpty()) {
+            viewModel.addTags(validTags)
+        }
+
+        createNoteEntity = createNoteEntity?.copy(tags = validTags)
+
+        if (validTags.isNotEmpty()) {
+            binding?.flexboxLayout?.visibility = View.VISIBLE
+            validTags.setupFlexBox()
+        } else {
+            binding?.flexboxLayout?.visibility = View.GONE
+        }
+    }
+
+    private fun loadInterstitial() {
+        interstitialAdsConfig.loadInterstitialAd(InterAdKey.ADD_NOTE_INTER_SAVE_BUTTON)
+    }
+
+    private fun checkInterstitial() {
+        if (sessionManagerRepo.wasRewardedJustShown()) {
+            navigateScreen()
+            return
+        }
+        when (interstitialAdsConfig.isInterstitialLoaded()) {
+            true -> showInterstitial()
+            false -> navigateScreen()
+        }
+    }
+
+    private fun showBackPressInterstitial() {
+        sessionManagerRepo.bypassSecurityLogin(true)
+        // Reset guard so the cross/dismiss callback can always navigate
+        hasNavigated = false
+
+        interstitialAdsConfig.showInterstitialWithDialog(
+            requireActivity(),
+            InterAdKey.ADD_TASK_INTER_BACKPRESS,
+            object : InterstitialOnShowCallBack {
+
+                // After the back-press interstitial is dismissed/failed, check whether
+                // the Remove Ads popup counter has been reached (per remote config
+                // remove_ads_inter_ad_cross_ipu). If yes, show the dialog; if no, navigate.
+                override fun onAdDismissedFullScreenContent() {
+                    checkRemoveAdsPopupOrNavigate()
+                }
+
+                override fun onAdFailedToShow() {
+                    checkRemoveAdsPopupOrNavigate()
+                }
+
+                override fun onAdImpressionDelayed() {
+                    checkRemoveAdsPopupOrNavigate()
+                }
+            }
+        )
+    }
+
+    /**
+     * Single place that checks the Remove Ads popup counter and either
+     * shows RemoveAdsDialog (no navigation) or navigates up.
+     * Called from every dismiss/fail/delay path of both interstitials.
+     *
+     * Internet guard: if the device is offline the dialog is suppressed and
+     * we navigate directly — there is no point showing a purchase UI without
+     * a network connection.
+     */
+    private fun checkRemoveAdsPopupOrNavigate() {
+        val shouldShow = sharedPref.shouldShowRemoveAdsPopup() && internetManager.isInternetConnected
+        if (shouldShow) {
+            proAccessManager.onInterstitialCrossClicked(
+                fragmentManager = requireActivity().supportFragmentManager,
+                onAfterDismiss = { navigateScreen(fromBackPress = true) }
+            )
+        } else {
+            navigateScreen(fromBackPress = true)
+        }
+    }
+
+    private fun showInterstitial() {
+        sessionManagerRepo.bypassSecurityLogin(true)
+
+        // Navigate to Home BEFORE showing the interstitial so the back stack is already
+        // clean while the ad plays. When the ad dismisses, Home is already the active
+        // destination — the user sees a seamless transition with zero flash of CreateNote.
+        navigateScreen()
+
+        interstitialAdsConfig.showInterstitialWithDialog(
+            requireActivity(),
+            InterAdKey.ADD_NOTE_INTER_SAVE_BUTTON,
+            object : InterstitialOnShowCallBack {
+
+                override fun onAdDismissedFullScreenContent() {
+                    // Navigation already done — only check the Remove Ads popup counter.
+                    checkRemoveAdsPopupOnly()
+                }
+
+                override fun onAdFailedToShow() {
+                    checkRemoveAdsPopupOnly()
+                }
+
+                override fun onAdImpressionDelayed() {
+                    checkRemoveAdsPopupOnly()
+                }
+            })
+    }
+
+    /**
+     * Checks the Remove Ads popup counter WITHOUT navigating.
+     * Used by showInterstitial() where navigation has already happened before the ad shows.
+     *
+     * Internet guard: if the device is offline the dialog is suppressed — no network,
+     * no purchase flow.
+     */
+    private fun checkRemoveAdsPopupOnly() {
+        val shouldShow = sharedPref.shouldShowRemoveAdsPopup() && internetManager.isInternetConnected
+        if (shouldShow) {
+            activity?.runOnUiThread {
+                if (!isAdded) return@runOnUiThread
+                proAccessManager.onInterstitialCrossClicked(
+                    fragmentManager = requireActivity().supportFragmentManager,
+                    onAfterDismiss  = { /* navigation already done, nothing to do */ }
+                )
+            }
+        }
+    }
+
+    override fun onDestroyView() {
+        billingManager.endConnection()
+        super.onDestroyView()
+    }
+
+    /**
+     * Navigates the user to the Home screen after the interstitial ad is dismissed.
+     *
+     * WHY THIS IS NEEDED:
+     * CreateNotesFragment lives inside a nested NavHostFragment (inner nav).
+     * Calling findNavController().navigateUp() from here resolves to the INNER nav controller,
+     * which pops back to CreateNotesFragment instead of going to Home.
+     *
+     * STRATEGY (3 levels, most-reliable first):
+     * 1. Walk the fragment back-stack to find MainFragment and call navigateInnerNavToHome()
+     *    directly — this is the cleanest path and handles all nested nav cases.
+     * 2. If MainFragment isn't found via nav_host_container, search ALL fragments in the
+     *    activity's supportFragmentManager recursively — handles edge cases where the
+     *    container ID differs or the fragment is nested deeper.
+     * 3. Last resort: pop to the start destination of the current nav graph. This is still
+     *    better than navigateUp() because it always goes to root, not just one step back.
+     */
+    private fun navigateScreen(fromBackPress: Boolean = false) {
+        if (hasNavigated) return
+        hasNavigated = true
+
+        // Read and immediately clear the "opened from draft" flag so it doesn't
+        // persist across subsequent CreateNote sessions.
+        val fromDraft = viewModel.openedFromDraft
+        viewModel.openedFromDraft = false
+
+        val hostActivity = activity ?: return
+
+        Log.d("navigateScreen", "navigateScreen() called — fromDraft=$fromDraft")
+
+        fun doNavigate() {
+            if (hostActivity.isFinishing || hostActivity.isDestroyed) {
+                Log.e("navigateScreen", "Activity is finishing/destroyed — aborting")
+                hasNavigated = false
+                return
+            }
+
+            val mainFragment =
+                // Strategy 1: find MainFragment via the primary nav host container
+                (hostActivity.supportFragmentManager
+                    .findFragmentById(R.id.nav_host_container)
+                    ?.childFragmentManager
+                    ?.fragments
+                    ?.firstOrNull { it is com.example.easydiarysatti.ui.main.MainFragment }
+                        as? com.example.easydiarysatti.ui.main.MainFragment)
+                // Strategy 2: search all fragments in the activity recursively
+                    ?: findMainFragmentRecursive(hostActivity.supportFragmentManager)
+
+            if (mainFragment != null) {
+                if (fromDraft && fromBackPress) {
+                    // Opened from DraftNotesFragment and user pressed back — go back to Drafts
+                    Log.d("navigateScreen", "fromDraft=true + backPress → navigateBackToDraft()")
+                    mainFragment.navigateBackToDraft()
+                } else {
+                    // Save path (fromBackPress=false): always go Home, regardless of fromDraft
+                    // Back press from normal/Favorites path: navigateBackFromCreateNote handles it
+                    Log.d("navigateScreen", "fromDraft=false or save → navigateBackFromCreateNote()")
+                    mainFragment.navigateBackFromCreateNote(fromBackPress)
+                }
+                return
+            }
+
+            // Strategy 3: last resort — pop inner nav
+            try {
+                val navController = findNavController()
+                val popped = navController.popBackStack(navController.graph.startDestinationId, false)
+                Log.d("navigateScreen", "Strategy 3 popBackStack result: $popped")
+                if (!popped) navController.navigateUp()
+            } catch (e: Exception) {
+                Log.e("navigateScreen", "Strategy 3 failed: ${e.message}")
+            }
+        }
+
+        // On Android 11, onAdDismissedFullScreenContent fires while FM isStateSaved=true.
+        // Handler.post() is still too early — the runnable executes before Activity.onStart()
+        // clears saved state and FM still rejects popBackStack().
+        // Solution: observe the lifecycle and navigate on the STARTED event, which fires
+        // exactly when onStateNotSaved() is called and FM accepts transactions again.
+        if (hostActivity.supportFragmentManager.isStateSaved) {
+            Log.d("navigateScreen", "FM state saved — waiting for STARTED lifecycle")
+            viewLifecycleOwner.lifecycle.addObserver(object : androidx.lifecycle.DefaultLifecycleObserver {
+                override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
+                    owner.lifecycle.removeObserver(this)
+                    Log.d("navigateScreen", "STARTED — retrying navigation")
+                    doNavigate()
+                }
+            })
+        } else {
+            doNavigate()
+        }
+    }
+
+    /**
+     * Recursively searches all fragment managers to find a MainFragment instance.
+     * Handles deeply nested NavHostFragment structures.
+     */
+    private fun findMainFragmentRecursive(
+        fragmentManager: androidx.fragment.app.FragmentManager
+    ): com.example.easydiarysatti.ui.main.MainFragment? {
+        for (fragment in fragmentManager.fragments) {
+            if (fragment is com.example.easydiarysatti.ui.main.MainFragment) return fragment
+            val found = findMainFragmentRecursive(fragment.childFragmentManager)
+            if (found != null) return found
+        }
+        return null
+    }
+
     fun onClickDateTimePick() {
         (activity as? MainActivity)?.requestExactAlarmPermission {
             showDatePickerWithTime(
                 sessionManagerRepo = sessionManagerRepo,
                 calendar = Calendar.getInstance()
-            ){ selectedCalendar ->
+            ) { selectedCalendar ->
                 if (!isAdded || view == null ||
                     viewLifecycleOwner.lifecycle.currentState < Lifecycle.State.STARTED
                 ) return@showDatePickerWithTime
@@ -501,66 +1351,5 @@ class CreateNotesFragment : Fragment(R.layout.fragment_create_notes) {
                 binding?.icSwitchRemainder?.isChecked = true
             }
         }
-    }
-
-    fun addDefaultTags() {
-        // 1. Get existing tags from the entity
-        val tags = createNoteEntity?.tags?.toMutableList() ?: mutableListOf()
-
-        // 2. Filter out any blank tags that might have been saved accidentally
-        val validTags = tags.filter { it.tagName.isNotBlank() }
-
-        // 3. Sync with ViewModel
-        viewModel.clearTags()
-        if (validTags.isNotEmpty()) {
-            viewModel.addTags(validTags)
-        }
-
-        // 4. Update the local entity reference
-        createNoteEntity = createNoteEntity?.copy(tags = validTags)
-
-        // 5. Only show the flexbox if there is actually something to display
-        if (validTags.isNotEmpty()) {
-            binding?.flexboxLayout?.visibility = View.VISIBLE
-            validTags.setupFlexBox()
-        } else {
-            binding?.flexboxLayout?.visibility = View.GONE
-        }
-    }
-
-    private fun loadInterstitial() {
-        interstitialAdsConfig.loadInterstitialAd(InterAdKey.FEATURE_SAVE_NOTE)
-    }
-
-    private fun checkInterstitial() {
-        when (interstitialAdsConfig.isInterstitialLoaded()) {
-            true -> showInterstitial()
-            false -> navigateScreen()
-        }
-    }
-
-    private fun showInterstitial() {
-        // Set bypass to true so MainActivity.onResume doesn't show login
-        sessionManagerRepo.bypassSecurityLogin(true)
-
-        interstitialAdsConfig.showInterstitialAd(
-            requireActivity(),
-            InterAdKey.FEATURE_SAVE_NOTE,
-            object : InterstitialOnShowCallBack {
-                override fun onAdFailedToShow() {
-                    sessionManagerRepo.bypassSecurityLogin(false)
-                    navigateScreen()
-                }
-                override fun onAdImpressionDelayed() {
-                    // Keep it true if the ad is still technically showing/active
-                    navigateScreen()
-                }
-                // If your callback has an 'onAdDismissed' or similar,
-                // set bypassSecurityLogin(false) there.
-            })
-    }
-
-    private fun navigateScreen() {
-        findNavController().navigateUp()
     }
 }

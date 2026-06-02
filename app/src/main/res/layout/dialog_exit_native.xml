@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    dialog_exit_with_native.xml
+    Matches design: "Exit App?" — Variant C (With Native Ad / Contextual Content)
+    Image ref: Contextual_Native_Content.png
+
+    Layout:
+      - Off-white/cream card (#F5F0EB), large rounded corners, no header icon
+      - Title: "Exit App?" bold, centered, dark
+      - Subtitle: "Take a moment before leaving." gray, centered
+      - Native ad card: white rounded rectangle with image + "RECOMMENDED FOR YOU" + title + snippet + "Listen Now →"
+      - Bottom row: [Exit] light gray pill  |  [Stay] teal pill
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/card_bg"
+    android:layout_marginStart="24dp"
+    android:layout_marginEnd="24dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="16dp"
+        app:cardBackgroundColor="#F5F0EC">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="28dp"
+            android:paddingBottom="24dp">
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Exit App?"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A1A"
+                android:layout_marginBottom="6dp" />
+
+            <!-- Subtitle -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Take a moment before leaving."
+                android:textSize="13sp"
+                android:textColor="#888888"
+                android:layout_marginBottom="20dp" />
+
+            <!-- Native Ad Card (white inner card) -->
+            <!--
+                At runtime this FrameLayout is replaced with the inflated NativeAdView.
+                The placeholder below shows the layout structure per the design.
+            -->
+            <FrameLayout
+                android:id="@+id/nativeAdContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp">
+
+                <!-- Placeholder structure — replaced at runtime with NativeAdView -->
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/nativePlaceholderCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="#FFFFFF">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:padding="12dp"
+                        android:gravity="center_vertical">
+
+                        <!-- Ad icon / thumbnail -->
+                        <ImageView
+                            android:id="@+id/ad_icon"
+                            android:layout_width="64dp"
+                            android:layout_height="64dp"
+                            android:scaleType="centerCrop"
+                            android:background="@drawable/bg_circle_gray"
+                            android:contentDescription="Ad icon" />
+
+                        <!-- Ad text content -->
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:paddingStart="12dp">
+
+                            <!-- "RECOMMENDED FOR YOU" label -->
+                            <TextView
+                                android:id="@+id/ad_label"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="RECOMMENDED FOR YOU"
+                                android:textSize="9sp"
+                                android:textStyle="bold"
+                                android:textColor="#3AACBA"
+                                android:letterSpacing="0.08"
+                                android:layout_marginBottom="4dp" />
+
+                            <!-- Ad headline -->
+                            <TextView
+                                android:id="@+id/ad_headline"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Sponsored Content Headline"
+                                android:textSize="13sp"
+                                android:textStyle="bold"
+                                android:textColor="#1A1A1A"
+                                android:maxLines="2"
+                                android:ellipsize="end"
+                                android:lineSpacingMultiplier="1.2"
+                                android:layout_marginBottom="4dp" />
+
+                            <!-- Ad body/snippet -->
+                            <TextView
+                                android:id="@+id/ad_body"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="Short description goes here..."
+                                android:textSize="11sp"
+                                android:textColor="#888888"
+                                android:maxLines="1"
+                                android:ellipsize="end"
+                                android:layout_marginBottom="6dp" />
+
+                            <!-- CTA: "Listen Now →" style -->
+                            <TextView
+                                android:id="@+id/ad_call_to_action"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Learn More →"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:textColor="#E05A3A" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </androidx.cardview.widget.CardView>
+            </FrameLayout>
+
+            <!-- Bottom buttons row: Exit (light) | Stay (teal) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2"
+                android:gravity="center_vertical">
+
+                <!-- Exit — light gray/muted pill -->
+                <Button
+                    android:id="@+id/btnExitApp"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_weight="0.85"
+                    android:layout_marginEnd="10dp"
+                    android:text="Exit"
+                    android:textAllCaps="false"
+                    android:textSize="15sp"
+                    android:textColor="#888888"
+                    android:backgroundTint="#D9EEF0"
+                    android:stateListAnimator="@null"
+                    app:cornerRadius="26dp"
+                    style="@style/Widget.MaterialComponents.Button" />
+
+                <!-- Stay — filled teal pill -->
+                <Button
+                    android:id="@+id/btnStayInApp"
+                    android:layout_width="0dp"
+                    android:layout_height="60dp"
+                    android:layout_weight="1.15"
+                    android:text="Stay"
+                    android:textAllCaps="false"
+                    android:textSize="15sp"
+                    android:textColor="#FFFFFF"
+                    android:backgroundTint="@color/app_primary_color"
+                    android:stateListAnimator="@null"
+                    app:cornerRadius="26dp"
+                    style="@style/Widget.MaterialComponents.Button" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

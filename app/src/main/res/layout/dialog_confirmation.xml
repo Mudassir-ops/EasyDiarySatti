@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    dialog_confirmation.xml
+    ─────────────────────────────────────────────────────────────────────
+    Matches reference Image 2:
+      • White card, rounded top corners
+      • Colored circle with icon  (red for delete, teal for favorite)
+      • Bold title
+      • Subtitle with note count
+      • Teal "Delete / Add to Favorites" button
+      • Light-blue "Cancel" button
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_rounded_bg"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingHorizontal="@dimen/_24sdp"
+    android:paddingTop="@dimen/_30sdp"
+    android:paddingBottom="@dimen/_24sdp">
+
+    <!-- Icon circle -->
+    <FrameLayout
+        android:layout_width="@dimen/_60sdp"
+        android:layout_height="@dimen/_60sdp">
+
+        <!-- Coloured circle background -->
+        <View
+            android:id="@+id/ivIconBg"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_circle_red_light" />
+
+        <!-- Icon on top -->
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="@dimen/_28sdp"
+            android:layout_height="@dimen/_28sdp"
+            android:layout_gravity="center"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/ic_delete_x"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
+
+    <!-- Title -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_16sdp"
+        android:fontFamily="@font/outfit_bold"
+        android:gravity="center"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_18ssp"
+        tools:text="Permanently Delete Notes?" />
+
+    <!-- Subtitle -->
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:fontFamily="@font/outfit"
+        android:gravity="center"
+        android:textColor="@color/pin_border"
+        android:textSize="@dimen/_13ssp"
+        tools:text="You're about to delete '3' notes. This action cannot be reversed." />
+
+    <!-- Confirm button (Delete / Add to Favorites / Remove) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_48sdp"
+        android:layout_marginTop="@dimen/_24sdp"
+        android:backgroundTint="@color/app_primary_color"
+        android:fontFamily="@font/outfit_medium"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:textColor="@color/white"
+        android:textSize="@dimen/_14ssp"
+        app:cornerRadius="@dimen/_24sdp"
+        tools:text="Delete" />
+
+    <!-- Cancel button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnCancel"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/_48sdp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:backgroundTint="#D6EEF1"
+        android:fontFamily="@font/outfit_medium"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="@string/cancel"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_14ssp"
+        app:cornerRadius="@dimen/_24sdp" />
+
+</LinearLayout>

@@ -13,6 +13,7 @@ import com.example.easydiarysatti.ads.utils.Constants.TAG_ADS
 import com.google.android.gms.ads.AdView
 import javax.inject.Inject
 
+
 class UseCaseBanner @Inject constructor(
     private val repositoryBannerImpl: RepositoryBannerImpl,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
@@ -22,56 +23,25 @@ class UseCaseBanner @Inject constructor(
     @Volatile
     private var isAdLoading = false
 
+    // Fetches "show" status directly from JSON
     private fun checkRemoteConfig(bannerAdKey: BannerAdKey): Boolean {
-        return when (bannerAdKey) {
-            BannerAdKey.HOME -> sharedPreferenceUtils.rcBannerHome != 0
-            BannerAdKey.ON_BOARDING -> sharedPreferenceUtils.rcBannerOnboarding != 0
-        }
+        return sharedPreferenceUtils.getAdShowStatus(bannerAdKey.value)
     }
 
-    private fun getAdId(bannerAdKey: BannerAdKey, context: Context): String {
-        return when (bannerAdKey) {
-            BannerAdKey.HOME -> context.getString(R.string.admob_banner_home_id).trim()
-            BannerAdKey.ON_BOARDING -> context.getString(R.string.admob_banner_onboard).trim()
-        }
+    // Fetches "id" directly from JSON
+    private fun getAdId(bannerAdKey: BannerAdKey): String {
+        return sharedPreferenceUtils.getAdId(bannerAdKey.value)
     }
 
-    private fun getAdType(bannerAdKey: BannerAdKey): BannerAdType {
-        return when (bannerAdKey) {
-            BannerAdKey.HOME -> BannerAdType.COLLAPSIBLE_BOTTOM
-            BannerAdKey.ON_BOARDING -> BannerAdType.COLLAPSIBLE_BOTTOM
-        }
-    }
-
-    fun loadBannerAd(
+    suspend fun loadBannerAd(
         adView: AdView,
         context: Context,
         bannerAdKey: BannerAdKey,
+        bannerAdType: BannerAdType = BannerAdType.ADAPTIVE,
         callback: (ItemBannerAd?) -> Unit
     ) {
-        val bannerAdType = getAdType(bannerAdKey)
-        validateAndLoadAd(bannerAdKey, context, callback) { adId ->
-            isAdLoading = true
-            repositoryBannerImpl.fetchBannerAd(
-                adKey = bannerAdKey.value,
-                adId = adId,
-                bannerAdType = bannerAdType,
-                adView = adView
-            ) {
-                isAdLoading = false
-                callback.invoke(it)
-            }
-        }
-    }
-
-    private fun validateAndLoadAd(
-        bannerAdKey: BannerAdKey,
-        context: Context,
-        callback: (ItemBannerAd?) -> Unit,
-        loadAdAction: (adId: String) -> Unit
-    ) {
         val isRemoteEnable = checkRemoteConfig(bannerAdKey)
-        val adId = getAdId(bannerAdKey, context)
+        val adId = getAdId(bannerAdKey)
 
         when {
             sharedPreferenceUtils.isAppPurchased -> {
@@ -79,36 +49,32 @@ class UseCaseBanner @Inject constructor(
                 callback.invoke(null)
             }
 
-            isRemoteEnable.not() -> {
-                Log.e(TAG_ADS, "${bannerAdKey.value} -> loadBanner: Remote config is off")
+            isRemoteEnable.not() || adId.isEmpty() -> {
+                Log.e(TAG_ADS, "${bannerAdKey.value} -> loadBanner: Disabled or ID missing in JSON")
                 callback.invoke(null)
             }
 
             internetManager.isInternetConnected.not() -> {
-                Log.e(TAG_ADS, "${bannerAdKey.value} -> loadBanner: Internet is not connected")
+                Log.e(TAG_ADS, "${bannerAdKey.value} -> loadBanner: No Internet")
                 callback.invoke(null)
-            }
-
-            adId.isEmpty() -> {
-                Log.e(TAG_ADS, "${bannerAdKey.value} -> loadBanner: Ad id is empty")
-                callback.invoke(null)
-            }
-
-            isAdLoading -> {
-                Log.e(TAG_ADS, "${bannerAdKey.value} -> loadBanner: Ad is already loading")
-                //callback.invoke(null)
             }
 
             else -> {
-                loadAdAction(adId)
+                isAdLoading = true
+                repositoryBannerImpl.fetchBannerAd(
+                    adKey = bannerAdKey.value,
+                    adId = adId,
+                    bannerAdType = bannerAdType,
+                    adView = adView
+                ) {
+                    isAdLoading = false
+                    callback.invoke(it)
+                }
             }
         }
     }
 
     fun destroyBanner(bannerAdKey: BannerAdKey): Boolean {
-        val isDestroyed = repositoryBannerImpl.destroyBanner(bannerAdKey.value)
-        if (isDestroyed)
-            Log.e(TAG_ADS, "${bannerAdKey.value} -> destroyBanner: destroyed")
-        return isDestroyed
+        return repositoryBannerImpl.destroyBanner(bannerAdKey.value)
     }
 }

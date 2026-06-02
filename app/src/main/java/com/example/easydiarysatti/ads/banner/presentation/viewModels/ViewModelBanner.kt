@@ -17,20 +17,23 @@ class ViewModelBanner @Inject constructor(
     private val useCaseBanner: UseCaseBanner
 ) : ViewModel() {
 
-    private val _adViewLiveData = MutableLiveData<AdView>()
-    val adViewLiveData: LiveData<AdView> get() = _adViewLiveData
+    // Store multiple ads: Key -> AdView
+    private val adMap = mutableMapOf<BannerAdKey, AdView>()
+
+    // LiveData now emits the Map so fragments can find their specific ad
+    private val _adMapLiveData = MutableLiveData<Map<BannerAdKey, AdView>>()
+    val adMapLiveData: LiveData<Map<BannerAdKey, AdView>> get() = _adMapLiveData
 
     private val _loadFailedLiveData = MutableLiveData<Unit>()
     val loadFailedLiveData: LiveData<Unit> get() = _loadFailedLiveData
-
-    private val _clearViewLiveData = MutableLiveData<Unit>()
-    val clearViewLiveData: LiveData<Unit> get() = _clearViewLiveData
 
     fun loadBannerAd(adView: AdView, bannerAdKey: BannerAdKey, context: Context) =
         viewModelScope.launch {
             useCaseBanner.loadBannerAd(adView, context, bannerAdKey) { itemBannerAd ->
                 itemBannerAd?.let {
-                    _adViewLiveData.value = it.adView
+                    // Save to map using the key as a unique identifier
+                    adMap[bannerAdKey] = it.adView
+                    _adMapLiveData.postValue(adMap)
                 } ?: run {
                     _loadFailedLiveData.value = Unit
                 }
@@ -39,8 +42,8 @@ class ViewModelBanner @Inject constructor(
 
     fun destroyBanner(bannerAdKey: BannerAdKey) = viewModelScope.launch {
         if (useCaseBanner.destroyBanner(bannerAdKey)) {
-            _clearViewLiveData.postValue(Unit)
+            adMap.remove(bannerAdKey) // Remove specifically this key
+            _adMapLiveData.postValue(adMap)
         }
     }
-
 }

@@ -4,6 +4,9 @@ import android.app.Activity
 import android.content.Context
 import android.util.Log
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnLoadCallBack
+import com.example.easydiarysatti.ads.appOpen.screen.callbacks.AppOpenOnShowCallBack
+import com.example.easydiarysatti.ads.appOpen.screen.enums.AppOpenAdKey
 import com.example.easydiarysatti.ads.manager.InternetManager
 import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
 import com.google.android.gms.ads.AdError
@@ -11,88 +14,95 @@ import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.appopen.AppOpenAd
+import com.example.easydiarysatti.ads.AdShowingTracker
 import java.util.Date
 
-class AppOpenAdManager(
-    private val context: Context,
-    private val internetManager: InternetManager,
-    private val sharedPrefs: SharedPreferenceUtils
-) {
-    private var appOpenAd: AppOpenAd? = null
-    private var isLoadingAd = false
-    private var loadTime = 0L
 
-    private val appOpenId by lazy { context.getString(R.string.admob_app_open_id) }
+// In AppOpenAdManager.kt
+abstract class AppOpenAdManager {
+    // 1. Change to a Map to store multiple ads simultaneously
+    private val appOpenAdMap = mutableMapOf<String, AppOpenAd>()
+    private val loadTimeMap = mutableMapOf<String, Long>()
 
-    fun loadAppOpen() {
-        if (isLoadingAd || isAdAvailable()) return
+    // 2. Use a Set to track which specific keys are currently loading
+    private val loadingKeys = mutableSetOf<String>()
 
-        if (sharedPrefs.isAppPurchased) return
-        if (!internetManager.isInternetConnected) return
-        if (appOpenId.isBlank()) return
-
-        isLoadingAd = true
-        val request = AdRequest.Builder().build()
-
-        AppOpenAd.load(
-            context,
-            appOpenId,
-            request,
-            object : AppOpenAd.AppOpenAdLoadCallback() {
-                override fun onAdLoaded(ad: AppOpenAd) {
-                    Log.d("AppOpenAd", "Ad loaded")
-                    appOpenAd = ad
-                    loadTime = Date().time
-                    isLoadingAd = false
-                }
-
-                override fun onAdFailedToLoad(error: LoadAdError) {
-                    Log.e("AppOpenAd", "Ad failed to load: ${error.message}")
-                    isLoadingAd = false
-                }
-            }
-        )
-    }
-
-    fun showAppOpen(activity: Activity, onDismiss: () -> Unit) {
-        if (!isAdAvailable()) {
-            Log.d("AppOpenAd", "Ad not ready, reloading...")
-            loadAppOpen()
-            onDismiss()
+    fun loadAppOpen(
+        context: Context,
+        adType: String,
+        appOpenId: String,
+        adEnable: Boolean,
+        isAppPurchased: Boolean,
+        isInternetConnected: Boolean,
+        listener: AppOpenOnLoadCallBack? = null
+    ) {
+        if (!adEnable || isAppPurchased || !isInternetConnected || appOpenId.isEmpty()) {
+            listener?.onResponse(false)
             return
         }
 
-        appOpenAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-            override fun onAdDismissedFullScreenContent() {
-                Log.d("AppOpenAd", "Ad dismissed")
-                appOpenAd = null
-                onDismiss()
-                loadAppOpen()
-            }
-
-            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
-                Log.e("AppOpenAd", "Failed to show: ${adError.message}")
-                onDismiss()
-                loadAppOpen()
-            }
-
-            override fun onAdShowedFullScreenContent() {
-                Log.d("AppOpenAd", "Ad shown successfully")
-            }
+        if (isAdAvailable(adType)) {
+            listener?.onResponse(true)
+            return
         }
 
-        appOpenAd?.show(activity)
+        // 3. Only block if the SPECIFIC key is already loading
+        if (loadingKeys.contains(adType)) return
+        loadingKeys.add(adType)
+
+        val request = AdRequest.Builder().build()
+        AppOpenAd.load(context, appOpenId, request, object : AppOpenAd.AppOpenAdLoadCallback() {
+            override fun onAdLoaded(ad: AppOpenAd) {
+                appOpenAdMap[adType] = ad
+                loadTimeMap[adType] = System.currentTimeMillis()
+                loadingKeys.remove(adType) // Release this key
+                listener?.onResponse(true)
+            }
+
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                loadingKeys.remove(adType)
+                listener?.onResponse(false, error.message)
+            }
+        })
     }
 
-    private fun isAdAvailable(): Boolean {
-        return appOpenAd != null && !wasAdExpired()
+    fun showAppOpen(
+        activity: Activity?,
+        adType: String,
+        isAppPurchased: Boolean,
+        listener: AppOpenOnShowCallBack? = null
+    ) {
+        val ad = appOpenAdMap[adType]
+
+        if (isAppPurchased || ad == null || !isAdAvailable(adType)) {
+            listener?.onAdFailedToShow()
+            return
+        }
+
+        // Hard gate — checked at the last possible moment before ad.show().
+        // No call path (Application, Config, or otherwise) can bypass this.
+        if (AdShowingTracker.isAdShowing) {
+            Log.d("AppOpenAdManager", "$adType -> suppressed: another full-screen ad is showing")
+            listener?.onAdFailedToShow()
+            return
+        }
+
+        ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            override fun onAdDismissedFullScreenContent() {
+                appOpenAdMap.remove(adType)
+                listener?.onAdDismissedFullScreenContent()
+            }
+            override fun onAdFailedToShowFullScreenContent(adError: AdError) {
+                appOpenAdMap.remove(adType)
+                listener?.onAdFailedToShow()
+            }
+        }
+        activity?.let { ad.show(it) }
     }
 
-    private fun wasAdExpired(): Boolean {
-        val now = Date().time
-        val diff = now - loadTime
-        val expired = diff > 4 * 60 * 60 * 1000 // 4 hours
-        if (expired) appOpenAd = null
-        return expired
+    private fun isAdAvailable(adType: String): Boolean {
+        val ad = appOpenAdMap[adType]
+        val loadTime = loadTimeMap[adType] ?: 0L
+        return ad != null && (System.currentTimeMillis() - loadTime) < 4 * 60 * 60 * 1000
     }
 }

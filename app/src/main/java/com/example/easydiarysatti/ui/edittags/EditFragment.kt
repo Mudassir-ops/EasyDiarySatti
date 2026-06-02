@@ -65,22 +65,22 @@ class EditFragment : Fragment(R.layout.fragment_edit) {
         setupBgTheme()
 //        setupNativeAd()
     }
-    private fun setupNativeAd() {
-        // 1. Observe the LiveData
-        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
-            if (nativeAd != null) {
-                val adSmallView = AdNativeSmallView(requireContext())
-                binding?.flAdplaceholder?.apply {
-                    removeAllViews()
-                    addView(adSmallView)
-                    adSmallView.setNativeAd(nativeAd)
-                }
-            }
-        }
-
-        // 2. Request the ad (using the ON_BOARDING or appropriate key)
-        nativeViewModel.loadNativeAd(NativeAdKey.PERMISSION)
-    }
+//    private fun setupNativeAd() {
+//        // 1. Observe the LiveData
+//        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+//            if (nativeAd != null) {
+//                val adSmallView = AdNativeSmallView(requireContext())
+//                binding?.flAdplaceholder?.apply {
+//                    removeAllViews()
+//                    addView(adSmallView)
+//                    adSmallView.setNativeAd(nativeAd)
+//                }
+//            }
+//        }
+//
+//        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+////        nativeViewModel.loadNativeAd(NativeAdKey.PERMISSION)
+//    }
     private fun setupBgTheme() {
         val bgResource = sessionManagerRepo.getBgTheme()
         val finalResource = if (bgResource != 0) bgResource else R.drawable.theme_1

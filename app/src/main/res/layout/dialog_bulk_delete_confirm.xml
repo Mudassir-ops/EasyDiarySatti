@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    dialog_bulk_delete_confirm.xml
+    Matches design: "Permanently Delete Notes?"
+    Image ref: Multi-select___Delete_UI.png
+
+    Layout:
+      - White card, large rounded corners
+      - Top: red/pink circle with an X/delete icon
+      - Title: "Permanently Delete Notes?" bold, dark, centered
+      - Body: "You're about to delete 'N' notes. This action cannot be reversed." gray, centered
+      - [Delete]  — filled teal pill (PRIMARY)
+      - [Cancel]  — light teal/muted pill (same as Remind Me Later style)
+
+    The body text dynamically shows the count — set via data binding or setText() at runtime.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_marginStart="32dp"
+    android:layout_marginEnd="32dp">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="10dp"
+        app:cardBackgroundColor="#FFFFFF">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="28dp">
+
+            <!-- Red/pink circle with X/delete icon -->
+            <FrameLayout
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_marginBottom="20dp">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_circle_red_light" />
+
+                <ImageView
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_delete_x"
+                    android:contentDescription="Delete"
+                    app:tint="#E53935" />
+            </FrameLayout>
+
+            <!-- Title -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="Permanently Delete\nNotes?"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="#1A1A1A"
+                android:lineSpacingMultiplier="1.2"
+                android:layout_marginBottom="10dp" />
+
+            <!-- Body — count set dynamically at runtime -->
+            <TextView
+                android:id="@+id/tvDeleteBody"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="You're about to delete '0' notes. This\naction cannot be reversed."
+                android:textSize="13sp"
+                android:textColor="#777777"
+                android:lineSpacingMultiplier="1.4"
+                android:layout_marginBottom="28dp" />
+
+            <!-- Delete — filled teal pill (PRIMARY) -->
+            <Button
+                android:id="@+id/btnDelete"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginBottom="12dp"
+                android:text="Delete"
+                android:textAllCaps="false"
+                android:textSize="15sp"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="@color/app_primary_color"
+                android:stateListAnimator="@null"
+                app:cornerRadius="26dp"
+                style="@style/Widget.MaterialComponents.Button" />
+
+            <!-- Cancel — light teal/muted pill -->
+            <Button
+                android:id="@+id/btnCancelDelete"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:text="Cancel"
+                android:textAllCaps="false"
+                android:textSize="15sp"
+                android:textColor="#3AACBA"
+                android:backgroundTint="#D6EEF1"
+                android:stateListAnimator="@null"
+                app:cornerRadius="26dp"
+                style="@style/Widget.MaterialComponents.Button" />
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

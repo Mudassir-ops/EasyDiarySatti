@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="popup_bg_color">#FFFFFF</color>
+    <color name="popup_text_color">#000000</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="app_color">#C4E5F0</color>
@@ -27,7 +29,12 @@
     <color name="opacity_color">#000000</color>
     <color name="amber">#E8BA00</color>
     <color name="grey">#AAB1BA</color>
+    <color name="screen_bg_color">#FEFCF4</color>
+    <color name="tag_input_bg">#EFEEE3</color>
+    <color name="popup_menu_text">#1A1A1A</color>
 
+    <!-- Delete row tint — keep red in both modes -->
+    <color name="delete_red">#EF4444</color>
     <color name="adsColor">#F1F0FF</color>
     <color name="adsTextColor">#475569</color>
 

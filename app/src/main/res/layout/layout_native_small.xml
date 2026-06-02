@@ -5,7 +5,7 @@
     android:id="@+id/nativeAdView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white">
+    >
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -14,8 +14,8 @@
 
         <androidx.constraintlayout.utils.widget.ImageFilterView
             android:id="@+id/adAppIcon"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_width="65dp"
+            android:layout_height="65dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:round="16dp"
@@ -84,9 +84,9 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/adCallToAction"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:backgroundTint="#1B3A1B"
+            android:backgroundTint="#42ABD0"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:paddingVertical="12dp"

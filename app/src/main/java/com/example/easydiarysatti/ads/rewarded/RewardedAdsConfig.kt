@@ -2,6 +2,7 @@ package com.example.easydiarysatti.ads.rewarded
 
 import android.app.Activity
 import android.content.Context
+import android.util.Log
 import androidx.annotation.StringRes
 import com.example.easydiarysatti.R
 import com.example.easydiarysatti.ads.manager.InternetManager
@@ -13,9 +14,6 @@ import com.example.easydiarysatti.ads.rewarded.managers.RewardedManager
 import javax.inject.Inject
 
 
-/**
- * @param context: Can be of application class
- */
 class RewardedAdsConfig @Inject constructor(
     private val context: Context?,
     private val sharedPreferenceUtils: SharedPreferenceUtils,
@@ -23,15 +21,9 @@ class RewardedAdsConfig @Inject constructor(
 ) : RewardedManager() {
 
     fun loadRewardedAd(adType: RewardedAdKey, listener: RewardedOnLoadCallBack? = null) {
-        var rewardedAdId = ""
-        var isRemoteEnable = false
-
-        when (adType) {
-            RewardedAdKey.IMAGE_MORE_THAN_ONE -> {
-                rewardedAdId = getResString(R.string.admob_rewarded_images_more_than_two)
-                isRemoteEnable = sharedPreferenceUtils.rcRewardedImageAddFeature != 0
-            }
-        }
+        // Fetch ID and Status dynamically from JSON
+        val rewardedAdId = sharedPreferenceUtils.getAdId(adType.value)
+        val isRemoteEnable = sharedPreferenceUtils.getAdShowStatus(adType.value)
 
         loadRewarded(
             context = context,
@@ -53,11 +45,7 @@ class RewardedAdsConfig @Inject constructor(
             activity = activity,
             adType = adType.value,
             isAppPurchased = sharedPreferenceUtils.isAppPurchased,
-            listener
+            listener = listener
         )
-    }
-
-    private fun getResString(@StringRes resId: Int): String {
-        return context?.resources?.getString(resId) ?: ""
     }
 }

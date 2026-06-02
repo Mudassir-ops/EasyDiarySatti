@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/menu/note_item_menu.xml -->
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    
+    >
+
+    <item
+        android:id="@+id/menu_add_tag"
+        android:title="@string/add_tag"
+        android:icon="@drawable/tag_icon" />
+
+    <item
+        android:id="@+id/menu_duplicate"
+        android:title="@string/duplicate"
+        android:icon="@drawable/ic_duplicate" />
+
+    <item
+        android:id="@+id/menu_edit"
+        android:title="@string/edit"
+        android:icon="@drawable/edit_ic" />
+
+    <item
+        android:id="@+id/menu_share"
+        android:title="@string/share"
+        android:icon="@drawable/ic_share" />
+
+    <item
+        android:id="@+id/menu_delete"
+        android:title="@string/delete"
+        android:icon="@drawable/red_delete_ic" />
+
+</menu>

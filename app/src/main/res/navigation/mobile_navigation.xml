@@ -21,6 +21,55 @@
             app:destination="@id/loginFragment"
             app:popUpTo="@id/splashFragment"
             app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_splashFragment_to_permissionFragment"
+            app:destination="@id/permissionFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_splashFragment_to_nameSetupFragment"
+            app:destination="@id/nameFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_splashFragment_to_pinSetupFragment"
+            app:destination="@id/signUpFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_splashFragment_to_themeFragment"
+            app:destination="@id/themesFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_splashFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_splashPaywallFragment"
+            app:destination="@id/splashPaywallFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_splashFragment_to_onboardingPaywallFragment"
+            app:destination="@id/onboardingPaywallFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/favoritesFragment"
+        android:name="com.example.easydiarysatti.ui.favorites.FavoritesFragment"
+        android:label="Favorites"
+        tools:layout="@layout/fragment_favorites">
+        <action
+            android:id="@+id/action_favoritesFragment_to_createNotesFragment2"
+            app:destination="@id/createNotesFragment2" />
     </fragment>
     <fragment
         android:id="@+id/onBoardingFragment"
@@ -30,15 +79,53 @@
         <action
             android:id="@+id/action_onBoardingFragment_to_permissionFragment"
             app:destination="@id/permissionFragment" />
+        <action
+            android:id="@+id/action_onBoardingFragment_to_nameSetupFragment"
+            app:destination="@id/nameFragment" />
+
+        <action
+            android:id="@+id/action_onBoardingFragment_to_pinSetupFragment"
+            app:destination="@id/signUpFragment" />
+
+        <action
+            android:id="@+id/action_onBoardingFragment_to_themeFragment"
+            app:destination="@id/themesFragment" />
+
+        <action
+            android:id="@+id/action_onBoardingFragment_to_mainFragment"
+            app:destination="@id/mainFragment" />
     </fragment>
     <fragment
         android:id="@+id/permissionFragment"
         android:name="com.example.easydiarysatti.ui.permission.PermissionFragment"
         android:label="fragment_permission"
         tools:layout="@layout/fragment_permission">
+        <!--
+            ALL actions pop permissionFragment off the stack (inclusive=true).
+            This ensures permission never appears in the back stack after the user
+            advances — whether via skip, auto-grant, or normal flow.
+            Back from nameFragment goes to onBoardingFragment, not permissionFragment.
+        -->
         <action
             android:id="@+id/action_permissionFragment_to_nameFragment"
-            app:destination="@id/nameFragment" />
+            app:destination="@id/nameFragment"
+            app:popUpTo="@id/permissionFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_permissionFragment_to_pinSetupFragment"
+            app:destination="@id/signUpFragment"
+            app:popUpTo="@id/permissionFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_permissionFragment_to_themeFragment"
+            app:destination="@id/themesFragment"
+            app:popUpTo="@id/permissionFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_permissionFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/permissionFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <!--Coming Soon-->
@@ -51,7 +138,29 @@
     <!--            android:id="@+id/action_languageFragment_to_themesFragment"-->
     <!--            app:destination="@id/themesFragment" />-->
     <!--    </fragment>-->
+    <fragment
+        android:id="@+id/onboardingPaywallFragment"
+        android:name="com.example.easydiarysatti.paywalls.OnboardingPaywallFragment"
+        tools:layout="@layout/fragment_variant1_paywall">
 
+        <action
+            android:id="@+id/action_onboardingPaywall_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/themesFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/splashPaywallFragment"
+        android:name="com.example.easydiarysatti.paywalls.SplashPaywallFragment"
+        tools:layout="@layout/fragment_variant1_paywall">
+
+        <action
+            android:id="@+id/action_splashPaywallFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/splashFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
     <fragment
         android:id="@+id/signUpFragment"
         android:name="com.example.easydiarysatti.ui.signup.SignUpFragment"
@@ -60,6 +169,12 @@
         <action
             android:id="@+id/action_signUpFragment_to_themesFragment"
             app:destination="@id/themesFragment" />
+
+        <action
+            android:id="@+id/action_pinSetupFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/signUpFragment"
+            app:popUpToInclusive="true" />
         <!--        <action-->
         <!--            android:id="@+id/action_signUpFragment_to_languageFragment"-->
         <!--            app:destination="@id/languageFragment" />-->
@@ -72,6 +187,15 @@
         <action
             android:id="@+id/action_nameFragment_to_signUpFragment"
             app:destination="@id/signUpFragment" />
+        <action
+            android:id="@+id/action_nameFragment_to_themeFragment"
+            app:destination="@id/themesFragment" />
+
+        <action
+            android:id="@+id/action_nameFragment_to_mainFragment"
+            app:destination="@id/mainFragment"
+            app:popUpTo="@id/nameFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/themesFragment"
@@ -81,6 +205,11 @@
         <action
             android:id="@+id/action_themesFragment_to_mainFragment"
             app:destination="@id/mainFragment" />
+        <action
+            android:id="@+id/action_themesFragment_to_onboardingPaywallFragment"
+            app:destination="@id/onboardingPaywallFragment"
+            app:popUpTo="@id/themesFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -88,6 +217,10 @@
         android:name="com.example.easydiarysatti.ui.main.MainFragment"
         android:label="fragment_main"
         tools:layout="@layout/fragment_main">
+        <action
+            android:id="@+id/action_mainFragment_to_mainPaywallFragment"
+            app:destination="@id/mainPaywallFragment" />
+
         <action
             android:id="@+id/action_mainFragment_to_editProfileFragment"
             app:destination="@id/editProfileFragment" />
@@ -97,6 +230,7 @@
         <action
             android:id="@+id/action_mainFragment_to_themesFragment"
             app:destination="@id/themesFragment" />
+
         <!--Coming Soon-->
         <!--        <action-->
         <!--            android:id="@+id/action_mainFragment_to_languageFragment"-->
@@ -107,6 +241,14 @@
         <action
             android:id="@+id/action_mainFragment_to_addTagsFragment2"
             app:destination="@id/addTagsFragment2" />
+        <action
+            android:id="@+id/action_mainFragment_to_draftNotesFragment"
+            app:destination="@id/draftNotesFragment" />
+        <action
+            android:id="@+id/action_mainFragment_to_favoritesFragment"
+            app:destination="@id/favoritesFragment" />
+
+
     </fragment>
     <fragment
         android:id="@+id/editProfileFragment"
@@ -161,8 +303,34 @@
         android:id="@+id/createNotesFragment2"
         android:name="com.example.easydiarysatti.ui.createnote.CreateNotesFragment"
         android:label="fragment_create_notes"
-        tools:layout="@layout/fragment_create_notes" />
+        tools:layout="@layout/fragment_create_notes">
+
+        <action
+            android:id="@+id/action_createNotesFragment2_to_addTagsFragment2"
+            app:destination="@id/addTagsFragment2" />
+    </fragment>
     <action
         android:id="@+id/action_global_remainderFragment"
         app:destination="@id/remainderFragment" />
+
+    <fragment
+        android:id="@+id/mainPaywallFragment"
+        android:name="com.example.easydiarysatti.paywalls.MainPaywallFragment"
+        android:label="mainPaywallFragment"
+        tools:layout="@layout/fragment_variant1_paywall" />
+
+    <action
+        android:id="@+id/action_global_mainPaywallFragment"
+        app:destination="@id/mainPaywallFragment" />
+
+
+    <fragment
+        android:id="@+id/draftNotesFragment"
+        android:name="com.example.easydiarysatti.ui.draft.DraftNotesFragment"
+        android:label="Draft Notes"
+        tools:layout="@layout/fragment_draft_notes">
+        <action
+            android:id="@+id/action_draftNotesFragment_to_createNotesFragment2"
+            app:destination="@id/createNotesFragment2" />
+    </fragment>
 </navigation>

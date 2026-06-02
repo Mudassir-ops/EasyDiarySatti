@@ -12,13 +12,11 @@ interface CreateNoteRepository {
     fun observeNoteById(id: Long): Flow<CreateNoteEntity?>
     fun observeAllNotes(): Flow<List<CreateNoteEntity>?>
     fun observeAllImages(): Flow<List<CreateNoteEntity>?>
-
     suspend fun getOldImages(noteId: Long): List<String>?
     fun observeNotesForDay(
         startOfDay: Long,
         endOfDay: Long
     ): Flow<List<CreateNoteEntity>?>
-
     suspend fun updateSortOrder(isAscending: Boolean)
     fun observeSortOrder(): Flow<Boolean?>
     suspend fun updateNote(note: CreateNoteEntity)
@@ -32,10 +30,13 @@ interface CreateNoteRepository {
         newImages: List<String>
     )
 
+    // ── NEW ───────────────────────────────────────────────────────────────────
+    fun observeDraftNotes(): Flow<List<CreateNoteEntity>>
+    suspend fun publishDraft(noteId: Long)
+    // ─────────────────────────────────────────────────────────────────────────
 
     suspend fun insertReminder(reminderEntity: ReminderEntity?): Long?
     suspend fun deleteReminder(reminderEntity: ReminderEntity?)
     suspend fun updateReminder(reminderEntity: ReminderEntity?)
     fun observeReminder(): Flow<List<ReminderEntity>?>
-
 }

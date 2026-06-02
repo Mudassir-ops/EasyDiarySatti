@@ -10,6 +10,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.databinding.FragmentChangePasswordBinding
 import com.example.easydiarysatti.domain.repo.SessionManagerRepo
 import com.example.easydiarysatti.loadBackground
@@ -25,6 +28,8 @@ class ChangePasswordFragment : Fragment(R.layout.fragment_change_password) {
 
     private val viewModel by viewModels<ChangePasswordViewModel>()
     private val signUpViewModel by viewModels<SignUpViewModel>()
+    private val nativeViewModel by viewModels<ViewModelNative>()
+
     private val binding by viewBinding(FragmentChangePasswordBinding::bind)
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
@@ -43,10 +48,25 @@ class ChangePasswordFragment : Fragment(R.layout.fragment_change_password) {
 //        setupBgTheme()
         setupKeypad()
         updateUiState()
-
+//setupNativeAd()
         binding?.ivMenu?.setOnClickListener { findNavController().navigateUp() }
     }
-
+//    private fun setupNativeAd() {
+//        // 1. Observe the LiveData
+//        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
+//            if (nativeAd != null) {
+//                val adSmallView = AdNativeSmallView(requireContext())
+//                binding?.flAdplaceholder?.apply {
+//                    removeAllViews()
+//                    addView(adSmallView)
+//                    adSmallView.setNativeAd(nativeAd)
+//                }
+//            }
+//        }
+//
+//        // 2. Request the ad (using the ON_BOARDING or appropriate key)
+////        nativeViewModel.loadNativeAd(NativeAdKey.CHANGE_PASSWORD)
+//    }
     private fun setupBgTheme() {
         binding?.parentView?.loadBackground(
             resourceId = viewModel.getBgTheme(),

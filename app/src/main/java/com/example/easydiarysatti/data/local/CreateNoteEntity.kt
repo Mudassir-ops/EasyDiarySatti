@@ -30,7 +30,7 @@ data class CreateNoteEntity(
     val tags: List<CustomTagEntity>? = null,
     val images: List<String>? = null,
     val isAscending: Boolean = false,
-    val remainderTime: Long = System.currentTimeMillis(),
-
-    ) : Parcelable
-
+    val remainderTime: Long = 0L,
+    val bgImageUri: String? = null,
+    val isDraft: Boolean = false,   // ← NEW: true = saved as draft, false = published note
+) : Parcelable

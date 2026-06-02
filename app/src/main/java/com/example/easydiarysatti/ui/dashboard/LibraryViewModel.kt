@@ -24,48 +24,55 @@ class LibraryViewModel @Inject constructor(
 
     private val _allImagesState = MutableStateFlow<LibraryImagesState>(LibraryImagesState.Loading)
     val allImagesState: StateFlow<LibraryImagesState> = _allImagesState
+//
+//    init {
+//        observeAllImages()
+//    }
 
-    init {
-        observeAllImages()
-    }
-
-    fun observeAllImages() {
+    // LibraryViewModel.kt
+    fun observeAllImages(targetRow: Int) {
         createNoteRepository.observeAllImages()
-            .onStart {
-                _allImagesState.value = LibraryImagesState.Loading
-            }
-            .catch { e ->
-                _allImagesState.value = LibraryImagesState.Error(e.message ?: "Unknown error")
-            }
+            .onStart { _allImagesState.value = LibraryImagesState.Loading }
             .distinctUntilChanged()
             .onEach { notes ->
                 if (notes.isNullOrEmpty()) {
-                    _allImagesState.value = LibraryImagesState.Error("No images found")
+                    _allImagesState.value = LibraryImagesState.Error("No data")
                 } else {
-                    val groupedItems = notes
-                        .filter { it.images?.isNotEmpty() == true }
+                    val baseItems = mutableListOf<LibraryItem>()
+                    val groupedMap = notes.filter { it.images?.isNotEmpty() == true }
                         .groupBy { it.creationTime.toDateString() }
-                        .flatMap { (date, noteList) ->
-                            val items = mutableListOf<LibraryItem>()
-                            items.add(LibraryItem.DateItem(date))
 
-                            // Add the note once, passing the entire list of images
-                            noteList.forEach { note ->
-                                items.add(
-                                    LibraryItem.ImagesItem(
-                                        date = date,
-                                        imagePaths = note.images ?: emptyList(), // Pass the list here
-                                        noteTitle = note.title ?: "no title",
-                                        noteId = note.noteId
-                                    )
-                                )
-                            }
-                            items
+                    groupedMap.forEach { (date, noteList) ->
+                        baseItems.add(LibraryItem.DateItem(date))
+                        noteList.forEach { note ->
+                            baseItems.add(LibraryItem.ImagesItem(date, note.images!!, note.title ?: "", note.noteId))
                         }
-                    _allImagesState.value = LibraryImagesState.Success(groupedItems)
+                    }
+
+                    val finalItemsList = mutableListOf<LibraryItem>()
+
+                    // ADJUSTMENT: We want to skip (targetRow) full rows of content.
+                    // If targetRow is 2, we want 2 full rows (4 slots) to pass.
+                    val targetSlotCount = targetRow * 2
+
+                    var currentSlotCount = 0
+                    var adInserted = false
+
+                    for (item in baseItems) {
+                        val itemSpan = if (item is LibraryItem.DateItem) 2 else 1
+
+                        finalItemsList.add(item)
+                        currentSlotCount += itemSpan
+                        if (!adInserted && currentSlotCount == targetSlotCount) {
+                            finalItemsList.add(LibraryItem.AdItem)
+                            adInserted = true
+                        }
+
+                    }
+
+                    _allImagesState.value = LibraryImagesState.Success(finalItemsList)
                 }
-            }
-            .launchIn(viewModelScope)
+            }.launchIn(viewModelScope)
     }
 
     fun String?.toFormattedDate(): String {

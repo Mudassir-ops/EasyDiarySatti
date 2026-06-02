@@ -16,6 +16,7 @@
             android:id="@+id/headerLayout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@+id/mainBackground"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.1"
             app:layout_constraintStart_toStartOf="parent"
@@ -63,7 +64,29 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_premium"
+                android:layout_width="@dimen/_22sdp"
+                android:layout_height="@dimen/_22sdp"
+                android:layout_marginEnd="@dimen/_15sdp"
+                android:elevation="@dimen/_100sdp"
+                app:layout_constraintEnd_toStartOf="@id/iv_remainder"
+                app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
+                app:layout_constraintTop_toTopOf="@+id/headerTitle"
+                app:srcCompat="@drawable/ic_premium"
+                />
 
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/iv_delete_all"
+                android:layout_width="@dimen/_22sdp"
+                android:layout_height="@dimen/_22sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+               app:layout_constraintEnd_toStartOf="@id/iv_remainder"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_delete"
+                app:tint="@color/white" />
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/iv_remainder"
                 android:layout_width="@dimen/_22sdp"
@@ -80,9 +103,10 @@
                 android:id="@+id/iv_kabab"
                 android:layout_width="@dimen/_22sdp"
                 android:layout_height="@dimen/_22sdp"
-                android:layout_marginEnd="@dimen/_20sdp"
+                android:layout_marginEnd="@dimen/_5sdp"
                 android:elevation="@dimen/_100sdp"
                 android:visibility="gone"
+                android:padding="@dimen/_5sdp"
                 app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/headerTitle"
@@ -93,17 +117,32 @@
                 android:id="@+id/headerSave"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="@dimen/_15sdp"
+                android:layout_marginEnd="@dimen/_10sdp"
                 android:elevation="@dimen/_5sdp"
                 android:fontFamily="@font/outfit"
                 android:text="@string/save"
+                android:paddingHorizontal="@dimen/_10sdp"
+                android:background="@drawable/blur_bg"
                 android:textAlignment="center"
                 android:textColor="@color/white"
                 android:textSize="@dimen/_14ssp"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="@+id/headerTitle"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@id/iv_kabab"
                 app:layout_constraintTop_toTopOf="@+id/headerTitle" />
+
+            <!-- Premium badge on Save — shown when save quota exceeded -->
+            <ImageView
+                android:id="@+id/iv_save_premium_badge"
+                android:layout_width="@dimen/_12sdp"
+                android:layout_height="@dimen/_12sdp"
+                android:visibility="visible"
+                android:elevation="10dp"
+                android:src="@drawable/ic_premium"
+                app:layout_constraintTop_toTopOf="@+id/headerSave"
+                app:layout_constraintEnd_toEndOf="@+id/headerSave"
+                app:layout_constraintStart_toEndOf="@+id/headerSave"
+                app:layout_constraintBottom_toTopOf="@+id/headerSave" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -337,6 +376,13 @@
                         app:iconTint="@color/selector_create_note_item2" />
 
                 </com.google.android.material.button.MaterialButtonToggleGroup>
+
+
+
+                <!-- ── Premium badge above Save button (header) — shown when save quota exceeded ── -->
+                <!-- Note: Save button is in the header toolbar, not here.                          -->
+                <!-- The iv_save_premium_badge is placed next to headerSave in the header layout.   -->
+
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -375,4 +421,3 @@
     </com.google.android.material.navigation.NavigationView>
 
 </androidx.drawerlayout.widget.DrawerLayout>
-

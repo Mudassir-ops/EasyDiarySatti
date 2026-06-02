@@ -1,25 +1,30 @@
 package com.example.easydiarysatti.ui.signup
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_STRONG
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.easydiarysatti.FROM_ONBOARDING
 import com.example.easydiarysatti.R
-import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
-import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeLargeView
-import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
-import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
+import com.example.easydiarysatti.ads.banner.presentation.enums.BannerAdKey
+import com.example.easydiarysatti.ads.banner.presentation.viewModels.ViewModelBanner
+import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.ads.utils.addCleanView
 import com.example.easydiarysatti.databinding.FragmentSignUpBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.showSnackbar
 import com.example.easydiarysatti.viewBinding
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
+import kotlin.getValue
 
 @AndroidEntryPoint
 class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
@@ -27,44 +32,125 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
     private val binding by viewBinding(FragmentSignUpBinding::bind)
     private var firstPin: String? = null
     private var isPinConfirmed = false
+    private val bannerViewModel by activityViewModels<ViewModelBanner>()
+    @Inject lateinit var sharedPreferenceUtils: SharedPreferenceUtils
+    @Inject lateinit var internetManager: InternetManager
     private var currentPin = StringBuilder()
-    private val nativeViewModel: ViewModelNative by viewModels()
     private val dotsIds = listOf(R.id.dot1, R.id.dot2, R.id.dot3, R.id.dot4)
     private var canUseBiometrics = false
-    lateinit var mFirebaseAnalytics : FirebaseAnalytics
+    private var isVerificationMode = false
+    lateinit var mFirebaseAnalytics: FirebaseAnalytics
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(requireContext())
         val eventParams = Bundle()
         eventParams.putString("onBoardingSignup", "open_screen")
         mFirebaseAnalytics.logEvent("On_Boarding_Access_Your_Diary_Login", eventParams)
+
+        val savedPin = viewModel.getPin()
+        if (!savedPin.isNullOrEmpty()) {
+            isVerificationMode = true
+            firstPin = savedPin
+            binding?.txtPinStage?.text = "Enter your PIN"
+        } else {
+            isVerificationMode = false
+            updateStageText()
+        }
+        setupBannerObserver()
         checkBiometricAvailability()
         setupKeypadListeners()
         clickListener()
         setupInitialButtonState()
         updateStageText()
-        setupNativeAd()
     }
-    private fun setupNativeAd() {
-        // 1. Observe the LiveData
-        nativeViewModel.adViewLiveData.observe(viewLifecycleOwner) { nativeAd ->
-            if (nativeAd != null) {
-                val adSmallView = AdNativeSmallView(requireContext())
-                binding?.flAdplaceholder?.apply {
-                    removeAllViews()
-                    addView(adSmallView)
-                    adSmallView.setNativeAd(nativeAd)
+
+    private var isAdProcessStarted = false
+
+    private fun setupBannerObserver() {
+        if (sharedPreferenceUtils.isAppPurchased||!internetManager.isInternetConnected || !sharedPreferenceUtils.getAdShowStatus(BannerAdKey.PIN_SETUP.value)) {
+            binding?.bannerShimmerContainer?.visibility = View.GONE
+            binding?.bannerContainer?.visibility = View.GONE
+            return
+        }
+        bannerViewModel.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            if (isAdProcessStarted) return@observe
+
+            val preloadedAd = adMap[BannerAdKey.PIN_SETUP]
+
+            if (preloadedAd != null) {
+                isAdProcessStarted = true
+                binding?.bannerShimmerContainer?.visibility = View.VISIBLE
+                binding?.bannerShimmerContainer?.startShimmer()
+
+                if (isAdded && binding != null) {
+                    binding?.bannerShimmerContainer?.stopShimmer()
+                    binding?.bannerShimmerContainer?.setShimmer(null)
+
+                    binding?.bannerContainer?.let { container ->
+                        container.setBackgroundColor(android.graphics.Color.TRANSPARENT)
+                        container.addCleanView(preloadedAd)
+                        container.visibility = View.VISIBLE
+                    }
+                    Log.d("AdDebug", "Shimmer off, PIN_SETUP Ad visible (One-time load)")
                 }
+            } else {
+                binding?.bannerShimmerContainer?.visibility = View.GONE
+                binding?.bannerContainer?.visibility = View.GONE
+                Log.d("AdDebug", "PIN_SETUP ad not found in map yet...")
             }
         }
-
-        // 2. Request the ad (using the ON_BOARDING or appropriate key)
-        nativeViewModel.loadNativeAd(NativeAdKey.SIGNUP)
     }
-    // Check if hardware is present to decide if we show the button
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        isAdProcessStarted = false
+    }
+
+    /* ---------- Waterfall Navigation driven by onboarding flow JSON ----------
+     *
+     * We ask the JSON "what comes after pin?" and navigate there.
+     * No manual boolean checks — the JSON already knows the active case:
+     *
+     *   case_full      → pin → theme → home
+     *   case_no_theme  → pin → home
+     */
+    private fun moveToNextScreen() {
+        val nextScreen = sharedPreferenceUtils.nextScreenAfter(SharedPreferenceUtils.SCREEN_PIN)
+        Log.d("SignUpFragment", "Next screen after pin: $nextScreen")
+
+        when (nextScreen) {
+            SharedPreferenceUtils.SCREEN_THEME -> {
+                preLoadNextAd(BannerAdKey.THEME_SELECTION)
+
+                val navOptions = androidx.navigation.NavOptions.Builder()
+                    .setPopUpTo(R.id.signUpFragment, true)
+                    .build()
+
+                findNavController().navigate(
+                    R.id.action_signUpFragment_to_themesFragment,
+                    Bundle().apply { putBoolean(FROM_ONBOARDING, true) },
+                    navOptions
+                )
+            }
+            SharedPreferenceUtils.SCREEN_HOME, null -> {
+                sharedPreferenceUtils.isFirstTimeUser = false
+                findNavController().safeNav(
+                    currentDestId = R.id.signUpFragment,
+                    actionId = R.id.action_pinSetupFragment_to_mainFragment
+                )
+            }
+        }
+    }
+
+    private fun preLoadNextAd(adKey: BannerAdKey) {
+        Log.d("AdsInformation", "PIN Setup pre-loading ad for: ${adKey.value}")
+        val adView = com.google.android.gms.ads.AdView(requireContext())
+        bannerViewModel.loadBannerAd(adView, adKey, requireContext())
+    }
+
     private fun checkBiometricAvailability() {
         val biometricManager = BiometricManager.from(requireContext())
-        // Only checking for strong biometrics here for informational purposes
         when (biometricManager.canAuthenticate(BIOMETRIC_STRONG)) {
             BiometricManager.BIOMETRIC_SUCCESS -> {
                 binding?.keypadLayout?.btnBiometric?.visibility = View.VISIBLE
@@ -72,12 +158,10 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             }
             BiometricManager.BIOMETRIC_ERROR_NO_HARDWARE,
             BiometricManager.BIOMETRIC_ERROR_HW_UNAVAILABLE -> {
-                // Hide if no hardware
                 binding?.keypadLayout?.btnBiometric?.visibility = View.INVISIBLE
                 canUseBiometrics = false
             }
             BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED -> {
-                // Hardware exists but user hasn't set it up in phone settings
                 binding?.keypadLayout?.btnBiometric?.visibility = View.VISIBLE
                 canUseBiometrics = false
             }
@@ -87,13 +171,13 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             }
         }
     }
+
     private fun logAnalyticsEvent(eventName: String, label: String) {
         if (eventName.isEmpty()) return
-        val params = Bundle().apply {
-            putString("action_label", label)
-        }
+        val params = Bundle().apply { putString("action_label", label) }
         mFirebaseAnalytics.logEvent(eventName, params)
     }
+
     private fun setupInitialButtonState() {
         binding?.btnNext?.apply {
             isEnabled = false
@@ -113,7 +197,6 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             }
             btnBackspace.setOnClickListener { onBackspaceClicked() }
 
-            // Informational click listener for Sign Up phase
             btnBiometric.setOnClickListener {
                 if (canUseBiometrics) {
                     binding?.parentView?.showSnackbar("Biometric authentication will be available for future logins.")
@@ -124,14 +207,10 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         }
     }
 
-    // --- Rest of existing PIN logic remains unchanged ---
-
     private fun onNumberClicked(number: String) {
         if (currentPin.length < 4) {
             currentPin.append(number)
             updateDotsUi()
-
-            // When we reach 4, trigger the logic immediately
             if (currentPin.length == 4) {
                 handleFullPinEntry()
             }
@@ -144,7 +223,6 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             updateDotsUi()
             if (isPinConfirmed) {
                 isPinConfirmed = false
-
             }
         }
     }
@@ -160,40 +238,32 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
         }
     }
 
-    private fun onPinEntry(digit: String) {
-        if (currentPin.length < 4) {
-            currentPin.append(digit)
-            updateDotsUi()
-
-            // Add this check to move forward automatically
-            if (currentPin.length == 4) {
-                handleFullPinEntry()
-            }
-        }
-    }
-
     private fun handleFullPinEntry() {
         val enteredPin = currentPin.toString()
 
-        if (firstPin == null) {
-            // STEP 1: First 4 digits entered, move to confirmation
-            firstPin = enteredPin
-            clearPinFields() // This clears currentPin for the next entry
-            updateStageText() // Should now show "Confirm your PIN"
-        } else {
-            // STEP 2: Confirmation digits entered, check if they match
+        if (isVerificationMode) {
             if (enteredPin == firstPin) {
-                isPinConfirmed = true
-                viewModel.savePin(enteredPin = firstPin.orEmpty())
-                moveToNextScreen() // Auto-navigate to dashboard
+                moveToNextScreen()
             } else {
-                // Error: PINs don't match, reset to start
-                firstPin = null
+                clearPinFields()
+                binding?.parentView?.showSnackbar("Incorrect PIN, please try again")
+            }
+        } else {
+            if (firstPin == null) {
+                firstPin = enteredPin
                 clearPinFields()
                 updateStageText()
-                binding?.parentView?.showSnackbar(
-                    message = getString(R.string.pins_do_not_match_try_again)
-                )
+            } else {
+                if (enteredPin == firstPin) {
+                    isPinConfirmed = true
+                    viewModel.savePin(enteredPin = firstPin.orEmpty())
+                    moveToNextScreen()
+                } else {
+                    firstPin = null
+                    clearPinFields()
+                    updateStageText()
+                    binding?.parentView?.showSnackbar(getString(R.string.pins_do_not_match_try_again))
+                }
             }
         }
     }
@@ -203,22 +273,6 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             "Create your PIN"
         } else {
             "Confirm your PIN"
-        }
-    }
-
-    private fun setButtonReadyState() {
-        binding?.btnNext?.apply {
-            isEnabled = true
-            alpha = 1f
-            text = getString(R.string.done)
-        }
-    }
-
-    private fun resetButtonState() {
-        binding?.btnNext?.apply {
-            isEnabled = false
-            alpha = 0.5f
-            text = getString(R.string.setup_pin)
         }
     }
 
@@ -237,16 +291,4 @@ class SignUpFragment : Fragment(R.layout.fragment_sign_up) {
             }
         }
     }
-
-    private fun moveToNextScreen() {
-        val bundle = Bundle().apply {
-            putBoolean(FROM_ONBOARDING, true)
-        }
-        findNavController().safeNav(
-            currentDestId = R.id.signUpFragment,
-            actionId = R.id.action_signUpFragment_to_themesFragment,
-            bundle = bundle
-        )
-    }
 }
-

@@ -4,10 +4,16 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.ui.AdNativeSmallView
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.cancelAlarm
 import com.example.easydiarysatti.data.local.ReminderEntity
 import com.example.easydiarysatti.databinding.FragmentRemainderBinding
@@ -19,18 +25,20 @@ import com.example.easydiarysatti.toFormattedString
 import com.example.easydiarysatti.viewBinding
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.UUID
-import javax.inject.Inject
+
 
 @AndroidEntryPoint
 class RemainderFragment : Fragment(R.layout.fragment_remainder) {
     private val binding by viewBinding(FragmentRemainderBinding::bind)
     private val viewModel by viewModels<RemainderViewModel>()
-
+    private val viewModelNative: ViewModelNative by activityViewModels()
     @Inject
     lateinit var sessionManagerRepo: SessionManagerRepo
+    @Inject lateinit var internetManager: InternetManager
+    @Inject lateinit var sharedPref: SharedPreferenceUtils
     lateinit var mFirebaseAnalytics : FirebaseAnalytics
     private val reminderAdapter by lazy {
         ReminderAdapter { reminder ->
@@ -62,10 +70,12 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
             // Logic to scroll to the note or open a detail dialog
             Log.d("Notification", "Opening note with ID: $noteIdFromNotification")
         }
+
         setupReminderRv()
         setupClickListeners()
         viewModel.observeReminders()
         observeReminders()
+        initAdObserver()
     }
 
     private fun setupClickListeners() {
@@ -113,6 +123,48 @@ class RemainderFragment : Fragment(R.layout.fragment_remainder) {
         binding?.reminderRecyclerView?.run {
             adapter = reminderAdapter
             setHasFixedSize(true)
+        }
+    }
+    private var isAdProcessStarted = false
+
+    private fun initAdObserver() {
+        if (sharedPref.isAppPurchased || !internetManager.isInternetConnected) {
+            binding?.shimmerViewContainer?.visibility = View.GONE
+            binding?.flAdplaceholder?.visibility = View.GONE
+            return
+        }
+
+        // ── 2. Ad disabled from remote → hide shimmer immediately ─────────────
+        if (!sharedPref.getAdShowStatus(NativeAdKey.REMINDER_INTERVAL.value)) {
+            binding?.shimmerViewContainer?.visibility = View.GONE
+            binding?.flAdplaceholder?.visibility = View.GONE
+            return
+        }
+        viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            // 1. Log the map keys to verify the ad actually exists in this fragment
+            Log.d("AdDebug", "Map keys present: ${adMap.keys}")
+
+            val specificAd = adMap[NativeAdKey.REMINDER_INTERVAL]
+
+            if (specificAd != null && !isAdProcessStarted) {
+                isAdProcessStarted = true
+
+                // 2. FORCE HIDE SHIMMER
+                binding?.shimmerViewContainer?.apply {
+                    stopShimmer()
+                    visibility = View.GONE
+                }
+
+                // 3. FORCE SHOW AD
+                binding?.flAdplaceholder?.apply {
+                    visibility = View.VISIBLE
+                    removeAllViews()
+                    val adView = AdNativeSmallView(requireContext())
+                    addView(adView)
+                    adView.setNativeAd(specificAd)
+                }
+                Log.d("AdDebug", "Ad injected and container set to VISIBLE")
+            }
         }
     }
 

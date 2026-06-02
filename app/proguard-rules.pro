@@ -19,4 +19,16 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+# 1. Keep your project classes
 -keep class com.example.easydiarysatti.** { *; }
+
+# 2. Keep Google Mobile Ads SDK
+-keep class com.google.android.gms.ads.** { *; }
+-keep public class com.google.android.gms.ads.AdView
+-keep public class com.google.android.gms.ads.AdRequest
+-keep public class com.google.android.gms.ads.AdSize
+-keep public class com.google.android.gms.ads.AdListener
+
+# Keep the model used by SharedPreferenceUtils/RemoteConfig
+-keepclassmembers class com.example.easydiarysatti.ads.manager.SharedPreferenceUtils { *; }
+

@@ -17,28 +17,26 @@ class ViewModelNative @Inject constructor(
     private val useCaseNative: UseCaseNative
 ) : ViewModel() {
 
-    private val _adViewLiveData = MutableLiveData<NativeAd?>()
-    val adViewLiveData: LiveData<NativeAd?> get() = _adViewLiveData
+    // 1. Change to a Map to store multiple preloaded ads
+    private val adMap = HashMap<NativeAdKey, NativeAd>()
 
-    private val _loadFailedLiveData = MutableLiveData<Unit>()
-    val loadFailedLiveData: LiveData<Unit> get() = _loadFailedLiveData
+    private val _adMapLiveData = MutableLiveData<Map<NativeAdKey, NativeAd>>()
+    val adMapLiveData: LiveData<Map<NativeAdKey, NativeAd>> get() = _adMapLiveData
 
-    private val _clearViewLiveData = MutableLiveData<Unit>()
-    val clearViewLiveData: LiveData<Unit> get() = _clearViewLiveData
+    private val _loadFailedLiveData = MutableLiveData<NativeAdKey>()
+    val loadFailedLiveData: LiveData<NativeAdKey> get() = _loadFailedLiveData
 
     fun loadNativeAd(nativeAdKey: NativeAdKey) = viewModelScope.launch {
         useCaseNative.loadNativeAd(nativeAdKey) { itemNativeAd ->
             itemNativeAd?.let {
-                _adViewLiveData.postValue(it.nativeAd)
+                // 2. Store ad with its specific key
+                adMap[nativeAdKey] = it.nativeAd
+                _adMapLiveData.postValue(adMap)
             } ?: run {
-                _loadFailedLiveData.postValue(Unit)
+                _loadFailedLiveData.postValue(nativeAdKey)
             }
         }
     }
 
-    fun destroyNative(nativeAdKey: NativeAdKey) = viewModelScope.launch(Dispatchers.Default) {
-        if (useCaseNative.destroyNative(nativeAdKey)) {
-            _clearViewLiveData.postValue(Unit)
-        }
-    }
+
 }

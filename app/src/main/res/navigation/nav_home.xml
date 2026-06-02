@@ -19,6 +19,9 @@
         <action
             android:id="@+id/action_homeFragment_to_previewFragment2"
             app:destination="@id/previewFragment2" />
+        <action
+            android:id="@+id/action_homeFragment_to_addTagsFragment"
+            app:destination="@id/addTagsFragment" />
     </fragment>
 
     <fragment

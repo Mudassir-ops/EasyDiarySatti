@@ -526,7 +526,7 @@ fun FlexboxLayout.addTags(
     onRemoveTagClick: ((CustomTagEntity) -> Unit)? = null,
 ) {
     // 1. Filter out tags that have no name (removes the "default" empty tag)
-    val validTags = tagList?.filter { it.tagName.isNotBlank() } ?: emptyList()
+    val validTags = tagList?.filter { !it.tagName.isNullOrBlank() } ?: emptyList()
 
     if (validTags.isEmpty()) {
         this.visibility = View.GONE
@@ -581,7 +581,7 @@ fun FlexboxLayout.addTags(
                 onRemoveTagClick?.invoke(tag)
 
                 // Hide if no valid tags left
-                if (tagList?.none { it.tagName.isNotBlank() } == true) {
+                if (tagList?.none { !it.tagName.isNullOrBlank() } == true) {
                     this@addTags.visibility = View.GONE
                 }
             }
@@ -938,7 +938,6 @@ fun Fragment.showDatePickerWithTime(
     onDateTimeSelected: (Calendar) -> Unit
 ) {
     val themeColor = getCurrentThemeColor(sessionManagerRepo)
-    // Use the fixed style we discussed to prevent inflation crashes
     val contextThemeWrapper = ContextThemeWrapper(requireContext(), R.style.TimePickerDialogTheme)
 
     val dateDialog = DatePickerDialog(
@@ -956,8 +955,10 @@ fun Fragment.showDatePickerWithTime(
 
     dateDialog.show()
 
+    // ── Restrict to today and future — no past dates ──────────────────────
+    dateDialog.datePicker.minDate = System.currentTimeMillis()
+
     // --- NEW: DYNAMIC HEADER COLOR ---
-    // 2. CHANGE HEADER COLOR (Supports multiple Android versions)
     val headerIds = arrayOf("date_picker_header", "day_picker_selector_layout", "header")
     for (idName in headerIds) {
         val id = Resources.getSystem().getIdentifier(idName, "id", "android")
@@ -1030,6 +1031,18 @@ fun Activity.privacyPolicyUrl() {
             Intent(
                 Intent.ACTION_VIEW,
                 this.getString(R.string.privacy_policy_link).toUri()
+            )
+        )
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+fun Activity.termsUrl() {
+    try {
+        this.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                this.getString(R.string.terms_link).toUri()
             )
         )
     } catch (e: Exception) {

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    layout_delete_success_toast.xml
+    Matches design: "Notes successfully deleted" dark pill with checkmark
+    Image ref: Multi-select___Delete_UI__1_.png
+
+    This is a custom Snackbar / Toast view — a dark rounded pill
+    centered on the screen with a white checkmark circle on the left
+    and "Notes successfully deleted" text.
+
+    Show it via a custom Snackbar or transient overlay — NOT a Dialog.
+
+    Runtime usage example:
+        val snackbar = Snackbar.make(binding.root, "", Snackbar.LENGTH_SHORT)
+        val layout = snackbar.view as Snackbar.SnackbarLayout
+        layout.setPadding(0, 0, 0, 0)
+        layout.setBackgroundColor(Color.TRANSPARENT)
+        val customView = LayoutInflater.from(context)
+            .inflate(R.layout.layout_delete_success_toast, layout, false)
+        customView.findViewById<TextView>(R.id.tvSuccessMessage).text =
+            "Notes successfully deleted"
+        layout.addView(customView)
+        snackbar.show()
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+
+    android:background="@drawable/bg_dark_pill"
+    android:layout_gravity="center_horizontal"
+    android:minWidth="240dp">
+
+    <!-- White circle with checkmark -->
+    <FrameLayout
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+       >
+
+        <!-- White circle background -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_circle_white" />
+
+        <!-- Checkmark icon -->
+        <ImageView
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_check"
+            android:contentDescription="Success"
+            app:tint="#3AACBA" />
+    </FrameLayout>
+
+    <!-- Success message text -->
+    <TextView
+        android:id="@+id/tvSuccessMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Notes successfully deleted"
+        android:textSize="14sp"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:layout_marginBottom="@dimen/_10sdp"
+        android:textColor="#FFFFFF"
+        android:textStyle="normal" />
+
+</LinearLayout>

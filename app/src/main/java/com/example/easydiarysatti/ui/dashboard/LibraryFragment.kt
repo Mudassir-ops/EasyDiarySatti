@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
@@ -12,30 +13,57 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.easydiarysatti.FROM_SCREEN
 import com.example.easydiarysatti.NOTE_ID
 import com.example.easydiarysatti.R
+import com.example.easydiarysatti.ads.manager.InternetManager
+import com.example.easydiarysatti.ads.manager.SharedPreferenceUtils
+import com.example.easydiarysatti.ads.natives.presentation.enums.NativeAdKey
+import com.example.easydiarysatti.ads.natives.presentation.viewModels.ViewModelNative
 import com.example.easydiarysatti.databinding.FragmentLibraryBinding
 import com.example.easydiarysatti.safeNav
 import com.example.easydiarysatti.ui.dashboard.MultiViewAdapter.Companion.TYPE_DATE
 import com.example.easydiarysatti.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
+import jakarta.inject.Inject
 import kotlinx.coroutines.launch
+import kotlin.getValue
 
 @AndroidEntryPoint
 class LibraryFragment : Fragment(R.layout.fragment_library) {
 
     private val binding by viewBinding(FragmentLibraryBinding::bind)
     private val viewModel by viewModels<LibraryViewModel>()
-
+    private val viewModelNative: ViewModelNative by activityViewModels()
     private var adapter: MultiViewAdapter? = null
-    private var layoutManager: GridLayoutManager? = null
+
+    @Inject
+    lateinit var sharedPreferenceUtils: SharedPreferenceUtils
+
+    @Inject
+    lateinit var internetManager: InternetManager
+
+    // Computed once per view lifecycle so adapter and observer always agree
+    private val showAds: Boolean
+        get() = !sharedPreferenceUtils.isAppPurchased &&
+                internetManager.isInternetConnected &&
+                sharedPreferenceUtils.getAdShowStatus(NativeAdKey.LIBRARY.value)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val adRow = sharedPreferenceUtils.libraryNativeAdAfterItems.toIntOrNull() ?: 2
+        viewModel.observeAllImages(adRow)
+
         setupRecyclerView()
         observeAllImages()
+        initAdObserver()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
     }
 
     private fun setupRecyclerView() {
-        adapter = MultiViewAdapter { imagePaths, date, noteId ->
+        // showAds is resolved once here and baked into the adapter — no race possible
+        adapter = MultiViewAdapter(showAds) { imagePaths, date, noteId ->
             findNavController().safeNav(
                 currentDestId = R.id.libraryFragment,
                 actionId = R.id.action_libraryFragment_to_previewFragment,
@@ -45,15 +73,36 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
                 }
             )
         }
-        layoutManager = GridLayoutManager(context ?: return, 2)
-        binding?.libraryRecyclerView?.adapter = adapter
-        binding?.libraryRecyclerView?.layoutManager = layoutManager
-        binding?.libraryRecyclerView?.setHasFixedSize(true)
-        layoutManager?.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+
+        val gridLayoutManager = GridLayoutManager(requireContext(), 2)
+        gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
-                val type = adapter?.getItemViewType(position)
-                return if (type == TYPE_DATE) layoutManager?.spanCount ?: 0 else 1
+                return when (adapter?.getItemViewType(position)) {
+                    MultiViewAdapter.TYPE_DATE -> 2
+                    MultiViewAdapter.TYPE_AD -> 2
+                    else -> 1
+                }
             }
+        }
+
+        binding?.libraryRecyclerView?.apply {
+            this.layoutManager = gridLayoutManager
+            this.adapter = this@LibraryFragment.adapter
+            setHasFixedSize(true)
+        }
+    }
+
+    private fun initAdObserver() {
+        // If ads shouldn't show, nothing to observe — adapter already collapses the slot
+        if (!showAds) return
+
+        viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            val nativeAd = adMap[NativeAdKey.LIBRARY]
+            if (nativeAd != null) {
+                adapter?.setNativeAd(nativeAd)
+            }
+            // null case is handled inside AdViewHolder.bind() → shows shimmer
+            // until a real ad arrives; no action needed here
         }
     }
 
@@ -85,4 +134,3 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
         }
     }
 }
-

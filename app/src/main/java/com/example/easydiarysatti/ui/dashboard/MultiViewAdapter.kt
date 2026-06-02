@@ -1,7 +1,5 @@
 package com.example.easydiarysatti.ui.dashboard
 
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,22 +14,22 @@ import com.example.easydiarysatti.databinding.ItemSingleImageBinding
 import com.google.android.gms.ads.nativead.NativeAd
 
 class MultiViewAdapter(
-    private val onImageClick: (List<String>, String, Long) -> Unit // Update parameter
+    private val showAds: Boolean,
+    private val onImageClick: (List<String>, String, Long) -> Unit
 ) : ListAdapter<LibraryItem, RecyclerView.ViewHolder>(DiffCallback()) {
 
-    // 1. Add NativeAd property
     private var nativeAd: NativeAd? = null
-    // Track if the 3-second delay has already passed for the current ad
     private var isShimmerComplete = false
+
     companion object {
         const val TYPE_DATE = 0
         const val TYPE_IMAGE = 1
-        const val TYPE_AD = 2 // New Type
+        const val TYPE_AD = 2
     }
 
     fun setNativeAd(ad: NativeAd) {
         this.nativeAd = ad
-        this.isShimmerComplete = false // Reset for new ad content
+        this.isShimmerComplete = false
         notifyDataSetChanged()
     }
 
@@ -51,30 +49,28 @@ class MultiViewAdapter(
                 )
                 AdViewHolder(binding)
             }
+
             TYPE_DATE -> {
                 val binding = ItemDateHeaderBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
+                    LayoutInflater.from(parent.context), parent, false
                 )
                 DateViewHolder(binding)
             }
 
             TYPE_IMAGE -> {
                 val binding = ItemSingleImageBinding.inflate(
-                    LayoutInflater.from(parent.context),
-                    parent,
-                    false
+                    LayoutInflater.from(parent.context), parent, false
                 )
-                ImageViewHolder(binding, onImageClick,)
+                ImageViewHolder(binding, onImageClick)
             }
 
             else -> throw IllegalArgumentException("Unknown viewType $viewType")
         }
     }
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (holder) {
-            is AdViewHolder -> holder.bind(nativeAd) // Pass the ad (could be null)
+            is AdViewHolder -> holder.bind(nativeAd)
             is DateViewHolder -> holder.bind(getItem(position) as LibraryItem.DateItem)
             is ImageViewHolder -> holder.bind(getItem(position) as LibraryItem.ImagesItem)
         }
@@ -84,24 +80,23 @@ class MultiViewAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(ad: NativeAd?) {
+            // Purchased / no internet / ad disabled → collapse row entirely, no shimmer
+            if (!showAds) {
+                binding.root.visibility = View.GONE
+                binding.root.layoutParams = RecyclerView.LayoutParams(0, 0)
+                return
+            }
+
             if (ad != null) {
                 if (isShimmerComplete) {
-                    // 3. Shimmer time finished: Show the ad immediately
                     showAdContent(ad)
                 } else {
-                    // 1. Ad is ready but we MUST show shimmer for 3-4 seconds first
-                    showShimmer()
-
-//                    Handler(Looper.getMainLooper()).postDelayed({
-                        isShimmerComplete = true
-                        // Ensure the holder is still visible/valid before updating
-                        if (adapterPosition != RecyclerView.NO_POSITION) {
-                            showAdContent(ad)
-                        }
-//                    }, 3500) // 3.5 seconds (the sweet spot between 3 and 4)
+                    isShimmerComplete = true
+                    if (adapterPosition != RecyclerView.NO_POSITION) {
+                        showAdContent(ad)
+                    }
                 }
             } else {
-                // Ad not loaded at all: Show shimmer
                 showShimmer()
             }
         }
@@ -123,6 +118,7 @@ class MultiViewAdapter(
             adView.setNativeAd(ad)
         }
     }
+
     class DateViewHolder(private val binding: ItemDateHeaderBinding) :
         RecyclerView.ViewHolder(binding.root) {
         fun bind(item: LibraryItem.DateItem) {
@@ -136,7 +132,6 @@ class MultiViewAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: LibraryItem.ImagesItem) {
-            // Load the first image as the representative cover
             Glide.with(binding.imageView.context)
                 .load(item.imagePaths.firstOrNull())
                 .thumbnail(0.1f)
@@ -149,9 +144,9 @@ class MultiViewAdapter(
             }
         }
     }
+
     fun hideAdSlot() {
         nativeAd = null
-        // Remove any AdItem from the current list so the slot disappears entirely
         val filteredList = currentList.filterNot { it is LibraryItem.AdItem }
         submitList(filteredList)
     }
@@ -162,12 +157,12 @@ class MultiViewAdapter(
                 oldItem is LibraryItem.DateItem && newItem is LibraryItem.DateItem ->
                     oldItem.date == newItem.date
                 oldItem is LibraryItem.ImagesItem && newItem is LibraryItem.ImagesItem ->
-                    oldItem.noteId == newItem.noteId // Use noteId for better comparison
+                    oldItem.noteId == newItem.noteId
                 else -> false
             }
         }
-        override fun areContentsTheSame(oldItem: LibraryItem, newItem: LibraryItem): Boolean = oldItem == newItem
+
+        override fun areContentsTheSame(oldItem: LibraryItem, newItem: LibraryItem): Boolean =
+            oldItem == newItem
     }
 }
-
-

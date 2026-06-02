@@ -115,8 +115,6 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             ) { notesState, globalNames ->
 
                 // BUG 1 FIX: Capture the notes list here so deleteTagEverywhere can use it.
-                // Previously allNotes was never assigned anywhere, so note cleanup on delete
-                // was silently skipped for all notes.
                 val notes = if (notesState is HomeNotesState.Success) notesState.notes else null
 
                 val noteTags: List<CustomTagEntity> = notes
@@ -139,11 +137,6 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
 
                     // BUG 4 & 5 FIX: Seed predefined tags only on the very first emission
                     // when no tags exist at all, not on every screen open or setup call.
-                    // Previously:
-                    //   • setupSelectModeUi() called saveGlobalTag unconditionally every open
-                    //   • setupManageModeUi() checked allUniqueTags.isEmpty() which was always
-                    //     true at setup time (flow hadn't emitted yet), so tags were always re-added
-                    // Now the check runs after the flow emits, against real data.
                     if (!predefinedTagsSeeded && mergedList.isEmpty()) {
                         predefinedTagsSeeded = true
                         PREDEFINED_TAGS.forEach { homeViewModel.saveGlobalTag(it) }
@@ -300,7 +293,8 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             drawerToolbar.visibility = View.VISIBLE
             applyToolbarTheme(drawerToolbar)
             ivDrawerBack.setOnClickListener {
-                findNavController().navigateUp() }
+                findNavController().navigateUp()
+            }
             tvSelectedTagsLabel.visibility = View.GONE
             chipGroupSelected.visibility = View.GONE
             btnNext.visibility = View.GONE
@@ -364,13 +358,7 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
             selectedTag = tag,
             onUpdateTag = { updatedList ->
 
-                // BUG 2 FIX: The old code used:
-                //   updatedList.firstOrNull { it.tagName != oldName }
-                // which matches the very first tag in the list that isn't `oldName`
-                // (e.g. "Work") — completely wrong for any predefined tag beyond index 0.
-                //
-                // Correct approach: diff the list against the pre-dialog snapshot to find
-                // whichever name is new (i.e. wasn't present before the rename).
+                // BUG 2 FIX: diff against pre-dialog snapshot to find the renamed tag.
                 val newName = updatedList
                     .mapNotNull { it.tagName }
                     .firstOrNull { it !in namesBefore }
@@ -379,8 +367,6 @@ class AddTagsFragment : Fragment(R.layout.fragment_add_tags) {
                 homeViewModel.renameGlobalTag(oldName, newName)
 
                 // BUG 3 FIX: Removed findNavController().navigateUp() from here.
-                // Previously every rename dismissed the entire Manage Tags screen,
-                // forcing the user to re-open it for each subsequent edit.
                 // The flow in observeAllNotes() will auto-refresh the list after renaming.
             }
         )

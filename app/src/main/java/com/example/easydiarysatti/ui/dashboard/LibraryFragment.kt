@@ -33,51 +33,37 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
     private val viewModel by viewModels<LibraryViewModel>()
     private val viewModelNative: ViewModelNative by activityViewModels()
     private var adapter: MultiViewAdapter? = null
-    private var layoutManager: GridLayoutManager? = null
+
     @Inject
     lateinit var sharedPreferenceUtils: SharedPreferenceUtils
-    @Inject  // ← ADD
+
+    @Inject
     lateinit var internetManager: InternetManager
+
+    // Computed once per view lifecycle so adapter and observer always agree
+    private val showAds: Boolean
+        get() = !sharedPreferenceUtils.isAppPurchased &&
+                internetManager.isInternetConnected &&
+                sharedPreferenceUtils.getAdShowStatus(NativeAdKey.LIBRARY.value)
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Default is 2 as per your spreadsheet
-        // Fetch row from Remote Config (bridge via SharedPrefs)
-        val adRow = sharedPreferenceUtils.libraryNativeAdAfterItems.toIntOrNull() ?: 2
 
-        // Now start the observation with the correct row
+        val adRow = sharedPreferenceUtils.libraryNativeAdAfterItems.toIntOrNull() ?: 2
         viewModel.observeAllImages(adRow)
+
         setupRecyclerView()
         observeAllImages()
-
         initAdObserver()
     }
 
-
     override fun onDestroyView() {
         super.onDestroyView()
-        adAlreadyPassedToAdapter = false
     }
-    private var adAlreadyPassedToAdapter = false
-    private fun initAdObserver() {
-        // ── No internet or ad disabled → remove ad slot entirely ──────────────
-        if (sharedPreferenceUtils.isAppPurchased ||!internetManager.isInternetConnected ||
-            !sharedPreferenceUtils.getAdShowStatus(NativeAdKey.LIBRARY.value)) {
-            adapter?.hideAdSlot()
-            return
-        }
 
-        viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
-            val nativeAd = adMap[NativeAdKey.LIBRARY]
-            if (nativeAd != null) {
-                adAlreadyPassedToAdapter = true
-                adapter?.setNativeAd(nativeAd)
-            } else {
-                adapter?.hideAdSlot()
-            }
-        }
-    }
     private fun setupRecyclerView() {
-        adapter = MultiViewAdapter { imagePaths, date, noteId ->
+        // showAds is resolved once here and baked into the adapter — no race possible
+        adapter = MultiViewAdapter(showAds) { imagePaths, date, noteId ->
             findNavController().safeNav(
                 currentDestId = R.id.libraryFragment,
                 actionId = R.id.action_libraryFragment_to_previewFragment,
@@ -88,14 +74,13 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
             )
         }
 
-        // Initialize ONLY ONE layout manager
         val gridLayoutManager = GridLayoutManager(requireContext(), 2)
         gridLayoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return when (adapter?.getItemViewType(position)) {
-                    MultiViewAdapter.TYPE_DATE -> 2 // Full Width
-                    MultiViewAdapter.TYPE_AD -> 2   // Full Width
-                    else -> 1                      // 1 Column
+                    MultiViewAdapter.TYPE_DATE -> 2
+                    MultiViewAdapter.TYPE_AD -> 2
+                    else -> 1
                 }
             }
         }
@@ -107,7 +92,19 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
         }
     }
 
+    private fun initAdObserver() {
+        // If ads shouldn't show, nothing to observe — adapter already collapses the slot
+        if (!showAds) return
 
+        viewModelNative.adMapLiveData.observe(viewLifecycleOwner) { adMap ->
+            val nativeAd = adMap[NativeAdKey.LIBRARY]
+            if (nativeAd != null) {
+                adapter?.setNativeAd(nativeAd)
+            }
+            // null case is handled inside AdViewHolder.bind() → shows shimmer
+            // until a real ad arrives; no action needed here
+        }
+    }
 
     private fun observeAllImages() {
         viewLifecycleOwner.lifecycleScope.launch {
@@ -137,4 +134,3 @@ class LibraryFragment : Fragment(R.layout.fragment_library) {
         }
     }
 }
-

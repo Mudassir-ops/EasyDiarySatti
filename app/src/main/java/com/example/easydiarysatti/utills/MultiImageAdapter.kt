@@ -32,6 +32,17 @@ class MultiImageAdapter(
     // bgIndex (position - 1):  2, 3, 7  → those are premium
     private val premiumBgIndices = setOf(1, 2, 6)
 
+    /**
+     * Set to true once the user has purchased Remove Ads or Premium.
+     * When true, [ImageViewHolder.bind] hides the lock/scrim overlay on every
+     * premium background thumbnail so purchased users see no gate icons.
+     *
+     * Always set this BEFORE the dialog opens (MainFragment reads sharedPref at
+     * lazy-init time), or call [notifyDataSetChanged] after updating it if the
+     * dialog is already visible.
+     */
+    var isPurchased: Boolean = false
+
     var onItemClick: ((Int) -> Unit)? = null
 
     // Called by showBackgroundDialog to dismiss itself when gallery opens
@@ -86,7 +97,7 @@ class MultiImageAdapter(
             is ImageViewHolder -> {
                 val bgIndex   = position - 1
                 val isPremium = bgIndex in premiumBgIndices
-                holder.bind(items[position], isPremium, onImageClick)
+                holder.bind(items[position], isPremium, isPurchased, onImageClick)
             }
         }
     }
@@ -131,6 +142,7 @@ class MultiImageAdapter(
         fun bind(
             item: BgItem?,
             isPremium: Boolean,
+            isPurchased: Boolean,
             onImageClick: (source: BgItem?, isPremium: Boolean) -> Unit
         ) {
             val loadTarget: Any? = when (item) {
@@ -144,7 +156,9 @@ class MultiImageAdapter(
                 .transform(RoundedCorners(24))
                 .into(imageView)
 
-            val overlayVisibility = if (isPremium) View.VISIBLE else View.GONE
+            // Show lock/scrim only when the slot is premium AND user has NOT purchased.
+            // Once isPurchased = true the overlay is hidden for all thumbnails.
+            val overlayVisibility = if (isPremium && !isPurchased) View.VISIBLE else View.GONE
             premiumLock?.visibility  = overlayVisibility
             premiumScrim?.visibility = overlayVisibility
 

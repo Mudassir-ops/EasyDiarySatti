@@ -206,7 +206,11 @@ class MainFragment : Fragment(R.layout.fragment_main) {
                     }
                 }
             }
-        )
+        ).also { adapter ->
+            // Stamp purchase state at creation time so the very first open of the
+            // background dialog already shows no lock icons for purchased users.
+            adapter.isPurchased = sharedPref.isAppPurchased
+        }
     }
 
     private var pendingBgSource: com.example.easydiarysatti.utills.BgItem? = null
@@ -1928,6 +1932,17 @@ class MainFragment : Fragment(R.layout.fragment_main) {
             } catch (e: Exception) { false }
             val showSaveBadge = onCreateNote && !purchased && sharedPref.shouldShowRewardedForSave()
             ivSavePremiumBadge.visibility = if (showSaveBadge) View.VISIBLE else View.GONE
+        }
+
+        // Sync purchase state into the background adapter so premium lock/scrim
+        // overlays are removed immediately after purchase.
+        // The lazy property is only touched here if it was already initialised
+        // (i.e. the background dialog was opened at least once this session).
+        // Calling it before that would force premature lazy-init and invoke
+        // getBgThemes() before the fragment is fully ready.
+        if (multiImageAdapter.isPurchased != sharedPref.isAppPurchased) {
+            multiImageAdapter.isPurchased = sharedPref.isAppPurchased
+            multiImageAdapter.notifyDataSetChanged()
         }
     }
 
